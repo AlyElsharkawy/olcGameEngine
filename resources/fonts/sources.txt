@@ -1,0 +1,2 @@
+Hack: https://sourcefoundry.org/hack/
+FreeSans: https://www.gnu.org/software/freefont/

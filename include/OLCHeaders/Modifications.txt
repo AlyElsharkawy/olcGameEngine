@@ -1,0 +1,14 @@
+olcPixelGameEngine.h:
+    Made it so that I could see valueToIndex on line 1622
+
+olcSplashScreen:
+    Made it so that it says an optional Aly Elsharkawy 2024 message instead of the normal one.
+    Title bar will remain as is for liscence compatiblity
+
+olcQuickGUI:
+    It can use custom fonts if you change lines 525 to 532. Make a font an optional parameter
+    I made it support font sizes
+    NOT RECOMMENDED TO USE
+
+olcTTF:
+    Added GetFontSize function
