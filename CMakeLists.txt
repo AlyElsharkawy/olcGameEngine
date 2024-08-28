@@ -83,22 +83,30 @@ set(TEST_APP_LIBS
   VECTOR_MATH_LIB
 )
 
-set(OLC_CUSTOM_FONT_LIBs
+set(OLC_CUSTOM_FONT_LIBS
   MISC_FUNCTIONS_LIB
 )
 
+# For Linux and windows support
+if(UNIX)
+    set(PLATFORM_LIBRARIES X11 GL pthread stdc++fs)
+elseif(WIN32)
+    set(PLATFORM_LIBRARIES user32 gdi32 opengl32 gdiplus Shlwapi dwmapi stdc++fs)
+    #set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static")
+endif()
+
 # Link the necessary libraries
 #linking with stdc++fs is not required if your compiler is above version 9.1
-target_link_libraries(${PROJECT_NAME} PRIVATE X11 GL pthread stdc++fs freetype ${PROJECT_NAME_LIBS})
-target_link_libraries(OBJFileSerializer PRIVATE X11 GL pthread stdc++fs ${OBJ_FILE_SERIALIZER_LIBS})
-target_link_libraries(TestApp PRIVATE X11 GL pthread stdc++fs ${TEST_APP_LIBS})
-target_link_libraries(GUITest PRIVATE X11 GL pthread stdc++fs freetype ${GUI_TEST_LIBS})
-target_link_libraries(PART_ONE_FINAL PRIVATE X11 GL pthread stdc++fs )
-target_link_libraries(PART_TWO_FINAL PRIVATE X11 GL pthread stdc++fs)
-target_link_libraries(PART_THREE_FINAL PRIVATE X11 GL pthread stdc++fs)
-target_link_libraries(PART_FOUR_FINAL PRIVATE X11 GL pthread stdc++fs ${PART_FOUR_FINAL_LIBS})
-target_link_libraries(OLC_GUI_EXAMPLE PRIVATE X11 GL pthread stdc++fs freetype ${OLC_GUI_EXAMPLE})
-target_link_libraries(OLC_CUSTOM_FONT PRIVATE X11 GL pthread stdc++fs ${OLC_CUSTOM_FONT_LIBs})
+target_link_libraries(${PROJECT_NAME} PRIVATE ${PLATFORM_LIBRARIES} ${PROJECT_NAME_LIBS} freetype)
+target_link_libraries(OBJFileSerializer PRIVATE ${PLATFORM_LIBRARIES} ${OBJ_FILE_SERIALIZER_LIBS})
+target_link_libraries(TestApp PRIVATE ${PLATFORM_LIBRARIES} ${TEST_APP_LIBS})
+target_link_libraries(GUITest PRIVATE ${PLATFORM_LIBRARIES} ${GUI_TEST_LIBS} freetype)
+target_link_libraries(PART_ONE_FINAL PRIVATE ${PLATFORM_LIBRARIES} )
+target_link_libraries(PART_TWO_FINAL PRIVATE ${PLATFORM_LIBRARIES})
+target_link_libraries(PART_THREE_FINAL PRIVATE ${PLATFORM_LIBRARIES})
+target_link_libraries(PART_FOUR_FINAL PRIVATE ${PLATFORM_LIBRARIES} ${PART_FOUR_FINAL_LIBS})
+target_link_libraries(OLC_GUI_EXAMPLE PRIVATE ${PLATFORM_LIBRARIES} ${OLC_GUI_EXAMPLE} freetype)
+target_link_libraries(OLC_CUSTOM_FONT PRIVATE ${PLATFORM_LIBRARIES} ${OLC_CUSTOM_FONT_LIBS})
 
 add_compile_options(
     $<$<CONFIG:Debug>:-g>
