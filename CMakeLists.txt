@@ -36,7 +36,6 @@ add_library(VECTOR_MATH_LIB SHARED ./src/vectorMathEssentials.cpp)
 add_library(TRIANGLE_MATH_LIB SHARED ./src/triangleMathEssentials.cpp)
 add_library(MISC_PRIMITIVES_LIB SHARED ./src/miscPrimitives.cpp)
 target_link_libraries(GEOMETRY_LIB PRIVATE MISC_FUNCTIONS_LIB)
-target_link_libraries(MISC_PRIMITIVES_LIB PRIVATE VECTOR_MATH_LIB)
 
 add_executable(${PROJECT_NAME} main.cpp)
 add_executable(OBJFileSerializer ./src/extra/OBJFileSerializer.cpp)

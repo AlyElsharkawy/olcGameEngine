@@ -118,6 +118,53 @@ class EngineReborn : public olc::PixelGameEngine
     ASPECT_RATIO = (float)ScreenHeight() / (float)ScreenWidth();
     PROJECTION_MATRIX = GetProjectionMatrix(ASPECT_RATIO, FIELD_OF_VIEW_RADIANS, VISION_NEAR, VISION_FAR);
     //Initializing hard coded light sources
+
+    /*
+      * LIGHT SYNTAX
+      * Light mainLamp(LIGHT_TYPE, LOCATION, COLOR, INTENSITY)
+      * Location is a olc::vf2d
+      * Color is a olc::Pixel
+      * INTENSITY is a float from 0 to 1;
+      *
+      * Then push it back to the allLights object. The effect of lighting on a triangle/mesh will be
+      * the average of all the lamps combined
+      */
+      
+      /*
+       *  Note: The GetPath family of functions take any number of inputs in a pair of braces {}
+       *  GetPathFromResources() will return a path object pointing to the directories and files in
+       *  the functions parameters. For example:
+       *  GetPathFromResources({"folder1", "folder2", "file.txt"});
+       *  example.SetTextureImage(GetPathFromResources("textures", "tex1.png"));
+       *  example.SetDiffuseColor({255.0f, 128.0f, 0.0f}); this is an olc::Pixel()
+       *
+       *  In the above example, only the latest method will take effect. Thus, the mesh will have a
+       *  diffuse color. The texture image will be deleted.
+       *
+       *  example.SetScalingOffsets(2.0f,2.0f, 2.0f)'
+       *  example.SetTranslationOffsets(50.0f,50.f, 50.0f);
+       *  example.doAutomaticRotation = true;
+       *  
+       *  example.isStatic = true //true is default
+       *  if its not static, then you can set a lookAtVector parameter.
+       *  The mesh will then be facing parallel to that vector.
+       *  example.lookAtVector = Vector3D(x,y,z, w); Note: W is by default one
+      *   example.doXRotation and example.doYRotation and example.doZRotation
+      *   These are all bools that can be set to true and false.
+      *   The mesh will only rotate if example.doAutomaticRotation is also set to true
+      *   All of the above are defaulted to false
+       * */
+
+      /*
+      * MESH OBJECT SYNTAX
+      * First, you simply create the object 
+      * Mesh example;
+      * Then you can use its methods to modify it 
+      * Load a .obj file: example.LoadFromOBJFile(GetPathFromResources("objectFiles", "example.obj"));
+      * Then you can assign either a color or texture. If none are specified, then the mesh will be
+      * shaded in black and white
+      */
+
     Light mainLamp(LIGHT_TYPES::LAMP_SUN, {0.0f,1.0f,-1.0f}, {255, 255, 255}, 0.8f);
     //Light testLamp(LIGHT_TYPES::LAMP_SUN, {0.0f,1.0f,-1.0f}, {253, 184, 19}, 0.5f);
     allLights.push_back(mainLamp);
@@ -132,7 +179,6 @@ class EngineReborn : public olc::PixelGameEngine
     //lightObj.SetDiffuseColor(210, 4, 45, 255);
     
     lightObj.SetTextureImage(GetPathFromResources({"textures", "stoneBrickWall.png"}));
-    //lightObj.SetTextureImage(GetPathFromResources({"textures","cottage_diffuse.png"}));
     lightObj.PrintTextureInformation();
     lightObj.lookAtVector = mainLamp.GetDirection();
     lightObj.isStatic = true;
@@ -155,6 +201,7 @@ class EngineReborn : public olc::PixelGameEngine
      ClearScreenPerformance(this, trianglesToRaster, normalsToRaster);
     else
      Clear(olc::BLACK);
+    fTheta += fElapsedTime;
     
     //Get the View Matrix after input
     Matrix4x4 viewMatrix = DoInputLoop(this, fElapsedTime, fYaw, fPitch,CAMERA, LookDirection);
@@ -167,7 +214,7 @@ class EngineReborn : public olc::PixelGameEngine
         if(mesh.doAutomaticRotation == true)
         {
           for(int i = 0; i < 3; i++)
-            mesh.rotationDegrees[i] += fElapsedTime * 0.1f;
+            mesh.rotationDegrees[1] += fElapsedTime * 0.1f;
         }
 
         Vector3D normal;
