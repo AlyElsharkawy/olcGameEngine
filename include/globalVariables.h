@@ -60,10 +60,12 @@ enum MATERIAL_TYPES : short
   COMPOSITE, //Mix of any previous material types
 };
 
+//LAMP prefix is cause windows reserves the POINT data type. This is so that you can use this project
+//on windows
 enum LIGHT_TYPES : short
 {
-  SUN,
-  POINT,
+  LAMP_SUN,
+  LAMP_POINT,
 };
 
 const inline float mathPI = 3.14159f;

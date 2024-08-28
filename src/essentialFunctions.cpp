@@ -322,12 +322,12 @@ float GetNoneMaterialLuminances(const Vector3D& normal, const deque<Light>& ligh
 {
     switch(light.GetLightType())
     {
-      case LIGHT_TYPES::SUN:
+      case LIGHT_TYPES::LAMP_SUN:
         {
           currentLuminance += GetDotProduct(normal, light.GetDirection()) * light.intensity;
           break;
         }
-      case LIGHT_TYPES::POINT:
+      case LIGHT_TYPES::LAMP_POINT:
         {
           cerr << "ERROR: Point light not implemented yet\n";
           break;
@@ -354,14 +354,14 @@ olc::Pixel GetDiffuseMaterialColor(const Vector3D& normal, const olc::Pixel& dif
     float colorLightIntensity = max(GetDotProduct(normal, light.GetDirection()), MINIMUM_DIFFUSE_LUMINANCE);
     switch(light.GetLightType())
     {
-      case LIGHT_TYPES::SUN:
+      case LIGHT_TYPES::LAMP_SUN:
         {
           rVal += diffuseColor.r * light.color.r * light.intensity * colorLightIntensity * SUN_DIVISION_CONSTANT;
           gVal += diffuseColor.g * light.color.g * light.intensity * colorLightIntensity * SUN_DIVISION_CONSTANT;
           bVal += diffuseColor.b * light.color.b * light.intensity * colorLightIntensity * SUN_DIVISION_CONSTANT;
           break;
         }
-      case LIGHT_TYPES::POINT:
+      case LIGHT_TYPES::LAMP_POINT:
         {
           cerr << "ERROR: Point light not implemented yet\n";
           break;

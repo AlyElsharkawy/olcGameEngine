@@ -29,20 +29,20 @@ bool Light::SetLightType(const short& lampType)
 {
   switch(lampType)
   {
-    case LIGHT_TYPES::SUN:
+    case LIGHT_TYPES::LAMP_SUN:
       {
-        this->lightType = LIGHT_TYPES::SUN;
+        this->lightType = LIGHT_TYPES::LAMP_SUN;
         break;
       }
-    case LIGHT_TYPES::POINT:
+    case LIGHT_TYPES::LAMP_POINT:
       {
-        this->lightType = LIGHT_TYPES::POINT;
+        this->lightType = LIGHT_TYPES::LAMP_POINT;
         break;
       }
     default:
       {
         cerr << "Invalid lamp type specified. Defaulted to sun.\n";
-        this->lightType = LIGHT_TYPES::SUN;
+        this->lightType = LIGHT_TYPES::LAMP_SUN;
         return false;
       }
   }

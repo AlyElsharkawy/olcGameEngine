@@ -118,8 +118,8 @@ class EngineReborn : public olc::PixelGameEngine
     ASPECT_RATIO = (float)ScreenHeight() / (float)ScreenWidth();
     PROJECTION_MATRIX = GetProjectionMatrix(ASPECT_RATIO, FIELD_OF_VIEW_RADIANS, VISION_NEAR, VISION_FAR);
     //Initializing hard coded light sources
-    Light mainLamp(LIGHT_TYPES::SUN, {0.0f,1.0f,-1.0f}, {255, 255, 255}, 0.8f);
-    //Light testLamp(LIGHT_TYPES::SUN, {0.0f,1.0f,-1.0f}, {253, 184, 19}, 0.5f);
+    Light mainLamp(LIGHT_TYPES::LAMP_SUN, {0.0f,1.0f,-1.0f}, {255, 255, 255}, 0.8f);
+    //Light testLamp(LIGHT_TYPES::LAMP_SUN, {0.0f,1.0f,-1.0f}, {253, 184, 19}, 0.5f);
     allLights.push_back(mainLamp);
     //allLights.push_back(testLamp);
 
