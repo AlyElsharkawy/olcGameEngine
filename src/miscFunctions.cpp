@@ -48,7 +48,7 @@ string GetExecutableDirectory(char* argvInput)
   filesystem::path launchPath = filesystem::current_path() / filesystem::path(argvInput);
   try
   {
-    return filesystem::canonical(launchPath.parent_path());
+    return filesystem::canonical(launchPath.parent_path()).string();
   }
   catch(const filesystem::filesystem_error& e)
   {
@@ -60,7 +60,7 @@ string GetExecutableDirectory(char* argvInput)
 
 string GetLaunchPWD()
 {
-  return string(filesystem::current_path());
+  return filesystem::current_path().string();
 }
 
 char GetPathSeperator()
@@ -78,7 +78,7 @@ string GetPath(std::initializer_list<string> input, bool interrupting)
 
   try
   {
-    return filesystem::canonical(toReturn);
+    return filesystem::canonical(toReturn).string();
   }
 
   catch(const filesystem::filesystem_error& e)
@@ -124,7 +124,7 @@ string GetPathFromResources(std::initializer_list<string> input, bool interrupti
 
   try
   {
-    return filesystem::canonical(tempPath);
+    return filesystem::canonical(tempPath).string();
   }
 
   catch(const filesystem::filesystem_error& e)

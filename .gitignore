@@ -5,3 +5,4 @@ misc/
 resources/textures/Spyro_High_Res.png
 resources/objectFiles/Levels/Spryo_*
 .cache/
+widgets.qss
