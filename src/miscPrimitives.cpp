@@ -2,6 +2,7 @@
 #include "matrixMathEssentials.h"
 #include "vectorMathEssentials.h"
 #include "globalVariables.h"
+#include <iostream>
 
 Light::Light(const short& lightType, const Vector3D& direction, const olc::Pixel& color, const float& intensity)
 {
@@ -75,7 +76,7 @@ Camera::Camera()
   this->FOV = DEFAULT_FOV;
 }
 
-void Camera::SetMovementSpeeds(const float& speedX, const float& speedY)
+void Camera::SetMovementSpeeds(const float& speedX, const float& speedY, const float& speedRotation)
 {
   if(speedX > 0.0f)
   {
@@ -95,6 +96,17 @@ void Camera::SetMovementSpeeds(const float& speedX, const float& speedY)
   {
     this->speedVertical = MINIMUM_VERTICAL_SPEED;
     cerr << "Error: Camera vertical speed cannot be negative\n";
+  }
+
+  if(speedRotation > 0.0f)
+  {
+    this->speedRotation = speedRotation;
+  }
+  
+  else
+  {
+    this->speedRotation = MINIMUM_ROTATION_SPEED;
+    cerr << "Error: Camera rotation speed cannot be negative\n";
   }
 }
 
@@ -171,6 +183,10 @@ const float Camera::GetVerticalSpeed() const
   return this->speedVertical;
 }
 
+const float Camera::GetRotationSpeed() const
+{
+  return this->speedRotation;
+}
 const float Camera::GetFOV() const
 {
   return this->FOV;

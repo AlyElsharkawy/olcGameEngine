@@ -77,15 +77,11 @@ const inline float MINIMUM_DIFFUSE_LUMINANCE = 0.3f;
 const inline float MINIMUM_DIFFUSE_COLOR = 10.0f;
 
 const inline float EPSILON = 1e-6f;
-const inline float CAMERA_VERTICAL_SPEED = 6.0f;
-const inline float CAMERA_HORIZONTAL_SPEED = 8.0f;
-const inline float CAMERA_ROTATION_SPEED = 150.0f;
-
-const inline Vector3D ZERO_VECTOR = {0.0f,0.0f,0.0f};
 
 //These are default values for the miscPrimitives.cpp file
 const inline float MINIMUM_HORIZONTAL_SPEED = 1.0f;
 const inline float MINIMUM_VERTICAL_SPEED = 1.0f;
+const inline float MINIMUM_ROTATION_SPEED = 30.0f;
 const inline float MINIMUM_NEAR_DISTANCE = 0.1f;
 const inline float MINIMUM_FAR_DISTANCE = 1000.0f;
 const inline float DEFAULT_FOV = 90.0f;

@@ -108,6 +108,7 @@ class EngineReborn : public olc::PixelGameEngine
     //Initialize single player instance
     player = new Player();
     player->camera.CalculateProjectionMatrix();
+    player->camera.SetMovementSpeeds(10.0f, 10.0f, 150.0f);
 
     //Initialize missing texture sprite. Will crash if fails
     MISSING_TEXTURE_SPRITE = new olc::Sprite(GetPathFromResources({"textures","missingTexture.png"}));
@@ -187,7 +188,7 @@ class EngineReborn : public olc::PixelGameEngine
     lightObj->LoadFromOBJFile(GetPathFromResources({"objectFiles", "Primitives", "GoodCube.obj"}), true);
     lightObj->SetTranslationOffsets(0.0f,0.0f, 20.0f);
     lightObj->SetRotationSpeeds(1.0f, 1.0f, 1.0f);
-    lightObj->doAutomaticRotation = true;
+    lightObj->doAutomaticRotation = false;
     //lightObj.SetDiffuseColor(210, 4, 45, 255);
     
     lightObj->SetTextureImage(GetPathFromResources({"textures", "stoneBrickWall.png"}));
@@ -251,7 +252,6 @@ class EngineReborn : public olc::PixelGameEngine
           rotatedTriangle = MultiplyTriangle(scaledTriangle, rotationMatrix);
         }
 
-        //Triangle rotatedTriangle = RotateTriangle(scaledTriangle, finalRotationMatrix);
         Triangle translatedTriangle = TranslateTriangle(rotatedTriangle, mesh->translationOffsets[0], mesh->translationOffsets[1], mesh->translationOffsets[2]);
         normal = GetNormal(translatedTriangle);
         

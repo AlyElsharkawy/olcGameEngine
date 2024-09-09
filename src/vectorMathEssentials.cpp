@@ -17,6 +17,14 @@ Vector3D AddVector(const Vector3D& input1, const Vector3D& input2)
   return toReturn;
 }
 
+void AddVectorIP(Vector3D& input1, const Vector3D& input2)
+{
+  input1.x += input2.x;
+  input1.y += input2.y;
+  input1.z += input2.z;
+}
+
+
 Vector2D AddVector(const Vector2D& input1, const Vector2D& input2)
 {
   Vector2D toReturn;
@@ -32,6 +40,13 @@ Vector3D SubtractVector(const Vector3D& input1, const Vector3D& input2)
   toReturn.y = input1.y - input2.y;
   toReturn.z = input1.z - input2.z;
   return toReturn;
+}
+
+void SubtractVectorIP(Vector3D& input1, const Vector3D& input2)
+{
+  input1.x -= input2.x;
+  input1.y -= input2.y;
+  input1.z -= input2.z;
 }
 
 Vector2D SubtractVector(const Vector2D& input1, const Vector2D& input2)
@@ -59,6 +74,15 @@ float GetDotProduct(const Vector3D& vectorA, const Vector3D& vectorB, const Vect
 void MultiplyVectorScalar(Vector3D& input, float scalarValue)
 {
  input.x *= scalarValue; input.y *= scalarValue; input.z *= scalarValue; 
+}
+
+Vector3D MultiplyVectorScalarOP(const Vector3D& input, float scalarValue)
+{
+  Vector3D toReturn = input;
+  toReturn.x *= scalarValue;
+  toReturn.y *= scalarValue;
+  toReturn.z *= scalarValue;
+  return toReturn;
 }
 
 void MultiplyVectorScalar(Vector2D& input, float scalarValue)
@@ -99,5 +123,10 @@ Vector3D GetCentroid(const Mesh& input)
     }
   }
   DivideVectorScalar(output, input.triangles.size());
+}
+
+bool IsZeroVector(const Vector3D& input)
+{
+  return input.x == 0.0f && input.y == 0.0f && input.z == 0.0f;
 }
 

@@ -219,6 +219,9 @@ Matrix4x4 DoInputLoop(olc::PixelGameEngine* engine, Player* player)
   float& fYaw = player->camera.fYaw;
   float& fPitch = player->camera.fPitch;
   const Vector3D& LookDirection = player->camera.GetFacingVector();
+  const float& CAMERA_VERTICAL_SPEED = player->camera.GetVerticalSpeed();
+  const float& CAMERA_HORIZONTAL_SPEED = player->camera.GetHorizontalSpeed();
+  const float& CAMERA_ROTATION_SPEED = player->camera.GetRotationSpeed();
 
   //Print currently pressed inputs
   PrintPressedKeys(engine);
@@ -228,7 +231,7 @@ Matrix4x4 DoInputLoop(olc::PixelGameEngine* engine, Player* player)
     CAMERA.y -= CAMERA_VERTICAL_SPEED * fElapsedTime;
     
   //Move up
-  if(engine->GetKey(BASIC_CONTROLS[MOVE_UP]).bHeld)
+  else if(engine->GetKey(BASIC_CONTROLS[MOVE_UP]).bHeld)
     CAMERA.y += CAMERA_VERTICAL_SPEED * fElapsedTime;
 
   //Add Yaw (Look left. Aka, rotate left along y axis)
@@ -236,65 +239,59 @@ Matrix4x4 DoInputLoop(olc::PixelGameEngine* engine, Player* player)
     fYaw += CAMERA_ROTATION_SPEED * fElapsedTime;
   
   //Subtract Yaw (Look right. Aka, Rotate right along y axis)
-  if(engine->GetKey(BASIC_CONTROLS[LOOK_RIGHT]).bHeld)
+  else if(engine->GetKey(BASIC_CONTROLS[LOOK_RIGHT]).bHeld)
     fYaw -= CAMERA_ROTATION_SPEED * fElapsedTime;
 
   //Add pitch (Look up. Aka, rotate up along local x axis)
   if(engine->GetKey(BASIC_CONTROLS[ROTATE_UP]).bHeld && fPitch <= 45.0f)
-    fPitch += CAMERA_ROTATION_SPEED * 0.5 * fElapsedTime;
+    fPitch += CAMERA_ROTATION_SPEED * 0.4f * fElapsedTime;
 
   //Remove pitch (look down. Aka, rotate down along local x axis)
-  if(engine->GetKey(BASIC_CONTROLS[ROTATE_DOWN]).bHeld && fPitch >= -45.0f)
-    fPitch -= CAMERA_ROTATION_SPEED * 0.5 * fElapsedTime;
+  else if(engine->GetKey(BASIC_CONTROLS[ROTATE_DOWN]).bHeld && fPitch >= -45.0f)
+    fPitch -= CAMERA_ROTATION_SPEED * 0.4f * fElapsedTime;
 
+  //This is where we will deal with forward and backward movement
   //Getting the camera to traverse in the relative forward direction is more involved
   //We will create a new vector in the look direciton of the camera and scale its
   //This is essentially a velocity vector
+
   Vector3D tempForward = LookDirection;
   MultiplyVectorScalar(tempForward, CAMERA_HORIZONTAL_SPEED * fElapsedTime);
-  if(engine->GetKey(olc::Key::W).bHeld && engine->GetKey(olc::Key::A).bHeld)
-    CAMERA = AddVector(CAMERA, tempForward);
+  
+   // Initialize movement vector
+    Vector3D desiredMovement = {0.0f, 0.0f, 0.0f};
 
-  else if(engine->GetKey(olc::Key::W).bHeld && engine->GetKey(olc::Key::D).bHeld)
-    CAMERA = AddVector(CAMERA, tempForward);
+  // Calculate forward and backward movement
+  if(engine->GetKey(BASIC_CONTROLS[MOVE_FORWARD]).bHeld)
+    AddVectorIP(desiredMovement, LookDirection);
+  if(engine->GetKey(BASIC_CONTROLS[MOVE_BACKWARD]).bHeld)
+    SubtractVectorIP(desiredMovement, LookDirection);
 
-  else if(engine->GetKey(olc::Key::W).bHeld)
-    CAMERA = AddVector(CAMERA, tempForward); 
+  // Calculate side movements
+  Vector3D rightVector = GetCrossProduct(UP_DIRECTION, LookDirection);
+  if(engine->GetKey(BASIC_CONTROLS[MOVE_LEFT]).bHeld)
+    SubtractVectorIP(desiredMovement, rightVector);
+  if(engine->GetKey(BASIC_CONTROLS[MOVE_RIGHT]).bHeld)
+    AddVectorIP(desiredMovement, rightVector);
 
-  if(engine->GetKey(olc::Key::S).bHeld && engine->GetKey(olc::Key::A).bHeld)
-    CAMERA = SubtractVector(CAMERA, tempForward);
-
-  else if(engine->GetKey(olc::Key::S).bHeld && engine->GetKey(olc::Key::D).bHeld)
-    CAMERA = SubtractVector(CAMERA, tempForward);
-
-  else if(engine->GetKey(olc::Key::S).bHeld)
-    CAMERA = SubtractVector(CAMERA, tempForward);
-
-  Vector3D rightVector = GetCrossProduct(LookDirection, UP_DIRECTION);
-  MultiplyVectorScalar(rightVector, CAMERA_HORIZONTAL_SPEED * fElapsedTime);
-  if(engine->GetKey(olc::Key::A).bHeld)
-    CAMERA = AddVector(CAMERA,rightVector);
-
-  if(engine->GetKey(olc::Key::D).bHeld)
-    CAMERA = SubtractVector(CAMERA, rightVector);
+  // Normalize the desired movement vector if it's not zero to prevent div by 0 exception
+  if(IsZeroVector(desiredMovement) == false)
+  {
+    NormalizeVector(desiredMovement);
+    MultiplyVectorScalar(desiredMovement, CAMERA_HORIZONTAL_SPEED * fElapsedTime);
+    AddVectorIP(CAMERA, desiredMovement);
+  }
 
   Vector3D TARGET = {0.0f,0.0f, 1.0f};
-  Vector3D tempLookDirection = LookDirection;
+  Vector3D newLookDirection = LookDirection;
   Matrix4x4 cameraYRotationMatrix = GetRotationMatrix(ROT_TYPES::ROT_Y, fYaw * (mathPI / 180));
+
   //LookDirection is now updated in the Y direction
-  MultiplyMatrixVector(TARGET, cameraYRotationMatrix, tempLookDirection);
+  MultiplyMatrixVector(TARGET, cameraYRotationMatrix, newLookDirection);
 
-  //Get the local X-axis vector
-  Vector3D localXAxis = GetCrossProduct(tempLookDirection, UP_DIRECTION);
-  Matrix4x4 localXAxisRotation = GetArbitraryRotationMatrix(localXAxis, fPitch * (mathPI / 180));
-
-  //Update tempLookDirection and put its value in the final LookDirection
-  Vector3D newLookDirection;
-  MultiplyMatrixVector(tempLookDirection,localXAxisRotation, newLookDirection);
+  //Set the facing vector to the new one
   player->camera.SetFacingVector(newLookDirection);
-
-  TARGET = AddVector(CAMERA, LookDirection);
-  Vector3D tempCam;
+  TARGET = AddVector(CAMERA, newLookDirection);
   Matrix4x4 cameraMatrix = GetPointAtMatrix(CAMERA, TARGET, UP_DIRECTION);
   Matrix4x4 viewMatrix  = InvertPointAtMatrix(cameraMatrix); 
 

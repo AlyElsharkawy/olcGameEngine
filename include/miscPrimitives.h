@@ -32,7 +32,7 @@ class Camera
 public:
   Camera();
   Vector3D cameraPosition;
-  void SetMovementSpeeds(const float& speedX, const float& speedY);
+  void SetMovementSpeeds(const float& speedX, const float& speedY, const float& speedRotation);
   void SetFacingVector(Vector3D facingVector);
   void SetFacingPlanes(const float& nearPlane, const float& farPlane);
   void SetFOV(const float& newFOV);
@@ -42,6 +42,7 @@ public:
   const pair<float, float> GetFacingPlanes() const;
   const float GetHorizontalSpeed() const;
   const float GetVerticalSpeed() const;
+  const float GetRotationSpeed() const;
   const float GetFOV() const;
   float fYaw;
   float fPitch;
@@ -49,6 +50,7 @@ public:
 private:
   float speedHorizontal;
   float speedVertical;
+  float speedRotation;
   Vector3D facingVector;
   float nearPlane;
   float farPlane;
