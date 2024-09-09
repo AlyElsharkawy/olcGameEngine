@@ -20,6 +20,7 @@
 #include "olcPGEX_SplashScreen.h"
 #include "guiEssentials.h"
 #include "miscPrimitives.h"
+#include "inputManager.h"
 #include "olcPGEX_MiniAudio.h"
 
 using namespace std;
@@ -29,9 +30,6 @@ unsigned long long totalTimes = 0;
 
 class EngineReborn : public olc::PixelGameEngine
 {
-  float ASPECT_RATIO;
-  Matrix4x4 PROJECTION_MATRIX;
-  //Custom fonts 
   //Splash screen. Initializing it causes it to occur
   olc::SplashScreen* sps = nullptr;
   float* depthBuffer = nullptr;
@@ -77,12 +75,10 @@ class EngineReborn : public olc::PixelGameEngine
     Matrix4x4 zRotMat = GetIdentityMatrix();
     Matrix4x4 yRotMat = GetIdentityMatrix();
     Matrix4x4 xRotMat = GetIdentityMatrix();
+    Player* player;
 
     //Camera variables
-    float fYaw = 0.0f;
-    float fPitch = 0.0f;
     float fTheta = 0.0f;
-    Vector3D LookDirection;
 
     //Consideration: Should this be another data structure?
     vector<Triangle> trianglesToRaster;
@@ -90,12 +86,31 @@ class EngineReborn : public olc::PixelGameEngine
     
   bool OnUserCreate() override
   {
+    //Initializing ASPECT_RATIO
+    ASPECT_RATIO = (float)ScreenHeight() / (float)ScreenWidth();
+
     //Initializing fonts 
     olc::Font::init();
 
+    if(!filesystem::exists(GetPathFromConfig() + "/input.yaml"))
+    {
+      cout << "inputs.yaml does not exist. Creating it now...\n";
+      WriteInitialInputs();
+    }
+
+    //Initialize input maps for adjustable inputs during load and run time 
+    InitializeInputMaps();
+
+    bool loadedInputs = InitializeInputs(this, GetPathFromConfig({"input.yaml"}));
+    if(loadedInputs == false)
+      return false;
+
+    //Initialize single player instance
+    player = new Player();
+    player->camera.CalculateProjectionMatrix();
+
     //Initialize missing texture sprite. Will crash if fails
-    MISSING_TEXTURE_SPRITE = new olc::Sprite(GetPathFromResources({"textures", "missingTexture.png"}, true));
-    
+    MISSING_TEXTURE_SPRITE = new olc::Sprite(GetPathFromResources({"textures","missingTexture.png"}));
     //Initalize RenderingInstance
     RI.InitializeRenderingInstance(this);
 
@@ -114,14 +129,11 @@ class EngineReborn : public olc::PixelGameEngine
     checkDoPerformanceClearning = new CheckBox(this, &manager,fontHackButtons, "Do Automatic Rotation", {0,900}, olc::BLUE, 0.0f, {20,20}, SETTINGS_MAP[DO_PERFORMANCE_CLEARING], true);
     checkShowOptionsMenu = new CheckBox(this, &manager, fontHackButtons, "Show Options", {0,980}, olc::BLUE, 0.0f,{20,20}, true);
 
-    //Initializing Variables
-    ASPECT_RATIO = (float)ScreenHeight() / (float)ScreenWidth();
-    PROJECTION_MATRIX = GetProjectionMatrix(ASPECT_RATIO, FIELD_OF_VIEW_RADIANS, VISION_NEAR, VISION_FAR);
-    //Initializing hard coded light sources
-
     /*
+      * UPDATE: As of 9/9/2024, mesh objects are now heap allocated!
+      * Note: Memory management issues are painful
       * LIGHT SYNTAX
-      * Light mainLamp(LIGHT_TYPE, LOCATION, COLOR, INTENSITY)
+      * Light mainLamp = new Light(LIGHT_TYPE, LOCATION, COLOR, INTENSITY)
       * Location is a olc::vf2d
       * Color is a olc::Pixel
       * INTENSITY is a float from 0 to 1;
@@ -135,23 +147,23 @@ class EngineReborn : public olc::PixelGameEngine
        *  GetPathFromResources() will return a path object pointing to the directories and files in
        *  the functions parameters. For example:
        *  GetPathFromResources({"folder1", "folder2", "file.txt"});
-       *  example.SetTextureImage(GetPathFromResources("textures", "tex1.png"));
-       *  example.SetDiffuseColor({255.0f, 128.0f, 0.0f}); this is an olc::Pixel()
+       *  example->SetTextureImage(GetPathFromResources("textures", "tex1.png"));
+       *  example->SetDiffuseColor({255.0f, 128.0f, 0.0f}); this is an olc::Pixel()
        *
        *  In the above example, only the latest method will take effect. Thus, the mesh will have a
        *  diffuse color. The texture image will be deleted.
        *
-       *  example.SetScalingOffsets(2.0f,2.0f, 2.0f)'
-       *  example.SetTranslationOffsets(50.0f,50.f, 50.0f);
-       *  example.doAutomaticRotation = true;
+       *  example->SetScalingOffsets(2.0f,2.0f, 2.0f)'
+       *  example->SetTranslationOffsets(50.0f,50.f, 50.0f);
+       *  example->doAutomaticRotation = true;
        *  
-       *  example.isStatic = true //true is default
+       *  example->isStatic = true //true is default
        *  if its not static, then you can set a lookAtVector parameter.
        *  The mesh will then be facing parallel to that vector.
-       *  example.lookAtVector = Vector3D(x,y,z, w); Note: W is by default one
-      *   example.doXRotation and example.doYRotation and example.doZRotation
+       *  example->lookAtVector = {x,y,z,w}; Note: W is by default one
+      *   example->doXRotation and example.doYRotation and example.doZRotation
       *   These are all bools that can be set to true and false.
-      *   The mesh will only rotate if example.doAutomaticRotation is also set to true
+      *   The mesh will only rotate if example->doAutomaticRotation is also set to true
       *   All of the above are defaulted to false
        * */
 
@@ -160,35 +172,35 @@ class EngineReborn : public olc::PixelGameEngine
       * First, you simply create the object 
       * Mesh example;
       * Then you can use its methods to modify it 
-      * Load a .obj file: example.LoadFromOBJFile(GetPathFromResources("objectFiles", "example.obj"));
+      * Load a .obj file: example->LoadFromOBJFile(GetPathFromResources("objectFiles", "example.obj"));
       * Then you can assign either a color or texture. If none are specified, then the mesh will be
       * shaded in black and white
       */
 
     Light mainLamp(LIGHT_TYPES::LAMP_SUN, {0.0f,1.0f,-1.0f}, {255, 255, 255}, 0.8f);
-    //Light testLamp(LIGHT_TYPES::LAMP_SUN, {0.0f,1.0f,-1.0f}, {253, 184, 19}, 0.5f);
     allLights.push_back(mainLamp);
+    //Light testLamp(LIGHT_TYPES::LAMP_SUN, {0.0f,1.0f,-1.0f}, {253, 184, 19}, 0.5f);
     //allLights.push_back(testLamp);
 
     //Initialize hard coded meshes
-    Mesh lightObj;
-    lightObj.LoadFromOBJFile(GetPathFromResources({"objectFiles", "Primitives", "GoodCube.obj"}), true);
-    lightObj.SetTranslationOffsets(0.0f,0.0f, 10.0f);
-    lightObj.SetRotationSpeeds(1.0f, 1.0f, 1.0f);
-    lightObj.doAutomaticRotation = true;
+    Mesh* lightObj = new Mesh();
+    lightObj->LoadFromOBJFile(GetPathFromResources({"objectFiles", "Primitives", "GoodCube.obj"}), true);
+    lightObj->SetTranslationOffsets(0.0f,0.0f, 20.0f);
+    lightObj->SetRotationSpeeds(1.0f, 1.0f, 1.0f);
+    lightObj->doAutomaticRotation = true;
     //lightObj.SetDiffuseColor(210, 4, 45, 255);
     
-    lightObj.SetTextureImage(GetPathFromResources({"textures", "stoneBrickWall.png"}));
-    lightObj.PrintTextureInformation();
-    lightObj.lookAtVector = mainLamp.GetDirection();
-    lightObj.isStatic = true;
+    lightObj->SetTextureImage(GetPathFromResources({"textures", "stoneBrickWall.png"}));
+    lightObj->PrintTextureInformation();
+    lightObj->lookAtVector = mainLamp.GetDirection();
+    lightObj->isStatic = true;
     
-    Mesh mountainsObj;
+    /*Mesh mountainsObj;
     mountainsObj.LoadFromOBJFile(GetPathFromResources({"objectFiles", "Primitives", "mountains.obj"}), false);
-    mountainsObj.SetScalingOffsets(0.25f, 0.25f, 0.25f);
+    mountainsObj.SetScalingOffsets(0.25f, 0.25f, 0.25f);*/
+    //allObjects.AppendMesh(mountainsObj);
     
     allObjects.AppendMesh(lightObj);
-    //allObjects.AppendMesh(mountainsObj);
     allObjects.UpdateTotalCounts();
     cout << "Triangles in list: " << allObjects.GetTotalTriangles() << '\n';
 
@@ -203,67 +215,72 @@ class EngineReborn : public olc::PixelGameEngine
      Clear(olc::BLACK);
     fTheta += fElapsedTime;
     
+    //Variable aliases
+    Vector3D& cameraPosition = player->camera.cameraPosition;
+    const float& nearPlane = player->camera.GetFacingPlanes().first;
+    const float& farPlane = player->camera.GetFacingPlanes().second;
+
     //Get the View Matrix after input
-    Matrix4x4 viewMatrix = DoInputLoop(this, fElapsedTime, fYaw, fPitch,CAMERA, LookDirection);
+    Matrix4x4 viewMatrix = DoInputLoop(this, player);
    
     //Calculation loop
     for(auto& mesh : allObjects.GetMeshList())
     {
-      for(auto& triangle : mesh.triangles)
+      for(auto& triangle : mesh->triangles)
       {
-        if(mesh.doAutomaticRotation == true)
+        if(mesh->doAutomaticRotation == true)
         {
           for(int i = 0; i < 3; i++)
-            mesh.rotationDegrees[1] += fElapsedTime * 0.1f;
+            mesh->rotationDegrees[1] += fElapsedTime * 0.1f;
         }
 
         Vector3D normal;
 
-        Triangle scaledTriangle = ScaleTriangle(triangle, mesh.scalingOffsets[0], mesh.scalingOffsets[1], mesh.scalingOffsets[2]);
+        Triangle scaledTriangle = ScaleTriangle(triangle, mesh->scalingOffsets[0], mesh->scalingOffsets[1], mesh->scalingOffsets[2]);
         Triangle rotatedTriangle;
         
-        if(mesh.isStatic == false)
+        if(mesh->isStatic == false)
         {
-          Matrix4x4 lookAtRotMatrix = GetLookAtRotationMatrix(mesh.forwardVector, mesh.lookAtVector);
+          Matrix4x4 lookAtRotMatrix = GetLookAtRotationMatrix(mesh->forwardVector, mesh->lookAtVector);
           rotatedTriangle = MultiplyTriangle(scaledTriangle, lookAtRotMatrix);
         }
 
-        if(mesh.isStatic == true)
+        if(mesh->isStatic == true)
         {
-          Matrix4x4 rotationMatrix = GetCompoundRotationMatrix(ROT_TYPES::ROT_ZYX, mesh.rotationDegrees[0], mesh.rotationDegrees[1], mesh.rotationDegrees[2]);
+          Matrix4x4 rotationMatrix = GetCompoundRotationMatrix(ROT_TYPES::ROT_ZYX, mesh->rotationDegrees[0], mesh->rotationDegrees[1], mesh->rotationDegrees[2]);
           rotatedTriangle = MultiplyTriangle(scaledTriangle, rotationMatrix);
         }
 
         //Triangle rotatedTriangle = RotateTriangle(scaledTriangle, finalRotationMatrix);
-        Triangle translatedTriangle = TranslateTriangle(rotatedTriangle, mesh.translationOffsets[0], mesh.translationOffsets[1], mesh.translationOffsets[2]);
+        Triangle translatedTriangle = TranslateTriangle(rotatedTriangle, mesh->translationOffsets[0], mesh->translationOffsets[1], mesh->translationOffsets[2]);
         normal = GetNormal(translatedTriangle);
         
         //Only draw triangles if the normal says its fits on screen
-        Vector3D cameraRay = SubtractVector(translatedTriangle.points[0], CAMERA);
-        if(GetDotProduct(normal, cameraRay) < 0.0f && GetDistanceBetweenPoints(CAMERA, normal) <= VISION_FAR)
+        Vector3D cameraRay = SubtractVector(translatedTriangle.points[0], cameraPosition);
+        if(GetDotProduct(normal, cameraRay) < 0.0f &&
+          GetDistanceBetweenPoints(player->camera.cameraPosition, normal) <= farPlane)
         {
           //materials phase
           Triangle cameraTransformedTriangle = MultiplyTriangle(translatedTriangle, viewMatrix);
 
           //TO-DO: Switch this to a switch case
-          if(mesh.GetMaterialType() == MATERIAL_TYPES::NONE)
+          if(mesh->GetMaterialType() == MATERIAL_TYPES::NONE)
           {
             float luminance = GetNoneMaterialLuminances(normal, allLights);
             cameraTransformedTriangle.color = GetNoneMaterialColorCode(luminance);
           }
           
-          else if(mesh.GetMaterialType() == MATERIAL_TYPES::DIFFUSE)
+          else if(mesh->GetMaterialType() == MATERIAL_TYPES::DIFFUSE)
           {
-            olc::Pixel tempColor = *(mesh.GetDiffuseColor());
-            olc::Pixel finalColor = GetDiffuseMaterialColor(normal, *(mesh.GetDiffuseColor()), allLights);
+            olc::Pixel tempColor = *(mesh->GetDiffuseColor());
+            olc::Pixel finalColor = GetDiffuseMaterialColor(normal, *(mesh->GetDiffuseColor()), allLights);
             cameraTransformedTriangle.color = finalColor;
           }
 
           //View space clipping phase
-          DoViewSpaceClipping(this, trianglesToRaster, normal, PROJECTION_MATRIX, cameraTransformedTriangle);
+          DoViewSpaceClipping(this, player, trianglesToRaster, normal, cameraTransformedTriangle);
         }
       }
-
       //Sorting section
       //They are sorted according to distance from camera, furthest objects are drawn first
       //SortTriangles(trianglesToRaster);
@@ -271,19 +288,21 @@ class EngineReborn : public olc::PixelGameEngine
       //routines don't use it. They will have to be reimplemented or edited
 
       //Screen edges clipping and rasterization section
-      DoScreenSpaceClipping(RI, trianglesToRaster, mesh);
+      DoScreenSpaceClipping(RI, trianglesToRaster, *mesh);
 
       //FPS housekeeping section
 
       if(SETTINGS_MAP[DO_DEBUG_MENU] == true)
       {
-        u32string currentPosition = GetU32String(CAMERA.ExtractInfo());
+        u32string currentPosition = GetU32String(cameraPosition.ExtractInfo());
         u32string trianglesCount = GetU32String(to_string(trianglesToRaster.size()));
         olc::vi2d mousePosition = this->GetMousePos();
         u32string mouseString = GetU32String(mousePosition.str());
+        u32string facingString = GetU32String(player->camera.GetFacingVector().ExtractInfo());
         fontFreeSansBold->DrawString(U"Location: " + currentPosition, {10,60}, olc::WHITE);
         fontFreeSansBold->DrawString(U"Triangle Count: " + trianglesCount, {10,120}, olc::WHITE);
         fontFreeSansBold->DrawString(U"Mouse Position: " + mouseString, {10,180}, olc::WHITE);
+        fontFreeSansBold->DrawString(U"Facing: " + facingString, {10, 240}, olc::WHITE);
       }
 
       SETTINGS_MAP[DO_DEBUG_MENU] = checkDoDebugMenu->state;
@@ -292,7 +311,7 @@ class EngineReborn : public olc::PixelGameEngine
       SETTINGS_MAP[VISUALIZE_CLIPPING] = checkVisualizeClipping->state;
       SETTINGS_MAP[DO_SCREEN_SPACE_CLIPPING] = checkDoScreenSpaceClipping->state;
       SETTINGS_MAP[DO_VIEW_SPACE_CLIPPING] = checkDoViewSpaceClipping->state;
-      mesh.doAutomaticRotation = checkDoPerformanceClearning->state;
+      mesh->doAutomaticRotation = checkDoPerformanceClearning->state;
       
       bool temp = checkShowOptionsMenu->state;
       //There must be something about Stupid void* that I dont understand

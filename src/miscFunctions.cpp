@@ -1,3 +1,4 @@
+#include <cctype>
 #include <initializer_list>
 #include <string>
 #include <filesystem>
@@ -5,6 +6,7 @@
 #include <thread>
 #include "miscFunctions.h"
 #include "globalVariables.h"
+#include "inputManager.h"
 
 using namespace std;
 
@@ -137,6 +139,39 @@ string GetPathFromResources(std::initializer_list<string> input, bool interrupti
   }
 }
 
+string GetPathFromConfig(std::initializer_list<string> input, bool interrupting)
+{
+  filesystem::path tempPath = GetPathObject({"..", "..", "resources","config"}, interrupting);
+  for(const auto& elm : input)
+  {
+    tempPath /= elm;
+  }
+
+  try
+  {
+    return filesystem::canonical(tempPath).string();
+  }
+
+  catch(const filesystem::filesystem_error& e)
+  {
+    if(interrupting == true)
+      throw;
+    cerr << "Fatal error: Failed to resolve file path relative to program resources folder" << '\n';
+    cerr << e.what() << '\n';
+    return "NULL_PATH";
+  }
+}
+
+string ConcatenatePaths(std::initializer_list<string> input)
+{
+  filesystem::path toReturn;
+  for(const auto& path : input)
+  {
+    toReturn /= path;
+  }
+  return toReturn.string();
+}
+
 void PrintColor(const olc::Pixel& color)
 {
   cout << (short)color.r << ' ' << (short)color.g << ' ' << (short)color.b << '\n'; 
@@ -158,5 +193,4 @@ u32string GetU32String(const string& stringInput)
 {
   return u32string(stringInput.begin(), stringInput.end());
 }
-
 

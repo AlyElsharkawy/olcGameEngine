@@ -7,7 +7,7 @@
 void SortTriangles(vector<Triangle>& vecToSort);
 void DrawTexturedTriangle(const RenderingInstance& RI, const Triangle& input, const olc::Sprite* texture);
 //Returns the view matrix or look at matrix
-Matrix4x4 DoInputLoop(olc::PixelGameEngine* engine, const float& fElapsedTime, float& fYaw, float& fPitch, Vector3D& CAMERA, Vector3D& LookDirection);
+Matrix4x4 DoInputLoop(olc::PixelGameEngine* engine, Player* player);
 void ClearScreenPerformance(olc::PixelGameEngine* engine, const vector<Triangle>& trianglesToRaster, const vector<Vector3D>& normalsToRaster);
 float GetNoneMaterialLuminances(const Vector3D& normal, const deque<Light>& lightsDeque);
 olc::Pixel GetDiffuseMaterialColor(const Vector3D& normal, const olc::Pixel& diffuseColor, const deque<Light>& lightsDeque);

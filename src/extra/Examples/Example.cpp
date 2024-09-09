@@ -7,7 +7,6 @@
 
 #define OLC_PGEX_FONT
 #include "olcPGEX_Font.h"
-#include "miscFunctions.h"
 
 class Example : public olc::PixelGameEngine
 {

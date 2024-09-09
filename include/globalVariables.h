@@ -1,5 +1,4 @@
 #pragma once
-#include <cmath>
 #include "geometricPrimitives.h"
 
 enum SETTINGS_ENUM : uint8_t
@@ -60,7 +59,7 @@ enum MATERIAL_TYPES : short
   COMPOSITE, //Mix of any previous material types
 };
 
-//LAMP prefix is cause windows reserves the POINT data type. This is so that you can use this project
+//LIGHT prefix is cause windows reserves the POINT data type. This is so that you can use this project
 //on windows
 enum LIGHT_TYPES : short
 {
@@ -69,10 +68,7 @@ enum LIGHT_TYPES : short
 };
 
 const inline float mathPI = 3.14159f;
-const inline float VISION_NEAR = 0.05f;
-const inline float VISION_FAR = 1000.0f;
-const inline float FIELD_OF_VIEW = 90.0f;
-const inline float FIELD_OF_VIEW_RADIANS = 1.0f / tanf(FIELD_OF_VIEW * 0.5 / 180.0f * mathPI);
+inline float ASPECT_RATIO;
 
 const inline float SUN_DIVISION_CONSTANT = 1/100.0f;
 const inline float MINIMUM_NONE_LUMINANCE = 0.6f;
@@ -87,7 +83,15 @@ const inline float CAMERA_ROTATION_SPEED = 150.0f;
 
 const inline Vector3D ZERO_VECTOR = {0.0f,0.0f,0.0f};
 
-inline Vector3D CAMERA = {0.0f, 0.0f,5.0f};
+//These are default values for the miscPrimitives.cpp file
+const inline float MINIMUM_HORIZONTAL_SPEED = 1.0f;
+const inline float MINIMUM_VERTICAL_SPEED = 1.0f;
+const inline float MINIMUM_NEAR_DISTANCE = 0.1f;
+const inline float MINIMUM_FAR_DISTANCE = 1000.0f;
+const inline float DEFAULT_FOV = 90.0f;
+const inline Vector3D DEFAULT_POSITION = {0.0f,0.0f, 0.0f};
+const inline Vector3D DEFAULT_FACING_VECTOR = {0.0f, 0.0f, 1.0f};
+
 const inline Vector3D UP_DIRECTION = {0.0f, 1.0f, 0.0f};
 
 const inline olc::Sprite* MISSING_TEXTURE_SPRITE;

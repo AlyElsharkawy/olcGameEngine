@@ -94,28 +94,26 @@ const olc::Pixel* Mesh::GetDiffuseColor() const
   
 const olc::Decal* Mesh::GetTextureImage() const
 {
-  return this->textureImage;
+  return this->textureImageDecal;
 }
 
 const olc::Decal* Mesh::GetNormalImage() const
 {
-  return this->normalImage;
+  return this->normalImageDecal;
 }
 
 void Mesh::PrintTextureInformation() const
 {
-  if(this->normalImage != nullptr)
+  if(this->normalImageSprite != nullptr)
   {
-    olc::Sprite* normalSprite = this->normalImage->sprite;
     cout << "Normal Texture Information:\n";
-    cout << "Image size: " << normalSprite->Size() << '\n';
+    cout << "Image size: " << this->normalImageSprite->Size() << '\n';
     cout << "Image Path: " << this->normalImagePath << '\n';
   }
-  if(this->textureImage != nullptr)
+  if(this->textureImageSprite != nullptr)
   {
-    olc::Sprite* textureSprite = this->textureImage->sprite;
     cout << "Image Texture Information:\n";
-    cout << "Image size: " << textureSprite->Size() << '\n';
+    cout << "Image size: " << this->textureImageSprite->Size() << '\n';
     cout << "Image Path: " << this->textureImagePath << '\n';
   }
 }
@@ -134,6 +132,20 @@ const void Mesh::PrintMesh() const
     this->triangles[i].PrintTriangle();
   }
   cout << "End of mesh\n";
+}
+
+Mesh::~Mesh()
+{
+  if(this->diffuseColor != nullptr)
+    delete this->diffuseColor;
+  if(this->textureImageSprite != nullptr)
+    delete this->textureImageSprite;
+  if(this->textureImageDecal != nullptr)
+    delete this->textureImageDecal;
+  if(this->normalImageDecal != nullptr)
+    delete this->normalImageDecal;
+  if(this->normalImageSprite != nullptr)
+    delete this->normalImageSprite;
 }
 
 void Mesh::SetTranslationOffsets(const float& newX, const float& newY, const float& newZ)
@@ -166,10 +178,13 @@ void Mesh::SetDiffuseColor(const uint8_t& rVal, const uint8_t& gVal, const uint8
 bool Mesh::SetTextureImage(const string& pathToImage)
 {
   this->materialType = MATERIAL_TYPES::TEXTURE;
+  if(this->diffuseColor != nullptr)
+    delete this->diffuseColor;
+
   if(filesystem::exists(pathToImage))
   {
-    olc::Sprite* temp = new olc::Sprite(pathToImage);
-    this->textureImage = new olc::Decal(temp);
+    this->textureImageSprite = new olc::Sprite(pathToImage);
+    this->textureImageDecal = new olc::Decal(this->textureImageSprite);
     this->textureImagePath = pathToImage;
     return true;
   }
@@ -177,19 +192,20 @@ bool Mesh::SetTextureImage(const string& pathToImage)
   else
   {
     string missingTexturePath = GetPathFromResources({"textures", "missingTexture.png"});
-    olc::Sprite* temp = new olc::Sprite(missingTexturePath);
-    this->textureImage = new olc::Decal(temp);
+    this->textureImageSprite = new olc::Sprite(missingTexturePath);
+    this->textureImageDecal = new olc::Decal(this->textureImageSprite);
+    this->textureImagePath = missingTexturePath;
     return false;
   }
 }
 
 bool Mesh::SetNormalImage(const string& pathToImage)
 {
-  this->materialType = MATERIAL_TYPES::TEXTURE_WITH_NORMAL;
   if(filesystem::exists(pathToImage))
   {
-    olc::Sprite* temp = new olc::Sprite(pathToImage);
-    this->normalImage = new olc::Decal(temp);
+    this->materialType = MATERIAL_TYPES::TEXTURE_WITH_NORMAL;
+    this->normalImageSprite = new olc::Sprite(pathToImage);
+    this->normalImageDecal = new olc::Decal(this->normalImageSprite);
     this->normalImagePath = pathToImage;
     return true;
   }
@@ -213,7 +229,7 @@ bool Mesh::LoadFromOBJFile(const string& fileName, bool hasTexture)
   {   
     char lineBuffer[128];
     char junkChar;
-    cout << "Currently on line: " << lineCounter << '\n';
+    //cout << "Currently on line: " << lineCounter << '\n';
     inputFile.getline(lineBuffer, 128);
     strstream stringStream;
     stringStream << lineBuffer;
@@ -301,7 +317,7 @@ const int MeshList::GetTotalVisibleVertices() const
   return this->visibleTriangles;
 }
 
-deque<Mesh>& MeshList::GetMeshList()
+deque<Mesh*>& MeshList::GetMeshList()
 {
   return this->meshList;
 }
@@ -310,7 +326,7 @@ void MeshList::UpdateVisibleCounts()
 {
   int newVisibleTriangles = 0;
   for(int i = 0; i < this->meshList.size(); i++)
-    newVisibleTriangles += this->meshList[i].GetTotalVisibleTriangles();
+    newVisibleTriangles += this->meshList[i]->GetTotalVisibleTriangles();
   this->visibleTriangles = newVisibleTriangles;
   this->visibleVertices = newVisibleTriangles * 3;
 }
@@ -319,22 +335,22 @@ void MeshList::UpdateTotalCounts()
 {
   int newTotalTriangles = 0;
   for(int i = 0; i < this->meshList.size(); i++)
-    newTotalTriangles += meshList[i].GetTotalTriangles();
+    newTotalTriangles += meshList[i]->GetTotalTriangles();
   this->totalTriangles = newTotalTriangles;
   this->totalVertices = newTotalTriangles * 3;
 }
 
 //Consideration: performance of std::move
-void MeshList::AppendMesh(Mesh& input)
+void MeshList::AppendMesh(Mesh* input)
 {
-  this->meshList.emplace_back(std::move(input));
+  this->meshList.push_back(input);
 }
 
 bool MeshList::LoadMeshFromOBJ(string fileName)
 {
-  Mesh temp;
-  if(temp.LoadFromOBJFile(fileName) == false)
+  Mesh* temp = new Mesh();
+  if(temp->LoadFromOBJFile(fileName) == false)
     return false;
-  this->meshList.emplace_back(std::move(temp));
+  this->meshList.push_back(temp);
   return true;
 }

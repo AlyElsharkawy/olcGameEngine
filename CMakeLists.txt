@@ -21,6 +21,7 @@ include_directories("./include/External/")
 
 find_package(Freetype REQUIRED)
 include_directories(${FREETYPE_INCLUDE_DIRS})
+find_package(yaml-cpp REQUIRED)
 
 # We will create a shared library for each .cpp and .h file we have
 # We will then create debug and release configs for them
@@ -35,6 +36,7 @@ add_library(NORMAL_MATH_LIB SHARED ./src/normalMathEssentials.cpp)
 add_library(VECTOR_MATH_LIB SHARED ./src/vectorMathEssentials.cpp)
 add_library(TRIANGLE_MATH_LIB SHARED ./src/triangleMathEssentials.cpp)
 add_library(MISC_PRIMITIVES_LIB SHARED ./src/miscPrimitives.cpp)
+add_library(INPUT_MNGR_LIB SHARED ./src/inputManager.cpp)
 target_link_libraries(GEOMETRY_LIB PRIVATE MISC_FUNCTIONS_LIB)
 
 add_executable(${PROJECT_NAME} main.cpp)
@@ -60,6 +62,7 @@ set(PROJECT_NAME_LIBS
   CLIPPING_ROUTINES_LIB
   GUI_ESSENTIALS_LIB
   MISC_PRIMITIVES_LIB
+  INPUT_MNGR_LIB
 )
 
 set(GUI_TEST_LIBS
@@ -96,7 +99,8 @@ endif()
 
 # Link the necessary libraries
 #linking with stdc++fs is not required if your compiler is above version 9.1
-target_link_libraries(${PROJECT_NAME} PRIVATE ${PLATFORM_LIBRARIES} ${PROJECT_NAME_LIBS} freetype)
+target_link_libraries(${PROJECT_NAME} PRIVATE ${PLATFORM_LIBRARIES} ${PROJECT_NAME_LIBS} freetype
+yaml-cpp)
 target_link_libraries(OBJFileSerializer PRIVATE ${PLATFORM_LIBRARIES} ${OBJ_FILE_SERIALIZER_LIBS})
 target_link_libraries(TestApp PRIVATE ${PLATFORM_LIBRARIES} ${TEST_APP_LIBS})
 target_link_libraries(GUITest PRIVATE ${PLATFORM_LIBRARIES} ${GUI_TEST_LIBS} freetype)

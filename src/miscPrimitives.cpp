@@ -1,4 +1,6 @@
 #include "miscPrimitives.h"
+#include "matrixMathEssentials.h"
+#include "vectorMathEssentials.h"
 #include "globalVariables.h"
 
 Light::Light(const short& lightType, const Vector3D& direction, const olc::Pixel& color, const float& intensity)
@@ -63,5 +65,113 @@ void RenderingInstance::InitializeRenderingInstance(olc::PixelGameEngine* engine
 {
   this->engine = engine;
   this->depthBuffer = new float[engine->ScreenWidth() * engine->ScreenHeight()];
-  this->screenBuffer = new float[engine->ScreenHeight() * engine->ScreenHeight()];
+}
+
+Camera::Camera()
+{
+  this->speedVertical = MINIMUM_VERTICAL_SPEED; this->speedHorizontal = MINIMUM_HORIZONTAL_SPEED;
+  this->nearPlane = MINIMUM_NEAR_DISTANCE; this->farPlane = MINIMUM_FAR_DISTANCE;
+  this->facingVector = DEFAULT_FACING_VECTOR;
+  this->FOV = DEFAULT_FOV;
+}
+
+void Camera::SetMovementSpeeds(const float& speedX, const float& speedY)
+{
+  if(speedX > 0.0f)
+  {
+    this->speedHorizontal = speedX;
+  }
+  else
+  {
+    this->speedHorizontal = MINIMUM_HORIZONTAL_SPEED;
+    cerr << "Error: Camera horizontal speed cannot be negative\n";
+  }
+  
+  if(speedY > 0.0f)
+  {
+    this->speedVertical = speedY;
+  }
+  else
+  {
+    this->speedVertical = MINIMUM_VERTICAL_SPEED;
+    cerr << "Error: Camera vertical speed cannot be negative\n";
+  }
+}
+
+void Camera::SetFacingVector(Vector3D facingVector)
+{
+  NormalizeVector(facingVector);
+  this->facingVector = facingVector;
+}
+
+void Camera::SetFacingPlanes(const float& nearPlane, const float& farPlane)
+{
+  if(nearPlane > 0.0f)
+  {
+    this->nearPlane = nearPlane;
+  }
+  else
+  {
+    cerr << "Error: Camera near planes cannot be negative\n";
+    this->nearPlane = MINIMUM_NEAR_DISTANCE;
+  }
+
+  if(farPlane > 0.0f && farPlane > this->nearPlane)
+  {
+    this->farPlane = nearPlane;
+  }
+  else
+  {
+    this->farPlane = MINIMUM_FAR_DISTANCE;
+    cerr << "Error: Camera far distance value cannot be negative and/or smaller than the near plane value\n";
+  }
+}
+
+void Camera::CalculateProjectionMatrix()
+{
+  float fovRadians = 1.0f / tanf(this->FOV * 0.5 / 180.0f * mathPI);
+  this->projectionMatrix = GetProjectionMatrix(ASPECT_RATIO, fovRadians, this->nearPlane, this->farPlane);
+}
+
+void Camera::SetFOV(const float& newFOV)
+{
+  if(newFOV > 0.0f)
+  {
+    this->FOV = newFOV;
+  }
+  else
+  {
+    cerr << "Error: Camera FOV cannot be negative\n";
+    this->FOV = DEFAULT_FOV;
+  }
+}
+
+const Matrix4x4 Camera::GetCameraProjectionMatrix() const
+{
+  return this->projectionMatrix;
+}
+
+const Vector3D Camera::GetFacingVector() const
+{
+  return this->facingVector;
+}
+
+const pair<float, float> Camera::GetFacingPlanes() const
+{
+  return make_pair(this->nearPlane, this->farPlane);
+}
+
+const float Camera::GetHorizontalSpeed() const
+{
+  return this->speedHorizontal;
+}
+
+const float Camera::GetVerticalSpeed() const
+{
+  return this->speedVertical;
+}
+
+const float Camera::GetFOV() const
+{
+  return this->FOV;
 }

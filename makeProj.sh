@@ -15,6 +15,7 @@ export MAKEFLAGS="-j$(nproc)"
 cmake -S . -B ./build -DCMAKE_BUILD_TYPE=debug
 cd ./build
 make debug
+# $? is used to access exit code of previously executed command
 if [ "$?" != 0 ]; then
   echo "ERROR: Could not build debug project"
   exit 1

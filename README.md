@@ -37,10 +37,21 @@ cd ./olcGameEngine
 ## Usage:
 Moving around in the scene is quite easy. You can move around using the WASD keys. You can look left and right using the left and right arrow keys. Lastly, you can move vertically using the up and down arrow keys.
 
-The default scene in the `3DEngineRebornRelease` binary is unfortunately hard coded. You can experiment in the `OnUserCreate()` function to modify the lights and meshes in the scene and their properties
+The default scene in the `3DEngineRebornRelease` binary is unfortunately hard coded. You can experiment in the `OnUserCreate()` function to modify the lights and meshes in the scene and their properties. There is currently no official documentation to help. However, I added some explanations in comments to the `OnUserCreate()` function.
+
+## Upcoming Features:
+This list is in no way final and is subject to change:
+1. Networking.
+2. Editor enviroment.
+3. Normal map textures.
+4. Saving and loading scenes to and from disk.
+5. Simple and abstract interface to quickly develop games.
+6. If you have any recommended features, contact me via my email!
+
 ## Known Bugs: 
 **These are bugs that I am currently aware of and fixing. Please do not report issues for these bugs:**
 1. Approaching a textured mesh with 'Do View Space Clipping' disabled causes a segmenation fault when you need to clip the triangle.
 2. Drawing a texture mesh sometimes causes lines of textured material to offshoot from the mesh.
 3. Enabling 'Visualize Clipping' when drawing a textured mesh will cause the entire mesh to disappear. Only triangles undergoing clipping will be visible.
 4. This is more of a lacking feature but normals can not be drawn to the screen yet. The code infrastructure exists, however.
+5. Rotating meshes causes *lines and gaps* to appear where triangles meet.

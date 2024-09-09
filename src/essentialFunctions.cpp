@@ -1,5 +1,6 @@
 #include <vector>
 #include <algorithm>
+#include "inputManager.h"
 #include "matrixMathEssentials.h"
 #include "essentialFunctions.h"
 #include "geometricPrimitives.h"
@@ -209,25 +210,41 @@ void DrawTexturedTriangle(const RenderingInstance& RI, const Triangle& input, co
   }
 }
 
-Matrix4x4 DoInputLoop(olc::PixelGameEngine* engine, const float& fElapsedTime, float& fYaw, float& fPitch, Vector3D& CAMERA, Vector3D& LookDirection)
+Matrix4x4 DoInputLoop(olc::PixelGameEngine* engine, Player* player)
 {
-  //Input loop
-  if(engine->GetKey(olc::Key::DOWN).bHeld)
+  //Variable aliases for readibility
+  Vector3D& position = player->camera.cameraPosition;
+  Vector3D& CAMERA = player->camera.cameraPosition;
+  const float& fElapsedTime = engine->GetElapsedTime();
+  float& fYaw = player->camera.fYaw;
+  float& fPitch = player->camera.fPitch;
+  const Vector3D& LookDirection = player->camera.GetFacingVector();
+
+  //Print currently pressed inputs
+  PrintPressedKeys(engine);
+
+  //Move down
+  if(engine->GetKey(BASIC_CONTROLS[MOVE_DOWN]).bHeld)
     CAMERA.y -= CAMERA_VERTICAL_SPEED * fElapsedTime;
     
-  if(engine->GetKey(olc::Key::UP).bHeld)
+  //Move up
+  if(engine->GetKey(BASIC_CONTROLS[MOVE_UP]).bHeld)
     CAMERA.y += CAMERA_VERTICAL_SPEED * fElapsedTime;
 
-  if(engine->GetKey(olc::Key::LEFT).bHeld)
+  //Add Yaw (Look left. Aka, rotate left along y axis)
+  if(engine->GetKey(BASIC_CONTROLS[LOOK_LEFT]).bHeld)
     fYaw += CAMERA_ROTATION_SPEED * fElapsedTime;
-
-  if(engine->GetKey(olc::Key::RIGHT).bHeld)
+  
+  //Subtract Yaw (Look right. Aka, Rotate right along y axis)
+  if(engine->GetKey(BASIC_CONTROLS[LOOK_RIGHT]).bHeld)
     fYaw -= CAMERA_ROTATION_SPEED * fElapsedTime;
 
-  if(engine->GetKey(olc::Key::P).bHeld && fPitch <= 45.0f)
+  //Add pitch (Look up. Aka, rotate up along local x axis)
+  if(engine->GetKey(BASIC_CONTROLS[ROTATE_UP]).bHeld && fPitch <= 45.0f)
     fPitch += CAMERA_ROTATION_SPEED * 0.5 * fElapsedTime;
 
-  if(engine->GetKey(olc::Key::L).bHeld && fPitch >= -45.0f)
+  //Remove pitch (look down. Aka, rotate down along local x axis)
+  if(engine->GetKey(BASIC_CONTROLS[ROTATE_DOWN]).bHeld && fPitch >= -45.0f)
     fPitch -= CAMERA_ROTATION_SPEED * 0.5 * fElapsedTime;
 
   //Getting the camera to traverse in the relative forward direction is more involved
@@ -272,7 +289,9 @@ Matrix4x4 DoInputLoop(olc::PixelGameEngine* engine, const float& fElapsedTime, f
   Matrix4x4 localXAxisRotation = GetArbitraryRotationMatrix(localXAxis, fPitch * (mathPI / 180));
 
   //Update tempLookDirection and put its value in the final LookDirection
-  MultiplyMatrixVector(tempLookDirection,localXAxisRotation, LookDirection);
+  Vector3D newLookDirection;
+  MultiplyMatrixVector(tempLookDirection,localXAxisRotation, newLookDirection);
+  player->camera.SetFacingVector(newLookDirection);
 
   TARGET = AddVector(CAMERA, LookDirection);
   Vector3D tempCam;

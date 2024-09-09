@@ -7,7 +7,7 @@
 
 int main()
 {
-  while(true)
+  /*while(true)
   {
     Vector3D sourceVector;
     Vector3D targetVector;
@@ -29,6 +29,11 @@ int main()
     cout << "New source vector: ";
     output.PrintPoint();
     cout << "\n\n";
-  }
+  }*/ 
+  const float FIELD_OF_VIEW = 90.0f;
+  const float mathPI = 3.14159f;
+  const float FIELD_OF_VIEW_RADIANS = 1.0f / tanf(FIELD_OF_VIEW * 0.5 / 180.0f * mathPI);
+  Matrix4x4 proj = GetProjectionMatrix(1080.0f / 1920.0f, FIELD_OF_VIEW_RADIANS, 0.1f, 1000.0f);
+  proj.PrintMatrix();
   return 0;
 }

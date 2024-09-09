@@ -29,9 +29,8 @@ public:
 class Triangle
 {
 public:
-  //Is this heap or stack allocated? The vector is heap allocated, but the array is by default 
-  //stack allocated
   Vector3D points[3];
+  //TO-DO: Make this optionally assignable
   Vector2D texels[3];
   olc::Pixel color;
   void PrintTriangle() const;
@@ -68,8 +67,10 @@ private:
   float visibleVertices;
   short materialType;
   olc::Pixel* diffuseColor = nullptr;
-  olc::Decal* textureImage = nullptr;
-  olc::Decal* normalImage = nullptr;
+  olc::Sprite* textureImageSprite = nullptr;
+  olc::Sprite* normalImageSprite = nullptr;
+  olc::Decal* textureImageDecal = nullptr;
+  olc::Decal* normalImageDecal = nullptr;
 
 public:
   const int GetTotalVertices() const;
@@ -97,6 +98,7 @@ public:
   bool LoadFromOBJFile(const string& fileName, bool hasTexture = false);
   const void PrintMesh() const;
   Mesh();
+  ~Mesh();
 };
 
 class MeshList
@@ -104,7 +106,7 @@ class MeshList
 //I am aware a deque has its disadvantages in large scenes and selections
 //But I dont think the viewer or engine will scale to need such optimizations
 private:
-  deque<Mesh> meshList;
+  deque<Mesh*> meshList;
   float totalTriangles;
   float visibleTriangles;
   float totalVertices;
@@ -116,10 +118,10 @@ public:
   const int GetTotalTriangles() const;
   const int GetTotalVisibleTriangles() const;
   const short GetMaterialType() const;
-  deque<Mesh>& GetMeshList();
+  deque<Mesh*>& GetMeshList();
   void UpdateVisibleCounts();
   void UpdateTotalCounts();
-  void AppendMesh(Mesh& input);
+  void AppendMesh(Mesh* input);
   bool LoadMeshFromOBJ(string filename);
 };
 

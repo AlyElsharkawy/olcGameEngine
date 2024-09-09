@@ -206,13 +206,18 @@ void DoScreenSpaceClipping(const RenderingInstance& RI, const vector<Triangle> &
   }
 }
 
-void DoViewSpaceClipping(olc::PixelGameEngine* engine, vector<Triangle>& trianglesToRaster, const Vector3D& normal, const Matrix4x4& PROJECTION_MATRIX, Triangle& cameraTransformedTriangle)
+void DoViewSpaceClipping(olc::PixelGameEngine* engine, Player* player, vector<Triangle>& trianglesToRaster, const Vector3D& normal, Triangle& cameraTransformedTriangle)
 {
+  //Alias for readibility and to make refactoring easier
+  const float& VISION_NEAR = player->camera.GetFacingPlanes().first;
+  const Matrix4x4& PROJECTION_MATRIX = player->camera.GetCameraProjectionMatrix();
+
   if(SETTINGS_MAP[DO_VIEW_SPACE_CLIPPING] == true)
   {
     //The below section will clip objects that are closer than VISION_NEAR
     int clippedTrianglesNumber = 0;
     Triangle clippedTriangles[2];
+
     clippedTrianglesNumber = TriangleClipWithPlane({0.0f, 0.0f, VISION_NEAR}, {0.0f, 0.0f, 1.0f}, cameraTransformedTriangle, clippedTriangles[0], clippedTriangles[1]);
 
     //We are now going from view space(relative to camera) to screen space
