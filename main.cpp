@@ -21,7 +21,6 @@
 #include "guiEssentials.h"
 #include "miscPrimitives.h"
 #include "inputManager.h"
-#include "olcPGEX_MiniAudio.h"
 
 using namespace std;
 
@@ -104,6 +103,13 @@ class EngineReborn : public olc::PixelGameEngine
     bool loadedInputs = InitializeInputs(this, GetPathFromConfig({"input.yaml"}));
     if(loadedInputs == false)
       return false;
+
+    string pathToScreenshots = GetPath({PROGRAM_ROOT_DIRECTORY, "..","..",}) + string("/screenshots");
+    if(filesystem::exists(pathToScreenshots) == false)
+    {
+      cout << "Screenshots directory does not exist. Creating it now...\n";
+      filesystem::create_directory(pathToScreenshots);
+    }
 
     //Initialize single player instance
     player = new Player();
@@ -347,6 +353,10 @@ class EngineReborn : public olc::PixelGameEngine
       for(int i = 0; i < ScreenWidth() * ScreenHeight(); i++)
         RI.depthBuffer[i] = 0.0f;
     }
+  
+    //This is where screenshots are taken
+    DoAuxilliaryInputLoop(this);
+
     return true;
   }
 };

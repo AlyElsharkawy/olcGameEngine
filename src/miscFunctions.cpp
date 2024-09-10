@@ -1,12 +1,13 @@
-#include <cctype>
 #include <initializer_list>
+#include <iomanip>
 #include <string>
 #include <filesystem>
 #include <algorithm>
 #include <thread>
+#include <ctime>
 #include "miscFunctions.h"
 #include "globalVariables.h"
-#include "inputManager.h"
+#include "stb_image_write.h"
 
 using namespace std;
 
@@ -194,3 +195,41 @@ u32string GetU32String(const string& stringInput)
   return u32string(stringInput.begin(), stringInput.end());
 }
 
+string GetCurrentDate(bool twelveHour)
+{
+  std::time_t timeFrom1970 = time(nullptr);
+  auto localTime = std::localtime(&timeFrom1970);
+
+  std::ostringstream output;
+  if(twelveHour == false)
+    output << std::put_time(localTime, "%d-%m-%Y %H:%M:%S");
+  else 
+    output << std::put_time(localTime, "%d-%m-%Y %I:%M:%S %p");
+  return output.str();
+}
+
+void TakeScreenshot(olc::PixelGameEngine* engine)
+{
+  cout << "Screenshot function called!\n";
+  int screenWidth = engine->GetDrawTarget()->width;
+  int screenHeight = engine->GetDrawTarget()->height;
+  vector<olc::Pixel>& pixelBuffer = engine->GetDrawTarget()->pColData;
+  vector<uint8_t> screenBuffer(screenWidth * screenHeight * 4);
+  for(int y = 0; y < screenHeight; y++)
+  {
+    for(int x = 0; x < screenWidth; x++)
+    {
+      olc::Pixel currentPixel = pixelBuffer[y * screenWidth + x];
+      int index = (y * screenWidth + x) * 4;
+      screenBuffer[index + 0] = currentPixel.r;
+      screenBuffer[index + 1] = currentPixel.g;
+      screenBuffer[index + 2] = currentPixel.b;
+      screenBuffer[index + 3] = currentPixel.a;
+    }
+  }
+  string currentDate = GetCurrentDate();
+  string name = string("screenshot ") + currentDate + string(".png");
+  string path = ConcatenatePaths({GetPath({"..","..","screenshots"}), name});
+  cout << "Screenshot Path: " << path << '\n';
+  stbi_write_png(path.c_str(), screenWidth, screenHeight, 4, screenBuffer.data(), screenWidth * 4);
+}

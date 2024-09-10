@@ -26,7 +26,7 @@ find_package(yaml-cpp REQUIRED)
 # We will create a shared library for each .cpp and .h file we have
 # We will then create debug and release configs for them
 add_library(GUI_ESSENTIALS_LIB SHARED ./src/guiEssentials.cpp)
-add_library(MISC_FUNCTIONS_LIB SHARED ./src/miscFunctions.cpp)
+add_library(MISC_FUNCTIONS_LIB SHARED ./src/miscFunctions.cpp ./src/stbImageWriteImplementation.cpp)
 add_library(CLIPPING_ROUTINES_LIB SHARED ./src/clippingRoutines.cpp)
 add_library(ESSENTIAL_FUNCTIONS_LIB SHARED ./src/essentialFunctions.cpp)
 add_library(MESH_MATH_LIB SHARED ./src/meshMathEssentials.cpp)

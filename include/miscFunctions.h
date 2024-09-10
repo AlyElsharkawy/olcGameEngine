@@ -19,3 +19,5 @@ string ConcatenatePaths(std::initializer_list<string> input);
 void PrintColor(const olc::Pixel& color);
 void WaitTillFPS(const float& fElapsedTime, const int& targetFPS);
 u32string GetU32String(const string& stringInput);
+string GetCurrentDate(bool twelveHour = false);
+void TakeScreenshot(olc::PixelGameEngine* engine);

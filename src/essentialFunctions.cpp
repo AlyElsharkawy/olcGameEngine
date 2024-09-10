@@ -4,6 +4,7 @@
 #include "matrixMathEssentials.h"
 #include "essentialFunctions.h"
 #include "geometricPrimitives.h"
+#include "miscFunctions.h"
 #include "miscPrimitives.h"
 #include "vectorMathEssentials.h"
 #include "globalVariables.h"
@@ -282,6 +283,19 @@ Matrix4x4 DoInputLoop(olc::PixelGameEngine* engine, Player* player)
     AddVectorIP(CAMERA, desiredMovement);
   }
 
+  //THIS IS WHERE WE WILL ADD OTHER NON-MOVEMENT RELATED INPUT CHECKING
+  //string special1 = KEY_TO_STRING_LEGEND.at(BASIC_CONTROLS[SPECIAL_ONE]);
+  //string special2 = KEY_TO_STRING_LEGEND.at(BASIC_CONTROLS[SPECIAL_TWO]);
+  //cout << "SPECIAL_ONE: " << special1 << '\n';
+  //cout << "SPECIAL_TWO: " << special2 << '\n';
+
+  if(engine->GetKey(BASIC_CONTROLS[SPECIAL_ONE]).bPressed)
+    cout << "We are pressing shift!\n";
+  if(engine->GetKey(BASIC_CONTROLS[SPECIAL_TWO]).bPressed)
+    cout << "We are pressing ctrl!\n";
+  if(engine->GetKey(olc::Key::S).bPressed)
+    cout << "We are pressing S!\n";
+
   Vector3D TARGET = {0.0f,0.0f, 1.0f};
   Vector3D newLookDirection = LookDirection;
   Matrix4x4 cameraYRotationMatrix = GetRotationMatrix(ROT_TYPES::ROT_Y, fYaw * (mathPI / 180));
@@ -450,5 +464,14 @@ void PopulateOLCPoints(const Triangle& inputTriangle, olc::vf2d& point1, olc::vf
   point1.x = inputTriangle.points[0].x; point1.y = inputTriangle.points[0].y;
   point2.x = inputTriangle.points[1].x; point2.y = inputTriangle.points[1].y;
   point3.x = inputTriangle.points[2].x; point3.y = inputTriangle.points[2].y;
+}
+
+void DoAuxilliaryInputLoop(olc::PixelGameEngine* engine)
+{
+  if(engine->GetKey(BASIC_CONTROLS[SPECIAL_ONE]).bHeld && engine->GetKey(BASIC_CONTROLS[SPECIAL_TWO]).bHeld && engine->GetKey(olc::Key::S).bHeld)
+  {
+    TakeScreenshot(engine);
+  }
+  
 }
 

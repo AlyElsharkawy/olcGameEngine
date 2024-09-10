@@ -3,4 +3,5 @@ lib/
 build/
 misc/
 .cache/
+screenshots/
 widgets.qss
