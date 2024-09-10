@@ -20,6 +20,7 @@ void SortTriangles(vector<Triangle>& vecToSort)
   });
 }
 
+
 void DrawTexturedTriangle(const RenderingInstance& RI, const Triangle& input, const olc::Sprite* texture)
 {
   Triangle tri = input;
@@ -107,7 +108,7 @@ void DrawTexturedTriangle(const RenderingInstance& RI, const Triangle& input, co
         swap(ax, bx);
         swap(texSu, texEu);
         swap(texSv, texEv);
-        swap(texEw, texSw);
+        swap(texSw, texEw);
       }
 
       texU = texSu;
@@ -122,16 +123,13 @@ void DrawTexturedTriangle(const RenderingInstance& RI, const Triangle& input, co
         texU = (1.0f - t) * texSu + t * texEu;
         texV = (1.0f - t) * texSv + t * texEv;
         texW = (1.0f - t) * texSw + t * texEw;
-        //cout << "texU: " << texU << '\n';
-        //cout << "texV: " << texV << '\n';
-        olc::Pixel color = texture->Sample(texU / texW, texV / texW);
-        //engine->FillRect({100,100},{300,300}, olc::GREEN);
-        //cout << "(Top Half)J: " << j << ' ' << "I: " << i << '\n';
-        //PrintColor(color);
-        //cout << '\n';
         int indexedPoint = i * RI.engine->ScreenWidth() + jFirst;
+        //This is a hack but it seems to work quite weel
+        if(indexedPoint > (RI.engine->ScreenWidth() * RI.engine->ScreenHeight()) - 1 || i < 0 || jFirst < 0)
+          continue;
         if(texW > RI.depthBuffer[indexedPoint])
         {  
+          olc::Pixel color = texture->Sample(texU / texW, texV / texW);
           RI.engine->Draw({jFirst,i}, color);
           RI.depthBuffer[indexedPoint] = texW;
         }
@@ -146,6 +144,7 @@ void DrawTexturedTriangle(const RenderingInstance& RI, const Triangle& input, co
   du1 = tri.texels[2].u - tri.texels[1].u;
   dw1 = tri.texels[2].w - tri.texels[1].w;
 
+  dU1Step = 0; dV1Step = 0;  
   if(dy1)
   {
     dAxStep = dx1 / (float)abs(dy1);
@@ -158,7 +157,6 @@ void DrawTexturedTriangle(const RenderingInstance& RI, const Triangle& input, co
   {
     dBxStep = dx2 / (float)abs(dy2);
   }
-  
   //cout << "DY1 (bottom half): " << dy1 << '\n';
   if(dy1)
   {
@@ -195,13 +193,12 @@ void DrawTexturedTriangle(const RenderingInstance& RI, const Triangle& input, co
         texU = (1.0f - t) * texSu + t * texEu;
         texV = (1.0f - t) * texSv + t * texEv;
         texW = (1.0f - t) * texSw + t * texEw;
-        olc::Pixel color = texture->Sample(texU / texW, texV / texW);
-        //cout << "(Bottom Half)J: " << j << ' ' << "I: " << i << '\n';
-        //PrintColor(color);
-        //cout << '\n';
         int indexedPoint = i * RI.engine->ScreenWidth() + jSecond;
+        if(indexedPoint > (RI.engine->ScreenWidth() * RI.engine->ScreenHeight()) - 1 || i < 0 || jSecond < 0)
+          continue;
         if(texW > RI.depthBuffer[indexedPoint])
         {
+          olc::Pixel color = texture->Sample(texU / texW, texV / texW);
           RI.engine->Draw({jSecond,i}, color);
           RI.depthBuffer[indexedPoint] = texW;
         }
@@ -442,11 +439,15 @@ void DrawTriangleToScreen(const RenderingInstance& RI, const Triangle& triangleI
         {
           break;
         }
-      default:
+      case MATERIAL_TYPES::DIFFUSE:
         {
           PopulateOLCPoints(triangleInput, point1, point2, point3);
           RI.engine->FillTriangle(point1, point2 , point3, triangleInput.color);
           break;
+        }
+      default:
+        {
+          cerr << "ERROR: Material type not specified. Please file a bug report immiedtly!\n";
         }
     }
   }

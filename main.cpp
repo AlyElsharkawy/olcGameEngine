@@ -5,6 +5,7 @@
 #define OLC_PGEX_SPLASHSCREEN
 #define OLC_PGEX_TTF
 #define OLC_PGEX_MINIAUDIO
+
 #include <iostream>
 #include <string>
 #include "globalVariables.h"
@@ -57,10 +58,10 @@ class EngineReborn : public olc::PixelGameEngine
       sAppName = "3D Viewer Reborn";
       if(SETTINGS_MAP[DO_SPLASH_SCREEN] == true)
       {
-        sps = new olc::SplashScreen; 
+        sps = new olc::SplashScreen(); 
       }
 
-      if(sps != nullptr && SETTINGS_MAP[DO_SPLASH_SCREEN] == false)
+      if(sps != nullptr && SETTINGS_MAP[DO_SPLASH_SCREEN] == true)
       {
         delete sps;
       }
@@ -195,7 +196,7 @@ class EngineReborn : public olc::PixelGameEngine
     lightObj->SetTranslationOffsets(0.0f,0.0f, 20.0f);
     lightObj->SetRotationSpeeds(1.0f, 1.0f, 1.0f);
     lightObj->doAutomaticRotation = false;
-    //lightObj.SetDiffuseColor(210, 4, 45, 255);
+    //lightObj->SetDiffuseColor(210, 4, 45, 255);
     
     lightObj->SetTextureImage(GetPathFromResources({"textures", "stoneBrickWall.png"}));
     lightObj->PrintTextureInformation();
@@ -224,7 +225,6 @@ class EngineReborn : public olc::PixelGameEngine
     
     //Variable aliases
     Vector3D& cameraPosition = player->camera.cameraPosition;
-    const float& nearPlane = player->camera.GetFacingPlanes().first;
     const float& farPlane = player->camera.GetFacingPlanes().second;
 
     //Get the View Matrix after input
@@ -279,7 +279,7 @@ class EngineReborn : public olc::PixelGameEngine
           else if(mesh->GetMaterialType() == MATERIAL_TYPES::DIFFUSE)
           {
             olc::Pixel tempColor = *(mesh->GetDiffuseColor());
-            olc::Pixel finalColor = GetDiffuseMaterialColor(normal, *(mesh->GetDiffuseColor()), allLights);
+            olc::Pixel finalColor = GetDiffuseMaterialColor(normal, tempColor, allLights);
             cameraTransformedTriangle.color = finalColor;
           }
 
