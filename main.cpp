@@ -121,6 +121,7 @@ class EngineReborn : public olc::PixelGameEngine
     MISSING_TEXTURE_SPRITE = new olc::Sprite(GetPathFromResources({"textures","missingTexture.png"}));
     //Initalize RenderingInstance
     RI.InitializeRenderingInstance(this);
+    RI.SetProjectionMatrix(player->camera.GetCameraProjectionMatrix());
 
     //Initializing Custom fonts 
     fontFreeSans = new olc::Font(GetPathFromResources({"fonts", "TTF", "Hack-Regular.ttf"}), 50);
@@ -218,7 +219,7 @@ class EngineReborn : public olc::PixelGameEngine
   bool OnUserUpdate(float fElapsedTime) override
   {
     if(SETTINGS_MAP[DO_PERFORMANCE_CLEARING] == true)
-     ClearScreenPerformance(this, trianglesToRaster, normalsToRaster);
+     ClearScreenPerformance(this, trianglesToRaster);
     else
      Clear(olc::BLACK);
     fTheta += fElapsedTime;
@@ -229,10 +230,11 @@ class EngineReborn : public olc::PixelGameEngine
 
     //Get the View Matrix after input
     Matrix4x4 viewMatrix = DoInputLoop(this, player);
-   
     //Calculation loop
+    Mesh* currentMesh;
     for(auto& mesh : allObjects.GetMeshList())
     {
+      currentMesh = mesh;
       for(auto& triangle : mesh->triangles)
       {
         if(mesh->doAutomaticRotation == true)
@@ -260,14 +262,16 @@ class EngineReborn : public olc::PixelGameEngine
 
         Triangle translatedTriangle = TranslateTriangle(rotatedTriangle, mesh->translationOffsets[0], mesh->translationOffsets[1], mesh->translationOffsets[2]);
         normal = GetNormal(translatedTriangle);
-        
+
+        Triangle cameraTransformedTriangle;
+
         //Only draw triangles if the normal says its fits on screen
         Vector3D cameraRay = SubtractVector(translatedTriangle.points[0], cameraPosition);
         if(GetDotProduct(normal, cameraRay) < 0.0f &&
           GetDistanceBetweenPoints(player->camera.cameraPosition, normal) <= farPlane)
         {
           //materials phase
-          Triangle cameraTransformedTriangle = MultiplyTriangle(translatedTriangle, viewMatrix);
+          cameraTransformedTriangle = MultiplyTriangle(translatedTriangle, viewMatrix);
 
           //TO-DO: Switch this to a switch case
           if(mesh->GetMaterialType() == MATERIAL_TYPES::NONE)
@@ -284,9 +288,10 @@ class EngineReborn : public olc::PixelGameEngine
           }
 
           //View space clipping phase
-          DoViewSpaceClipping(this, player, trianglesToRaster, normal, cameraTransformedTriangle);
+          DoViewSpaceClipping(this, player, trianglesToRaster, normalsToRaster, cameraTransformedTriangle);
         }
       }
+      
       //Sorting section
       //They are sorted according to distance from camera, furthest objects are drawn first
       //SortTriangles(trianglesToRaster);
@@ -294,66 +299,64 @@ class EngineReborn : public olc::PixelGameEngine
       //routines don't use it. They will have to be reimplemented or edited
 
       //Screen edges clipping and rasterization section
-      DoScreenSpaceClipping(RI, trianglesToRaster, *mesh);
-
-      //FPS housekeeping section
-
-      if(SETTINGS_MAP[DO_DEBUG_MENU] == true)
-      {
-        u32string currentPosition = GetU32String(cameraPosition.ExtractInfo());
-        u32string trianglesCount = GetU32String(to_string(trianglesToRaster.size()));
-        olc::vi2d mousePosition = this->GetMousePos();
-        u32string mouseString = GetU32String(mousePosition.str());
-        u32string facingString = GetU32String(player->camera.GetFacingVector().ExtractInfo());
-        fontFreeSansBold->DrawString(U"Location: " + currentPosition, {10,60}, olc::WHITE);
-        fontFreeSansBold->DrawString(U"Triangle Count: " + trianglesCount, {10,120}, olc::WHITE);
-        fontFreeSansBold->DrawString(U"Mouse Position: " + mouseString, {10,180}, olc::WHITE);
-        fontFreeSansBold->DrawString(U"Facing: " + facingString, {10, 240}, olc::WHITE);
-      }
-
-      SETTINGS_MAP[DO_DEBUG_MENU] = checkDoDebugMenu->state;
-      SETTINGS_MAP[DRAW_LINES] = checkDrawLines->state;
-      SETTINGS_MAP[DRAW_FACES] = checkDrawFaces->state;
-      SETTINGS_MAP[VISUALIZE_CLIPPING] = checkVisualizeClipping->state;
-      SETTINGS_MAP[DO_SCREEN_SPACE_CLIPPING] = checkDoScreenSpaceClipping->state;
-      SETTINGS_MAP[DO_VIEW_SPACE_CLIPPING] = checkDoViewSpaceClipping->state;
-      mesh->doAutomaticRotation = checkDoPerformanceClearning->state;
-      
-      bool temp = checkShowOptionsMenu->state;
-      //There must be something about Stupid void* that I dont understand
-      if(temp == true)
-      {
-        //manager.ChangeEnabledStatesExcept(checkShowOptionsMenu, true);
-        checkDoDebugMenu->isEnabled = true;
-        checkDrawLines->isEnabled = true;
-        checkDrawFaces->isEnabled = true;
-        checkVisualizeClipping->isEnabled = true;
-        checkDoScreenSpaceClipping->isEnabled = true;
-        checkDoViewSpaceClipping->isEnabled = true;
-        checkDoPerformanceClearning->isEnabled = true;
-      }
-
-      else if(temp == false)
-      {
-        //manager.ChangeEnabledStatesExcept(checkShowOptionsMenu, false);
-        checkDoDebugMenu->isEnabled = false;
-        checkDrawLines->isEnabled = false;
-        checkDrawFaces->isEnabled = false;
-        checkVisualizeClipping->isEnabled = false;
-        checkDoScreenSpaceClipping->isEnabled = false;
-        checkDoViewSpaceClipping->isEnabled = false;
-        checkDoPerformanceClearning->isEnabled = false;
-      }
-      //Draw Updated GUI Components 
-      manager.Update();
-      manager.Draw();
-
-      trianglesToRaster.clear();
-      normalsToRaster.clear();
-      for(int i = 0; i < ScreenWidth() * ScreenHeight(); i++)
-        RI.depthBuffer[i] = 0.0f;
+      //Rasterizing normals(if settings allow it)
+      //RasterizeNormal(this, cameraTransformedTriangle, player->camera.GetCameraProjectionMatrix(), normal);
+      DoScreenSpaceClipping(RI, trianglesToRaster, normalsToRaster, *mesh);
+    } 
+    if(SETTINGS_MAP[DO_DEBUG_MENU] == true)
+    {
+      u32string currentPosition = GetU32String(cameraPosition.ExtractInfo());
+      u32string trianglesCount = GetU32String(to_string(trianglesToRaster.size()));
+      olc::vi2d mousePosition = this->GetMousePos();
+      u32string mouseString = GetU32String(mousePosition.str());
+      u32string facingString = GetU32String(player->camera.GetFacingVector().ExtractInfo());
+      fontFreeSansBold->DrawString(U"Location: " + currentPosition, {10,60}, olc::WHITE);
+      fontFreeSansBold->DrawString(U"Triangle Count: " + trianglesCount, {10,120}, olc::WHITE);
+      fontFreeSansBold->DrawString(U"Mouse Position: " + mouseString, {10,180}, olc::WHITE);
+      fontFreeSansBold->DrawString(U"Facing: " + facingString, {10, 240}, olc::WHITE);
     }
-  
+
+    SETTINGS_MAP[DO_DEBUG_MENU] = checkDoDebugMenu->state;
+    SETTINGS_MAP[DRAW_LINES] = checkDrawLines->state;
+    SETTINGS_MAP[DRAW_FACES] = checkDrawFaces->state;
+    SETTINGS_MAP[VISUALIZE_CLIPPING] = checkVisualizeClipping->state;
+    SETTINGS_MAP[DO_SCREEN_SPACE_CLIPPING] = checkDoScreenSpaceClipping->state;
+    SETTINGS_MAP[DO_VIEW_SPACE_CLIPPING] = checkDoViewSpaceClipping->state;
+    currentMesh->doAutomaticRotation = checkDoPerformanceClearning->state;
+
+    bool temp = checkShowOptionsMenu->state;
+    //There must be something about Stupid void* that I dont understand
+    if(temp == true)
+    {
+      //manager.ChangeEnabledStatesExcept(checkShowOptionsMenu, true);
+      checkDoDebugMenu->isEnabled = true;
+      checkDrawLines->isEnabled = true;
+      checkDrawFaces->isEnabled = true;
+      checkVisualizeClipping->isEnabled = true;
+      checkDoScreenSpaceClipping->isEnabled = true;
+      checkDoViewSpaceClipping->isEnabled = true;
+      checkDoPerformanceClearning->isEnabled = true;
+    }
+
+    else if(temp == false)
+    {
+      //manager.ChangeEnabledStatesExcept(checkShowOptionsMenu, false);
+      checkDoDebugMenu->isEnabled = false;
+      checkDrawLines->isEnabled = false;
+      checkDrawFaces->isEnabled = false;
+      checkVisualizeClipping->isEnabled = false;
+      checkDoScreenSpaceClipping->isEnabled = false;
+      checkDoViewSpaceClipping->isEnabled = false;
+      checkDoPerformanceClearning->isEnabled = false;
+    }
+    //Draw Updated GUI Components
+    manager.Update();
+    manager.Draw();
+
+    trianglesToRaster.clear();
+    normalsToRaster.clear();
+    for(int i = 0; i < ScreenWidth() * ScreenHeight(); i++)
+      RI.depthBuffer[i] = 0.0f;
     //This is where screenshots are taken
     DoAuxilliaryInputLoop(this);
 

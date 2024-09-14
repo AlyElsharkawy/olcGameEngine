@@ -4,6 +4,7 @@
 #include "matrixMathEssentials.h"
 #include "geometricPrimitives.h"
 #include "vectorMathEssentials.h"
+#include "normalMathEssentials.h"
 
 int main()
 {
@@ -30,10 +31,14 @@ int main()
     output.PrintPoint();
     cout << "\n\n";
   }*/ 
-  const float FIELD_OF_VIEW = 90.0f;
+  /*const float FIELD_OF_VIEW = 90.0f;
   const float mathPI = 3.14159f;
   const float FIELD_OF_VIEW_RADIANS = 1.0f / tanf(FIELD_OF_VIEW * 0.5 / 180.0f * mathPI);
   Matrix4x4 proj = GetProjectionMatrix(1080.0f / 1920.0f, FIELD_OF_VIEW_RADIANS, 0.1f, 1000.0f);
-  proj.PrintMatrix();
+  proj.PrintMatrix();*/ 
+  Vector3D source(10,9,0);
+  Vector3D destination(50,60,0);
+  Vector3D newVec = ScaleNormal(source, destination, 8.0f);
+  newVec.PrintPoint();
   return 0;
 }

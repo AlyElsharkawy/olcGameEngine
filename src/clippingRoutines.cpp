@@ -1,9 +1,11 @@
+#include <complex>
 #include <deque>
 #include "essentialFunctions.h"
 #include "miscPrimitives.h"
 #include "triangleMathEssentials.h"
 #include "clippingRoutines.h"
 #include "vectorMathEssentials.h"
+#include "normalMathEssentials.h"
 #include "globalVariables.h"
 
 Vector3D VectorIntersectPlane(const Vector3D& planePoint, const Vector3D& planeNormal, const Vector3D& lineStart, const Vector3D& lineEnd, float& tVal)
@@ -147,7 +149,7 @@ int TriangleClipWithPlane(const Vector3D& planePoint, const Vector3D& planeNorma
   return -10;
 }
 
-void DoScreenSpaceClipping(const RenderingInstance& RI, const vector<Triangle> &trianglesToRaster, const Mesh& meshInput)
+void DoScreenSpaceClipping(const RenderingInstance& RI, const vector<Triangle> &trianglesToRaster, const vector<Vector3D>& normalsToRaster, const Mesh& meshInput)
 {
   for(int i = 0; i < trianglesToRaster.size(); i++)
   {
@@ -198,15 +200,26 @@ void DoScreenSpaceClipping(const RenderingInstance& RI, const vector<Triangle> &
         }
         newTrianglesNumber = trianglesQueue.size();
       }
+      
       for(int j = 0; j < trianglesQueue.size(); j++)
       {
         DrawTriangleToScreen(RI, trianglesQueue[j], meshInput.GetMaterialType(), meshInput.GetTextureImage());
       }
     }
+    olc::vi2d point1;
+    olc::vi2d point2;
+    point1.x = trianglesToRaster[i].points[1].x;
+    point1.y = trianglesToRaster[i].points[1].y;
+    point2.x = normalsToRaster[i].x;
+    point2.y = normalsToRaster[i].y;
+    cout << "Triangle Point: "; trianglesToRaster[i].points[1].PrintPoint();
+    cout << "Normal Point: "; normalsToRaster[i].PrintPoint();
+    RI.engine->DrawLine(point1, point2, NORMAL_COLOR);
+
   }
 }
 
-void DoViewSpaceClipping(olc::PixelGameEngine* engine, Player* player, vector<Triangle>& trianglesToRaster, const Vector3D& normal, Triangle& cameraTransformedTriangle)
+void DoViewSpaceClipping(olc::PixelGameEngine* engine, Player* player, vector<Triangle>& trianglesToRaster, vector<Vector3D>& normalsToRaster, Triangle& cameraTransformedTriangle)
 {
   //Alias for readibility and to make refactoring easier
   const float& VISION_NEAR = player->camera.GetFacingPlanes().first;
@@ -226,11 +239,20 @@ void DoViewSpaceClipping(olc::PixelGameEngine* engine, Player* player, vector<Tr
       Triangle projectedTriangle = MultiplyTriangle(clippedTriangles[i], PROJECTION_MATRIX, false);
       NormalizeTriangleTextels(projectedTriangle);
       ConvertToDNCoordinates(projectedTriangle);
+      
       //Fixing inverted axes
       InvertTriangleXY(projectedTriangle);
 
       ScreenNormalizeTriangle(projectedTriangle, (float)engine->ScreenWidth(), (float)engine->ScreenHeight());
       trianglesToRaster.push_back(projectedTriangle);
+      if(SETTINGS_MAP[DRAW_NORMALS] == true)
+      {
+        Vector3D tempNormal = GetNormal(clippedTriangles[i]);
+        Vector3D normalPoint = GetProjectedNormal(engine, PROJECTION_MATRIX, clippedTriangles[i], tempNormal);
+        normalsToRaster.push_back(normalPoint);
+      }
+      cout << "Size of tris to raster: " << trianglesToRaster.size() << '\n';
+      cout << "Size of normals to raster: " << normalsToRaster.size() << '\n';
     }
   } 
   

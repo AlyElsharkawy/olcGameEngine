@@ -19,7 +19,7 @@ enum SETTINGS_ENUM : uint8_t
 
 inline unordered_map<uint8_t,bool> SETTINGS_MAP
 {
-  {DRAW_NORMALS, false},
+  {DRAW_NORMALS, true},
   {DRAW_LINES , true},
   {DRAW_FACES, true},
 
@@ -93,5 +93,6 @@ const inline Vector3D UP_DIRECTION = {0.0f, 1.0f, 0.0f};
 const inline olc::Sprite* MISSING_TEXTURE_SPRITE;
 
 const olc::Pixel WIREFRAME_COLOR = olc::BLUE;
+const olc::Pixel NORMAL_COLOR = olc::GREEN;
 
 inline string PROGRAM_ROOT_DIRECTORY;

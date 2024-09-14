@@ -1,3 +1,4 @@
+#include <complex>
 #include <vector>
 #include <algorithm>
 #include "inputManager.h"
@@ -6,9 +7,11 @@
 #include "geometricPrimitives.h"
 #include "miscFunctions.h"
 #include "miscPrimitives.h"
+#include "triangleMathEssentials.h"
 #include "vectorMathEssentials.h"
 #include "globalVariables.h"
 #include "olcPixelGameEngine.h"
+#include "normalMathEssentials.h"
 
 void SortTriangles(vector<Triangle>& vecToSort)
 {
@@ -19,7 +22,6 @@ void SortTriangles(vector<Triangle>& vecToSort)
     return zPoint1 > zPoint2;
   });
 }
-
 
 void DrawTexturedTriangle(const RenderingInstance& RI, const Triangle& input, const olc::Sprite* texture)
 {
@@ -309,8 +311,9 @@ Matrix4x4 DoInputLoop(olc::PixelGameEngine* engine, Player* player)
   return viewMatrix;
 }
 
-void ClearScreenPerformance(olc::PixelGameEngine* engine, const vector<Triangle>& trianglesToRaster, const vector<Vector3D>& normalsToRaster)
+void ClearScreenPerformance(olc::PixelGameEngine* engine, const vector<Triangle>& trianglesToRaster)
 {
+  /*
   //These are the previous points on the screen that we should clear
   olc::vf2d pointTriPrevious1;
   olc::vf2d pointTriPrevious2;
@@ -340,6 +343,7 @@ void ClearScreenPerformance(olc::PixelGameEngine* engine, const vector<Triangle>
       engine->DrawLine(pointNormPrevious1, pointNormPrevious2, olc::BLACK);
     }
   }
+  */
 }
 
 float GetNoneMaterialLuminances(const Vector3D& normal, const deque<Light>& lightsDeque)
@@ -473,6 +477,25 @@ void DoAuxilliaryInputLoop(olc::PixelGameEngine* engine)
   {
     TakeScreenshot(engine);
   }
-  
+}
+
+Vector3D GetProjectedNormal(olc::PixelGameEngine* engine, const Matrix4x4& projectionMatrix, const Triangle& rawTriangleInput, const Vector3D& normalInput)
+{
+  Vector3D scaledNormal = ScaleNormal(rawTriangleInput.points[1], normalInput, 1.0f);
+  Vector3D projectedNormal;
+  MultiplyMatrixVector(scaledNormal, projectionMatrix, projectedNormal);
+    
+  //Converting to DNC Coordinates
+  DivideVectorScalar(projectedNormal, projectedNormal.w);
+    
+  //Fixing Inverted Y axis
+  projectedNormal.y *= -1.0f;
+
+  //Normalizing to Screen Size
+  projectedNormal.x += 1.0f; projectedNormal.y += 1.0f;
+  projectedNormal.x *= 0.5f * (float)engine->ScreenWidth(); 
+  projectedNormal.y *= 0.5f * (float)engine->ScreenHeight();
+  projectedNormal.PrintPoint();
+  return projectedNormal;
 }
 

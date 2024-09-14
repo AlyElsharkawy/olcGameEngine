@@ -1,6 +1,7 @@
 #include "geometricPrimitives.h"
 #include "normalMathEssentials.h"
 #include "vectorMathEssentials.h"
+#include <complex>
 
 Vector3D GetNormal(const Triangle& input, bool normalize)
 {
@@ -34,4 +35,10 @@ void ScreenNormalizeNormal(Vector3D& input, float ScreenWidth, float ScreenHeigh
   input.y *= 0.5f * ScreenHeight;
 }
 
-
+Vector3D ScaleNormal(const Vector3D& source, const Vector3D& normal, const float& length)
+{
+  Vector3D temp = normal;
+  MultiplyVectorScalar(temp, length);
+  AddVectorIP(temp, source);
+  return temp;
+}

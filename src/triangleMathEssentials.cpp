@@ -1,7 +1,6 @@
 #include "triangleMathEssentials.h"
 #include "matrixMathEssentials.h"
 #include "vectorMathEssentials.h"
-#include <iterator>
 
 Triangle MultiplyTriangle(const Triangle &input, const Matrix4x4& transformMatrix, bool normalize)
 {

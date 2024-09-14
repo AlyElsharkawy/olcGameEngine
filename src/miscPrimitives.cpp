@@ -1,4 +1,5 @@
 #include "miscPrimitives.h"
+#include "geometricPrimitives.h"
 #include "matrixMathEssentials.h"
 #include "vectorMathEssentials.h"
 #include "globalVariables.h"
@@ -66,6 +67,18 @@ void RenderingInstance::InitializeRenderingInstance(olc::PixelGameEngine* engine
 {
   this->engine = engine;
   this->depthBuffer = new float[engine->ScreenWidth() * engine->ScreenHeight()];
+}
+
+void RenderingInstance::SetProjectionMatrix(const Matrix4x4 matrixInput)
+{
+  this->PROJECTION_MATRIX = new Matrix4x4();
+  for(int i = 0; i < 4; i++)
+  {
+    for(int j = 0; j < 4; j++)
+    {
+      this->PROJECTION_MATRIX->mat[i][j] = matrixInput.mat[i][j];
+    }
+  }
 }
 
 Camera::Camera()
@@ -158,12 +171,12 @@ void Camera::SetFOV(const float& newFOV)
   }
 }
 
-const Matrix4x4 Camera::GetCameraProjectionMatrix() const
+const Matrix4x4& Camera::GetCameraProjectionMatrix() const
 {
   return this->projectionMatrix;
 }
 
-const Vector3D Camera::GetFacingVector() const
+const Vector3D& Camera::GetFacingVector() const
 {
   return this->facingVector;
 }

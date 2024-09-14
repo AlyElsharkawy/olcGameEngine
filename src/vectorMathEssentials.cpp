@@ -129,4 +129,17 @@ bool IsZeroVector(const Vector3D& input)
 {
   return input.x == 0.0f && input.y == 0.0f && input.z == 0.0f;
 }
+Vector3D ScaleLine(const Vector3D& source, const Vector3D& destination, const float& scalingFactor)
+{
+  float lineLength = GetDistanceBetweenPoints(source, destination);
+  float desiredLength = lineLength / scalingFactor;
+  Vector3D directionVector = SubtractVector(destination, source);
+  NormalizeVector(directionVector);
+  Vector3D additionVector;
+  additionVector.x = directionVector.x * desiredLength;
+  additionVector.y = directionVector.y * desiredLength;
+  additionVector.z = directionVector.z * desiredLength;
+  AddVectorIP(additionVector, source);
+  return additionVector;
+}
 

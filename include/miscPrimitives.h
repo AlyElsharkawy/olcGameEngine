@@ -24,7 +24,9 @@ class RenderingInstance
 public:
   float* depthBuffer = nullptr;
   olc::PixelGameEngine* engine = nullptr; 
+  Matrix4x4* PROJECTION_MATRIX = nullptr; //Optional. Better to get it from a camera instance instead
   void InitializeRenderingInstance(olc::PixelGameEngine* engine);
+  void SetProjectionMatrix(const Matrix4x4 matrixInput);
 };
 
 class Camera
@@ -37,8 +39,8 @@ public:
   void SetFacingPlanes(const float& nearPlane, const float& farPlane);
   void SetFOV(const float& newFOV);
   void CalculateProjectionMatrix();
-  const Matrix4x4 GetCameraProjectionMatrix() const;
-  const Vector3D GetFacingVector() const;
+  const Matrix4x4& GetCameraProjectionMatrix() const;
+  const Vector3D& GetFacingVector() const;
   const pair<float, float> GetFacingPlanes() const;
   const float GetHorizontalSpeed() const;
   const float GetVerticalSpeed() const;

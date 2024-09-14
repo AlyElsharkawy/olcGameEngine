@@ -18,3 +18,5 @@ void DivideVectorScalar(Vector2D& input, float scalarValue);
 float GetVectorLength(const Vector3D& input);
 float GetDistanceBetweenPoints(const Vector3D& input1, const Vector3D& input2);
 bool IsZeroVector(const Vector3D& input);
+void ConvertToDNCCoordinates(Vector3D& input);
+Vector3D ScaleLine(const Vector3D& source, const Vector3D& destination, const float& scalingFactor);
