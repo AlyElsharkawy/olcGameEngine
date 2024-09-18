@@ -7,7 +7,6 @@
 #include "geometricPrimitives.h"
 #include "miscFunctions.h"
 #include "miscPrimitives.h"
-#include "triangleMathEssentials.h"
 #include "vectorMathEssentials.h"
 #include "globalVariables.h"
 #include "olcPixelGameEngine.h"
@@ -495,7 +494,6 @@ Vector3D GetProjectedNormal(olc::PixelGameEngine* engine, const Matrix4x4& proje
   projectedNormal.x += 1.0f; projectedNormal.y += 1.0f;
   projectedNormal.x *= 0.5f * (float)engine->ScreenWidth(); 
   projectedNormal.y *= 0.5f * (float)engine->ScreenHeight();
-  projectedNormal.PrintPoint();
   return projectedNormal;
 }
 

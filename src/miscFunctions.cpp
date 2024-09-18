@@ -71,6 +71,23 @@ char GetPathSeperator()
   return char(filesystem::path::preferred_separator);
 }
 
+string __CheckPathValidity(const filesystem::path& pathToCheck, bool interrupting, const string& failLocation)
+{
+  try
+  {
+    return filesystem::canonical(pathToCheck).string();
+  }
+
+  catch(const filesystem::filesystem_error& e)
+  {
+    if(interrupting == true)
+      throw;
+    cerr << "Fatal error: Failed to resolve file path relative to program's" << failLocation << "variable" << '\n';
+    cerr << e.what() << '\n';
+    return "NULL_PATH";
+  }
+}
+
 string GetPath(std::initializer_list<string> input, bool interrupting)
 {
   filesystem::path toReturn = PROGRAM_ROOT_DIRECTORY;
@@ -78,20 +95,7 @@ string GetPath(std::initializer_list<string> input, bool interrupting)
   {
     toReturn /= elm;
   }
-
-  try
-  {
-    return filesystem::canonical(toReturn).string();
-  }
-
-  catch(const filesystem::filesystem_error& e)
-  {
-    if(interrupting == true)
-      throw;
-    cerr << "Fatal error: Failed to resolve file path relative to program PROGRAM_ROOT_DIRECTORY variable" << '\n';
-    cerr << e.what() << '\n';
-    return "NULL_PATH";
-  }
+  __CheckPathValidity(toReturn, interrupting, "PROGRAM_ROOT_DIRECTORY");
 }
 
 filesystem::path GetPathObject(std::initializer_list<string> input, bool interrupting)
@@ -102,19 +106,7 @@ filesystem::path GetPathObject(std::initializer_list<string> input, bool interru
     toReturn /= elm;
   }
   
-  try
-  {
-    return filesystem::canonical(toReturn);
-  }
-
-  catch(const filesystem::filesystem_error& e)
-  {
-    if(interrupting == true)
-      throw;
-    cerr << "Fatal error: Failed to resolve file path relative to program PROGRAM_ROOT_DIRECTORY variable" << '\n';
-    cerr << e.what() << '\n';
-    return "NULL_PATH";
-  }
+  __CheckPathValidity(toReturn, interrupting, "PROGRAM_ROOT_DIRECTORY");
 }
 
 string GetPathFromResources(std::initializer_list<string> input, bool interrupting)
@@ -124,20 +116,8 @@ string GetPathFromResources(std::initializer_list<string> input, bool interrupti
   {
     tempPath /= elm;
   }
-
-  try
-  {
-    return filesystem::canonical(tempPath).string();
-  }
-
-  catch(const filesystem::filesystem_error& e)
-  {
-    if(interrupting == true)
-      throw;
-    cerr << "Fatal error: Failed to resolve file path relative to program resources folder" << '\n';
-    cerr << e.what() << '\n';
-    return "NULL_PATH";
-  }
+  
+  __CheckPathValidity(tempPath, interrupting, "resources");
 }
 
 string GetPathFromConfig(std::initializer_list<string> input, bool interrupting)
@@ -147,20 +127,8 @@ string GetPathFromConfig(std::initializer_list<string> input, bool interrupting)
   {
     tempPath /= elm;
   }
-
-  try
-  {
-    return filesystem::canonical(tempPath).string();
-  }
-
-  catch(const filesystem::filesystem_error& e)
-  {
-    if(interrupting == true)
-      throw;
-    cerr << "Fatal error: Failed to resolve file path relative to program resources folder" << '\n';
-    cerr << e.what() << '\n';
-    return "NULL_PATH";
-  }
+  
+  __CheckPathValidity(tempPath, interrupting, "config");
 }
 
 string ConcatenatePaths(std::initializer_list<string> input)

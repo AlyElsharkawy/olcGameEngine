@@ -12,6 +12,7 @@ string GetLaunchPWD();
 char GetPathSeperator();
 //Interrupting in this case means that whether its exceptions should be handled or crash the program
 filesystem::path GetPathObject(std::initializer_list<string> input, bool interupting = false);
+string __CheckPathValidity(const filesystem::path& pathToCheck, bool interrupting, const string& failLocation); 
 string GetPath(std::initializer_list<string> input = {}, bool interupting = false);
 string GetPathFromResources(std::initializer_list<string> input = {}, bool interupting = false);
 string GetPathFromConfig(std::initializer_list<string> input = {}, bool interupting = false);

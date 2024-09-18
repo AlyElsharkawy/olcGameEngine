@@ -1,4 +1,3 @@
-#include <complex>
 #include <deque>
 #include "essentialFunctions.h"
 #include "miscPrimitives.h"
@@ -212,10 +211,7 @@ void DoScreenSpaceClipping(const RenderingInstance& RI, const vector<Triangle> &
     point1.y = trianglesToRaster[i].points[1].y;
     point2.x = normalsToRaster[i].x;
     point2.y = normalsToRaster[i].y;
-    cout << "Triangle Point: "; trianglesToRaster[i].points[1].PrintPoint();
-    cout << "Normal Point: "; normalsToRaster[i].PrintPoint();
     RI.engine->DrawLine(point1, point2, NORMAL_COLOR);
-
   }
 }
 
@@ -251,8 +247,6 @@ void DoViewSpaceClipping(olc::PixelGameEngine* engine, Player* player, vector<Tr
         Vector3D normalPoint = GetProjectedNormal(engine, PROJECTION_MATRIX, clippedTriangles[i], tempNormal);
         normalsToRaster.push_back(normalPoint);
       }
-      cout << "Size of tris to raster: " << trianglesToRaster.size() << '\n';
-      cout << "Size of normals to raster: " << normalsToRaster.size() << '\n';
     }
   } 
   

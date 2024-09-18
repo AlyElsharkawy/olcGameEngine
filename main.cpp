@@ -211,7 +211,6 @@ class EngineReborn : public olc::PixelGameEngine
     
     allObjects.AppendMesh(lightObj);
     allObjects.UpdateTotalCounts();
-    cout << "Triangles in list: " << allObjects.GetTotalTriangles() << '\n';
 
     return true;
   }
@@ -302,7 +301,8 @@ class EngineReborn : public olc::PixelGameEngine
       //Rasterizing normals(if settings allow it)
       //RasterizeNormal(this, cameraTransformedTriangle, player->camera.GetCameraProjectionMatrix(), normal);
       DoScreenSpaceClipping(RI, trianglesToRaster, normalsToRaster, *mesh);
-    } 
+    }
+
     if(SETTINGS_MAP[DO_DEBUG_MENU] == true)
     {
       u32string currentPosition = GetU32String(cameraPosition.ExtractInfo());
@@ -357,6 +357,7 @@ class EngineReborn : public olc::PixelGameEngine
     normalsToRaster.clear();
     for(int i = 0; i < ScreenWidth() * ScreenHeight(); i++)
       RI.depthBuffer[i] = 0.0f;
+    
     //This is where screenshots are taken
     DoAuxilliaryInputLoop(this);
 

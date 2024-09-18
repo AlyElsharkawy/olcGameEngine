@@ -53,5 +53,5 @@ This list is in no way final and is subject to change:
 1. Approaching a textured mesh with 'Do View Space Clipping' disabled causes a segmenation fault when you need to clip the triangle (FIXED).
 2. Drawing a texture mesh sometimes causes lines of textured material to offshoot from the mesh.
 3. Enabling 'Visualize Clipping' when drawing a textured mesh will cause the entire mesh to disappear. Only triangles undergoing clipping will be visible.
-4. This is more of a lacking feature but normals can not be drawn to the screen yet. The code infrastructure exists, however.
+4. This is more of a lacking feature but normals can not be drawn to the screen yet. The code infrastructure exists, however (FIXED).
 5. Rotating meshes causes *lines and gaps* to appear where triangles meet.
