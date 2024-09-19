@@ -56,7 +56,7 @@ string GetExecutableDirectory(char* argvInput)
   catch(const filesystem::filesystem_error& e)
   {
     cerr << "FATAL ERROR: Failed to determine pwd of executable\n";
-    cerr << "This is a fatal non-recoverable error. Please report to developer immiedtly. This should never happen!\n";
+    cerr << "This is a fatal non-recoverable error. Please report to developer immiedtely. This should never happen!\n";
     throw;
   }
 }
@@ -95,7 +95,7 @@ string GetPath(std::initializer_list<string> input, bool interrupting)
   {
     toReturn /= elm;
   }
-  __CheckPathValidity(toReturn, interrupting, "PROGRAM_ROOT_DIRECTORY");
+  return __CheckPathValidity(toReturn, interrupting, "PROGRAM_ROOT_DIRECTORY");
 }
 
 filesystem::path GetPathObject(std::initializer_list<string> input, bool interrupting)
@@ -106,7 +106,7 @@ filesystem::path GetPathObject(std::initializer_list<string> input, bool interru
     toReturn /= elm;
   }
   
-  __CheckPathValidity(toReturn, interrupting, "PROGRAM_ROOT_DIRECTORY");
+  return __CheckPathValidity(toReturn, interrupting, "PROGRAM_ROOT_DIRECTORY");
 }
 
 string GetPathFromResources(std::initializer_list<string> input, bool interrupting)
@@ -117,7 +117,7 @@ string GetPathFromResources(std::initializer_list<string> input, bool interrupti
     tempPath /= elm;
   }
   
-  __CheckPathValidity(tempPath, interrupting, "resources");
+  return __CheckPathValidity(tempPath, interrupting, "resources");
 }
 
 string GetPathFromConfig(std::initializer_list<string> input, bool interrupting)
@@ -128,7 +128,18 @@ string GetPathFromConfig(std::initializer_list<string> input, bool interrupting)
     tempPath /= elm;
   }
   
-  __CheckPathValidity(tempPath, interrupting, "config");
+  return __CheckPathValidity(tempPath, interrupting, "config");
+}
+
+string GetPathFromAudio(std::initializer_list<string> input, bool interrupting)
+{
+  filesystem::path tempPath = GetPathObject({"..", "..", "resources","audio"}, interrupting);
+  for(const auto& elm : input)
+  {
+    tempPath /= elm;
+  }
+  
+  return __CheckPathValidity(tempPath, interrupting, "audio");
 }
 
 string ConcatenatePaths(std::initializer_list<string> input)

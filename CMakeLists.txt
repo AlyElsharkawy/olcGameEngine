@@ -18,6 +18,9 @@ include_directories("./include")
 include_directories("./include/OLCHeaders/")
 #This is for third party libaries 
 include_directories("./include/External/")
+#This is for the user's header files when they are developing a game
+include_directories("./user/include/")
+
 
 find_package(Freetype REQUIRED)
 include_directories(${FREETYPE_INCLUDE_DIRS})
@@ -37,6 +40,7 @@ add_library(VECTOR_MATH_LIB SHARED ./src/vectorMathEssentials.cpp)
 add_library(TRIANGLE_MATH_LIB SHARED ./src/triangleMathEssentials.cpp)
 add_library(MISC_PRIMITIVES_LIB SHARED ./src/miscPrimitives.cpp)
 add_library(INPUT_MNGR_LIB SHARED ./src/inputManager.cpp)
+add_library(AUDIO_LIB SHARED ./src/audioManager.cpp)
 target_link_libraries(GEOMETRY_LIB PRIVATE MISC_FUNCTIONS_LIB)
 
 add_executable(${PROJECT_NAME} main.cpp)
@@ -63,6 +67,7 @@ set(PROJECT_NAME_LIBS
   GUI_ESSENTIALS_LIB
   MISC_PRIMITIVES_LIB
   INPUT_MNGR_LIB
+  AUDIO_LIB
 )
 
 set(GUI_TEST_LIBS

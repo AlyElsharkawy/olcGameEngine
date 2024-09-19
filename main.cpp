@@ -22,6 +22,7 @@
 #include "guiEssentials.h"
 #include "miscPrimitives.h"
 #include "inputManager.h"
+#include "audioManager.h"
 
 using namespace std;
 
@@ -211,7 +212,7 @@ class EngineReborn : public olc::PixelGameEngine
     
     allObjects.AppendMesh(lightObj);
     allObjects.UpdateTotalCounts();
-
+  
     return true;
   }
 
