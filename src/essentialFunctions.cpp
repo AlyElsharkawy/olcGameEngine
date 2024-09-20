@@ -431,6 +431,10 @@ void DrawTriangleToScreen(const RenderingInstance& RI, const Triangle& triangleI
         {
           break;
         }
+      case MATERIAL_TYPES::NONE:
+        {
+
+        }
       case MATERIAL_TYPES::DIFFUSE:
         {
           PopulateOLCPoints(triangleInput, point1, point2, point3);

@@ -189,7 +189,7 @@ class EngineReborn : public olc::PixelGameEngine
     lightObj->doAutomaticRotation = false;
     //lightObj->SetDiffuseColor(210, 4, 45, 255);
     
-    lightObj->SetTextureImage(GetPathFromResources({"textures", "stoneBrickWall.png"}));
+    //lightObj->SetTextureImage(GetPathFromResources({"textures", "stoneBrickWall.png"}));
     lightObj->PrintTextureInformation();
     lightObj->lookAtVector = mainLamp.GetDirection();
     lightObj->isStatic = true;
