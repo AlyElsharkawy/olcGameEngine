@@ -12,3 +12,4 @@ olcQuickGUI:
 
 olcTTF:
     Added GetFontSize function
+

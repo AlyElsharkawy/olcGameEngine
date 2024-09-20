@@ -93,18 +93,7 @@ class EngineReborn : public olc::PixelGameEngine
     //Initializing fonts 
     olc::Font::init();
 
-    if(!filesystem::exists(GetPathFromConfig() + "/input.yaml"))
-    {
-      cout << "inputs.yaml does not exist. Creating it now...\n";
-      WriteInitialInputs();
-    }
-
-    //Initialize input maps for adjustable inputs during load and run time 
-    InitializeInputMaps();
-
-    bool loadedInputs = InitializeInputs(this, GetPathFromConfig({"input.yaml"}));
-    if(loadedInputs == false)
-      return false;
+    InputManager::InitializeInputs(GetPathFromConfig({"input.yaml"}));
 
     string pathToScreenshots = GetPath({PROGRAM_ROOT_DIRECTORY, "..","..",}) + string("/screenshots");
     if(filesystem::exists(pathToScreenshots) == false)
@@ -213,6 +202,7 @@ class EngineReborn : public olc::PixelGameEngine
     allObjects.AppendMesh(lightObj);
     allObjects.UpdateTotalCounts();
   
+    //this->olc::Platform::SetWindowTitle("Not working");
     return true;
   }
 

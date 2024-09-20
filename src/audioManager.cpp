@@ -71,6 +71,7 @@ void AudioManager::PlaySoundAtLocation(const uint8_t& audioNumber, Player* playe
   float relativeTargetMagnitude = GetVectorLength(relativeTarget);
   float facingVectorMagnitude = GetVectorLength(facingVector);
   float angle = acos((dotProduct / (relativeTargetMagnitude * facingVectorMagnitude)));
+  
   //This is the final pan value
   float pan = sin(angle);
   cout << "Pan: " << pan << '\n';

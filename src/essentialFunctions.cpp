@@ -1,4 +1,3 @@
-#include <complex>
 #include <vector>
 #include <algorithm>
 #include "inputManager.h"
@@ -11,6 +10,7 @@
 #include "globalVariables.h"
 #include "olcPixelGameEngine.h"
 #include "normalMathEssentials.h"
+#include "inputManager.h"
 
 void SortTriangles(vector<Triangle>& vecToSort)
 {
@@ -223,30 +223,30 @@ Matrix4x4 DoInputLoop(olc::PixelGameEngine* engine, Player* player)
   const float& CAMERA_ROTATION_SPEED = player->camera.GetRotationSpeed();
 
   //Print currently pressed inputs
-  PrintPressedKeys(engine);
+  InputManager::PrintPressedKeys(engine);
 
   //Move down
-  if(engine->GetKey(BASIC_CONTROLS[MOVE_DOWN]).bHeld)
+  if(InputManager::KeyHeld(engine, {MOVE_DOWN}))
     CAMERA.y -= CAMERA_VERTICAL_SPEED * fElapsedTime;
     
   //Move up
-  else if(engine->GetKey(BASIC_CONTROLS[MOVE_UP]).bHeld)
+  else if(InputManager::KeyHeld(engine, {MOVE_UP}))
     CAMERA.y += CAMERA_VERTICAL_SPEED * fElapsedTime;
 
   //Add Yaw (Look left. Aka, rotate left along y axis)
-  if(engine->GetKey(BASIC_CONTROLS[LOOK_LEFT]).bHeld)
+  if(InputManager::KeyHeld(engine, {LOOK_LEFT}))
     fYaw += CAMERA_ROTATION_SPEED * fElapsedTime;
   
   //Subtract Yaw (Look right. Aka, Rotate right along y axis)
-  else if(engine->GetKey(BASIC_CONTROLS[LOOK_RIGHT]).bHeld)
+  else if(InputManager::KeyHeld(engine, {LOOK_RIGHT}))
     fYaw -= CAMERA_ROTATION_SPEED * fElapsedTime;
 
   //Add pitch (Look up. Aka, rotate up along local x axis)
-  if(engine->GetKey(BASIC_CONTROLS[ROTATE_UP]).bHeld && fPitch <= 45.0f)
+  if(InputManager::KeyHeld(engine, {ROTATE_UP}) && fPitch <= 45.0f)
     fPitch += CAMERA_ROTATION_SPEED * 0.4f * fElapsedTime;
 
   //Remove pitch (look down. Aka, rotate down along local x axis)
-  else if(engine->GetKey(BASIC_CONTROLS[ROTATE_DOWN]).bHeld && fPitch >= -45.0f)
+  else if(InputManager::KeyHeld(engine,{ROTATE_DOWN}) && fPitch >= -45.0f)
     fPitch -= CAMERA_ROTATION_SPEED * 0.4f * fElapsedTime;
 
   //This is where we will deal with forward and backward movement
@@ -261,16 +261,18 @@ Matrix4x4 DoInputLoop(olc::PixelGameEngine* engine, Player* player)
     Vector3D desiredMovement = {0.0f, 0.0f, 0.0f};
 
   // Calculate forward and backward movement
-  if(engine->GetKey(BASIC_CONTROLS[MOVE_FORWARD]).bHeld)
+  if(InputManager::KeyHeld(engine, {MOVE_FORWARD}))
     AddVectorIP(desiredMovement, LookDirection);
-  if(engine->GetKey(BASIC_CONTROLS[MOVE_BACKWARD]).bHeld)
+  
+  else if(InputManager::KeyHeld(engine, {MOVE_BACKWARD}))
     SubtractVectorIP(desiredMovement, LookDirection);
 
   // Calculate side movements
   Vector3D rightVector = GetCrossProduct(UP_DIRECTION, LookDirection);
-  if(engine->GetKey(BASIC_CONTROLS[MOVE_LEFT]).bHeld)
+  if(InputManager::KeyHeld(engine, {MOVE_LEFT}))
     SubtractVectorIP(desiredMovement, rightVector);
-  if(engine->GetKey(BASIC_CONTROLS[MOVE_RIGHT]).bHeld)
+  
+  else if(InputManager::KeyHeld(engine, {MOVE_RIGHT}))
     AddVectorIP(desiredMovement, rightVector);
 
   // Normalize the desired movement vector if it's not zero to prevent div by 0 exception
@@ -280,19 +282,6 @@ Matrix4x4 DoInputLoop(olc::PixelGameEngine* engine, Player* player)
     MultiplyVectorScalar(desiredMovement, CAMERA_HORIZONTAL_SPEED * fElapsedTime);
     AddVectorIP(CAMERA, desiredMovement);
   }
-
-  //THIS IS WHERE WE WILL ADD OTHER NON-MOVEMENT RELATED INPUT CHECKING
-  //string special1 = KEY_TO_STRING_LEGEND.at(BASIC_CONTROLS[SPECIAL_ONE]);
-  //string special2 = KEY_TO_STRING_LEGEND.at(BASIC_CONTROLS[SPECIAL_TWO]);
-  //cout << "SPECIAL_ONE: " << special1 << '\n';
-  //cout << "SPECIAL_TWO: " << special2 << '\n';
-
-  if(engine->GetKey(BASIC_CONTROLS[SPECIAL_ONE]).bPressed)
-    cout << "We are pressing shift!\n";
-  if(engine->GetKey(BASIC_CONTROLS[SPECIAL_TWO]).bPressed)
-    cout << "We are pressing ctrl!\n";
-  if(engine->GetKey(olc::Key::S).bPressed)
-    cout << "We are pressing S!\n";
 
   Vector3D TARGET = {0.0f,0.0f, 1.0f};
   Vector3D newLookDirection = LookDirection;
@@ -472,7 +461,7 @@ void PopulateOLCPoints(const Triangle& inputTriangle, olc::vf2d& point1, olc::vf
 
 void DoAuxilliaryInputLoop(olc::PixelGameEngine* engine)
 {
-  if(engine->GetKey(BASIC_CONTROLS[SPECIAL_ONE]).bHeld && engine->GetKey(BASIC_CONTROLS[SPECIAL_TWO]).bHeld && engine->GetKey(olc::Key::S).bHeld)
+  if(InputManager::KeyHeld(engine, {SPECIAL_ONE}) && InputManager::KeyHeld(engine,{SPECIAL_TWO}) && engine->GetKey(olc::Key::S).bHeld)
   {
     TakeScreenshot(engine);
   }

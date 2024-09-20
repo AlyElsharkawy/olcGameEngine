@@ -41,7 +41,9 @@ add_library(TRIANGLE_MATH_LIB SHARED ./src/triangleMathEssentials.cpp)
 add_library(MISC_PRIMITIVES_LIB SHARED ./src/miscPrimitives.cpp)
 add_library(INPUT_MNGR_LIB SHARED ./src/inputManager.cpp)
 add_library(AUDIO_LIB SHARED ./src/audioManager.cpp)
+add_library(PLATFORM_LIB SHARED ./src/platformFunctions.cpp)
 target_link_libraries(GEOMETRY_LIB PRIVATE MISC_FUNCTIONS_LIB)
+target_link_libraries(PLATFORM_LIB PRIVATE ${XFIXES_LIB})
 
 add_executable(${PROJECT_NAME} main.cpp)
 add_executable(OBJFileSerializer ./src/extra/OBJFileSerializer.cpp)
@@ -68,6 +70,7 @@ set(PROJECT_NAME_LIBS
   MISC_PRIMITIVES_LIB
   INPUT_MNGR_LIB
   AUDIO_LIB
+  PLATFORM_LIB
 )
 
 set(GUI_TEST_LIBS
@@ -97,7 +100,7 @@ set(OLC_CUSTOM_FONT_LIBS
 
 # For Linux and windows support
 if(UNIX)
-    set(PLATFORM_LIBRARIES X11 GL pthread stdc++fs)
+    set(PLATFORM_LIBRARIES X11 GL pthread stdc++fs ${X11_LIBRARIES})
 elseif(WIN32)
     set(PLATFORM_LIBRARIES user32 gdi32 opengl32 gdiplus Shlwapi dwmapi stdc++fs)
     #set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static")
