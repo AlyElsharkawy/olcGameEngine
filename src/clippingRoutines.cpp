@@ -205,13 +205,17 @@ void DoScreenSpaceClipping(const RenderingInstance& RI, const vector<Triangle> &
         DrawTriangleToScreen(RI, trianglesQueue[j], meshInput.GetMaterialType(), meshInput.GetTextureImage());
       }
     }
-    olc::vi2d point1;
-    olc::vi2d point2;
-    point1.x = trianglesToRaster[i].points[1].x;
-    point1.y = trianglesToRaster[i].points[1].y;
-    point2.x = normalsToRaster[i].x;
-    point2.y = normalsToRaster[i].y;
-    RI.engine->DrawLine(point1, point2, NORMAL_COLOR);
+    
+    if(SETTINGS_MAP[DRAW_NORMALS] == true)
+    {
+      olc::vi2d point1;
+      olc::vi2d point2;
+      point1.x = trianglesToRaster[i].points[1].x;
+      point1.y = trianglesToRaster[i].points[1].y;
+      point2.x = normalsToRaster[i].x;
+      point2.y = normalsToRaster[i].y;
+      RI.engine->DrawLine(point1, point2, NORMAL_COLOR);
+    }
   }
 }
 

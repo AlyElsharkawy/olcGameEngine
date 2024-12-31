@@ -40,7 +40,7 @@ class EngineReborn : public olc::PixelGameEngine
   CheckBox* checkDrawLines = nullptr;
   CheckBox* checkDrawFaces = nullptr;
   CheckBox* checkDoDebugMenu = nullptr;
-  CheckBox* checkDoPerformanceClearning = nullptr;
+  CheckBox* checkPlaceHolder = nullptr;
   CheckBox* checkVisualizeClipping = nullptr;
   CheckBox* checkDoScreenSpaceClipping = nullptr;
   CheckBox* checkDoViewSpaceClipping = nullptr;   
@@ -77,9 +77,6 @@ class EngineReborn : public olc::PixelGameEngine
     Matrix4x4 yRotMat = GetIdentityMatrix();
     Matrix4x4 xRotMat = GetIdentityMatrix();
     Player* player;
-
-    //Camera variables
-    float fTheta = 0.0f;
 
     //Consideration: Should this be another data structure?
     vector<Triangle> trianglesToRaster;
@@ -125,7 +122,7 @@ class EngineReborn : public olc::PixelGameEngine
     checkVisualizeClipping = new CheckBox(this, &manager, fontHackButtons, "Visualize Clipping", {0, 660}, olc::BLUE, 0.0f, {20,20}, SETTINGS_MAP[VISUALIZE_CLIPPING]);
     checkDoScreenSpaceClipping = new CheckBox(this, &manager, fontHackButtons, "Do Screen Space Clipping", {0, 740}, olc::BLUE, 0.0f, {20,20}, SETTINGS_MAP[DO_SCREEN_SPACE_CLIPPING]);
     checkDoViewSpaceClipping = new CheckBox(this, &manager, fontHackButtons, "Do View Space Clipping", {0,820}, olc::BLUE, 0.0f, {20,20}, SETTINGS_MAP[DO_VIEW_SPACE_CLIPPING]);
-    checkDoPerformanceClearning = new CheckBox(this, &manager,fontHackButtons, "Do Automatic Rotation", {0,900}, olc::BLUE, 0.0f, {20,20}, SETTINGS_MAP[DO_PERFORMANCE_CLEARING], true);
+    checkPlaceHolder = new CheckBox(this, &manager,fontHackButtons, "PLACEHOLDER", {0,900}, olc::BLUE, 0.0f, {20,20}, SETTINGS_MAP[DO_PERFORMANCE_CLEARING], true);
     checkShowOptionsMenu = new CheckBox(this, &manager, fontHackButtons, "Show Options", {0,980}, olc::BLUE, 0.0f,{20,20}, true);
 
     /*
@@ -189,10 +186,12 @@ class EngineReborn : public olc::PixelGameEngine
     lightObj->doAutomaticRotation = false;
     //lightObj->SetDiffuseColor(210, 4, 45, 255);
     
-    //lightObj->SetTextureImage(GetPathFromResources({"textures", "stoneBrickWall.png"}));
+    lightObj->SetTextureImage(GetPathFromResources({"textures", "stoneBrickWall.png"}));
     lightObj->PrintTextureInformation();
     lightObj->lookAtVector = mainLamp.GetDirection();
     lightObj->isStatic = true;
+    lightObj->doAutomaticRotation = true;
+    lightObj->doAutomaticRotations[1] = true;
     
     /*Mesh mountainsObj;
     mountainsObj.LoadFromOBJFile(GetPathFromResources({"objectFiles", "Primitives", "mountains.obj"}), false);
@@ -201,8 +200,9 @@ class EngineReborn : public olc::PixelGameEngine
     
     allObjects.AppendMesh(lightObj);
     allObjects.UpdateTotalCounts();
-  
-    //this->olc::Platform::SetWindowTitle("Not working");
+ 
+    //Optionall enable normal rasterization
+    SETTINGS_MAP[DRAW_NORMALS] = true;
     return true;
   }
 
@@ -211,8 +211,11 @@ class EngineReborn : public olc::PixelGameEngine
     if(SETTINGS_MAP[DO_PERFORMANCE_CLEARING] == true)
      ClearScreenPerformance(this, trianglesToRaster);
     else
+    {
      Clear(olc::BLACK);
-    fTheta += fElapsedTime;
+      for(int i = 0; i < ScreenWidth() * ScreenHeight(); i++)
+        RI.depthBuffer[i] = 0.0f;
+    }
     
     //Variable aliases
     Vector3D& cameraPosition = player->camera.cameraPosition;
@@ -225,13 +228,15 @@ class EngineReborn : public olc::PixelGameEngine
     for(auto& mesh : allObjects.GetMeshList())
     {
       currentMesh = mesh;
+      if(mesh->doAutomaticRotation == true)
+      {
+        for(int i = 0; i < 3; i++)
+          if(mesh->doAutomaticRotations[i] == true)
+            mesh->rotationDegrees[i] += fElapsedTime * 3.0f;
+      }
+
       for(auto& triangle : mesh->triangles)
       {
-        if(mesh->doAutomaticRotation == true)
-        {
-          for(int i = 0; i < 3; i++)
-            mesh->rotationDegrees[1] += fElapsedTime * 0.1f;
-        }
 
         Vector3D normal;
 
@@ -313,7 +318,6 @@ class EngineReborn : public olc::PixelGameEngine
     SETTINGS_MAP[VISUALIZE_CLIPPING] = checkVisualizeClipping->state;
     SETTINGS_MAP[DO_SCREEN_SPACE_CLIPPING] = checkDoScreenSpaceClipping->state;
     SETTINGS_MAP[DO_VIEW_SPACE_CLIPPING] = checkDoViewSpaceClipping->state;
-    currentMesh->doAutomaticRotation = checkDoPerformanceClearning->state;
 
     bool temp = checkShowOptionsMenu->state;
     //There must be something about Stupid void* that I dont understand
@@ -326,7 +330,6 @@ class EngineReborn : public olc::PixelGameEngine
       checkVisualizeClipping->isEnabled = true;
       checkDoScreenSpaceClipping->isEnabled = true;
       checkDoViewSpaceClipping->isEnabled = true;
-      checkDoPerformanceClearning->isEnabled = true;
     }
 
     else if(temp == false)
@@ -338,7 +341,6 @@ class EngineReborn : public olc::PixelGameEngine
       checkVisualizeClipping->isEnabled = false;
       checkDoScreenSpaceClipping->isEnabled = false;
       checkDoViewSpaceClipping->isEnabled = false;
-      checkDoPerformanceClearning->isEnabled = false;
     }
     //Draw Updated GUI Components
     manager.Update();
@@ -346,8 +348,6 @@ class EngineReborn : public olc::PixelGameEngine
 
     trianglesToRaster.clear();
     normalsToRaster.clear();
-    for(int i = 0; i < ScreenWidth() * ScreenHeight(); i++)
-      RI.depthBuffer[i] = 0.0f;
     
     //This is where screenshots are taken
     DoAuxilliaryInputLoop(this);

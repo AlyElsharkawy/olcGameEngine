@@ -1,6 +1,6 @@
 #include "platformFunctions.h"
 
-#if defined(OLC_PLATFORM_X11)
+/*#if defined(OLC_PLATFORM_X11)
   using namespace X11;
   #include <X11/Xlib.h>
   #include <X11/extensions/Xfixes.h>
@@ -29,5 +29,5 @@ void ReleaseMouse(olc::PixelGameEngine* engine)
   #if defined(OLC_PLATFORM_WINAPI)
   ShowCursor(true);
   #endif
-}
+}*/
 

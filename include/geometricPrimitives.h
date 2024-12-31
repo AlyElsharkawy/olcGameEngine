@@ -42,9 +42,6 @@ class Mesh
 public:
   vector<Triangle> triangles;
   bool doAutomaticRotation = false;
-  bool doZRotation = false;
-  bool doYRotation = false;
-  bool doXRotation = false;
   bool isStatic = true;
   Vector3D forwardVector = {0.0f,0.0f,1.0f};
   //A dedicated struct encompassing material types might be added in the future
@@ -55,6 +52,8 @@ public:
   float translationOffsets[3] = {0.0f};
   //In X,Y,Z order
   float rotationSpeeds[3] = {1.0f,1.0f,1.0f};
+  //In X,Y,Z order 
+  bool doAutomaticRotations[3] = {false, false, false};
   //In X,Y,Z order
   float scalingOffsets[3] = {1.0f,1.0f,1.0f};
   //In X,Y,Z order 

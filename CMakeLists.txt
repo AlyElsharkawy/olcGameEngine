@@ -20,6 +20,8 @@ include_directories("./include/OLCHeaders/")
 include_directories("./include/External/")
 #This is for the user's header files when they are developing a game
 include_directories("./user/include/")
+#For Dear ImGUI
+include_directories("./include/External/ImGUI/")
 
 
 find_package(Freetype REQUIRED)
@@ -42,8 +44,16 @@ add_library(MISC_PRIMITIVES_LIB SHARED ./src/miscPrimitives.cpp)
 add_library(INPUT_MNGR_LIB SHARED ./src/inputManager.cpp)
 add_library(AUDIO_LIB SHARED ./src/audioManager.cpp)
 add_library(PLATFORM_LIB SHARED ./src/platformFunctions.cpp)
+add_library(IM_GUI_LIB STATIC 
+./src/External/ImGUI/imgui.cpp
+./src/External/ImGUI/imgui_demo.cpp
+./src/External/ImGUI/imgui_draw.cpp
+./src/External/ImGUI/imgui_widgets.cpp
+./src/External/ImGUI/imgui_impl_opengl3.cpp
+./src/External/ImGUI/imgui_impl_opengl2.cpp
+./src/External/ImGUI/imgui_tables.cpp
+)
 target_link_libraries(GEOMETRY_LIB PRIVATE MISC_FUNCTIONS_LIB)
-target_link_libraries(PLATFORM_LIB PRIVATE ${XFIXES_LIB})
 
 add_executable(${PROJECT_NAME} main.cpp)
 add_executable(OBJFileSerializer ./src/extra/OBJFileSerializer.cpp)
@@ -55,6 +65,7 @@ add_executable(PART_THREE_FINAL ./src/extra/Part3Final.cpp)
 add_executable(PART_FOUR_FINAL ./src/extra/Part4Final.cpp)
 add_executable(OLC_GUI_EXAMPLE ./src/extra/Examples/TEST_QuickGUI.cpp)
 add_executable(OLC_CUSTOM_FONT ./src/extra/Examples/Example.cpp)
+add_executable(IM_GUI_TEST ./src/extra/ImGUITest.cpp)
 
 #Additional libraries for each project 
 set(PROJECT_NAME_LIBS
@@ -119,6 +130,7 @@ target_link_libraries(PART_THREE_FINAL PRIVATE ${PLATFORM_LIBRARIES})
 target_link_libraries(PART_FOUR_FINAL PRIVATE ${PLATFORM_LIBRARIES} ${PART_FOUR_FINAL_LIBS})
 target_link_libraries(OLC_GUI_EXAMPLE PRIVATE ${PLATFORM_LIBRARIES} ${OLC_GUI_EXAMPLE} freetype)
 target_link_libraries(OLC_CUSTOM_FONT PRIVATE ${PLATFORM_LIBRARIES} ${OLC_CUSTOM_FONT_LIBS})
+target_link_libraries(IM_GUI_TEST PRIVATE ${PLATFORM_LIBRARIES} IM_GUI_LIB)
 
 add_compile_options(
     $<$<CONFIG:Debug>:-g>

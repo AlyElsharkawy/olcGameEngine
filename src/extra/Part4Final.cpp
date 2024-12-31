@@ -600,7 +600,7 @@ public:
 		// Set up "World Tranmsform" though not updating theta 
 		// makes this a bit redundant
 		mat4x4 matRotZ, matRotX;
-		fTheta += 1.0f * fElapsedTime; // Uncomment to spin me right round baby right round
+		//fTheta += 1.0f * fElapsedTime; // Uncomment to spin me right round baby right round
 		matRotZ = Matrix_MakeRotationZ(fTheta * 0.5f);
 		matRotX = Matrix_MakeRotationX(fTheta);
 

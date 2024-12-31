@@ -19,7 +19,7 @@ enum SETTINGS_ENUM : uint8_t
 
 inline unordered_map<uint8_t,bool> SETTINGS_MAP
 {
-  {DRAW_NORMALS, true},
+  {DRAW_NORMALS, false},
   {DRAW_LINES , true},
   {DRAW_FACES, true},
 
