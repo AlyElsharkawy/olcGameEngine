@@ -54,4 +54,4 @@ This list is in no way final and is subject to change:
 2. Drawing a texture mesh sometimes causes lines of textured material to offshoot from the mesh.
 3. Enabling 'Visualize Clipping' when drawing a textured mesh will cause the entire mesh to disappear. Only triangles undergoing clipping will be visible.
 4. This is more of a lacking feature but normals can not be drawn to the screen yet. The code infrastructure exists, however (FIXED).
-5. Rotating meshes causes *lines and gaps* to appear where triangles meet.
+5. Rotating meshes causes *lines and gaps* to appear where triangles meet (FIXED).
