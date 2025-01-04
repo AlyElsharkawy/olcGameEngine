@@ -183,14 +183,13 @@ class EngineReborn : public olc::PixelGameEngine
     lightObj->LoadFromOBJFile(GetPathFromResources({"objectFiles", "Primitives", "GoodCube.obj"}), true);
     lightObj->SetTranslationOffsets(0.0f,0.0f, 20.0f);
     lightObj->SetRotationSpeeds(1.0f, 1.0f, 1.0f);
-    lightObj->doAutomaticRotation = false;
     //lightObj->SetDiffuseColor(210, 4, 45, 255);
     
     lightObj->SetTextureImage(GetPathFromResources({"textures", "stoneBrickWall.png"}));
     lightObj->PrintTextureInformation();
     lightObj->lookAtVector = mainLamp.GetDirection();
     lightObj->isStatic = true;
-    lightObj->doAutomaticRotation = true;
+    //lightObj->doAutomaticRotation = true;
     lightObj->doAutomaticRotations[1] = true;
     
     /*Mesh mountainsObj;
@@ -202,7 +201,7 @@ class EngineReborn : public olc::PixelGameEngine
     allObjects.UpdateTotalCounts();
  
     //Optionall enable normal rasterization
-    SETTINGS_MAP[DRAW_NORMALS] = true;
+    SETTINGS_MAP[DRAW_NORMALS] = false;
     return true;
   }
 
@@ -224,10 +223,8 @@ class EngineReborn : public olc::PixelGameEngine
     //Get the View Matrix after input
     Matrix4x4 viewMatrix = DoInputLoop(this, player);
     //Calculation loop
-    Mesh* currentMesh;
     for(auto& mesh : allObjects.GetMeshList())
     {
-      currentMesh = mesh;
       if(mesh->doAutomaticRotation == true)
       {
         for(int i = 0; i < 3; i++)
@@ -295,7 +292,6 @@ class EngineReborn : public olc::PixelGameEngine
 
       //Screen edges clipping and rasterization section
       //Rasterizing normals(if settings allow it)
-      //RasterizeNormal(this, cameraTransformedTriangle, player->camera.GetCameraProjectionMatrix(), normal);
       DoScreenSpaceClipping(RI, trianglesToRaster, normalsToRaster, *mesh);
     }
 
@@ -351,7 +347,7 @@ class EngineReborn : public olc::PixelGameEngine
     
     //This is where screenshots are taken
     DoAuxilliaryInputLoop(this);
-
+    cout << "NEW LOOP BELOW\n\n\n";
     return true;
   }
 };

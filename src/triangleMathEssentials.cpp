@@ -28,7 +28,7 @@ Triangle RotateTriangle(const Triangle& input, const Matrix4x4& transformMatrix)
   return MultiplyTriangle(input, transformMatrix);
 }
 
-Triangle TranslateTriangle(const Triangle& input, float moveX = 0.0f, float moveY = 0.0f, float moveZ = 0.0f)
+Triangle TranslateTriangle(const Triangle& input, float moveX, float moveY, float moveZ)
 {
   Triangle toReturn = input;
   toReturn.points[0].x += moveX; toReturn.points[1].x += moveX; toReturn.points[2].x += moveX;
@@ -63,11 +63,12 @@ void ScreenNormalizeTriangle(Triangle& input, const float ScreenWidth, const flo
 //I will fix the projection matrix later
 void InvertTriangleXY(Triangle& input)
 {
-  input.points[0].x *= 1.0f;
+  //This is due to an edit in the projection matrix
+  //input.points[0].x *= 1.0f;
   input.points[0].y *= -1.0f;
-  input.points[1].x *= 1.0f;
+  //input.points[1].x *= 1.0f;
   input.points[1].y *= -1.0f;
-  input.points[2].x *= 1.0f;
+  //input.points[2].x *= 1.0f;
   input.points[2].y *= -1.0f;
 
 }

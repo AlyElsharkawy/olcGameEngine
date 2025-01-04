@@ -48,8 +48,6 @@ void DrawTexturedTriangle(const RenderingInstance& RI, const Triangle& input, co
   float w2 = input.texels[1].w;
   float w3 = input.texels[2].w;
 
-
-
 		if (y2 < y1)
 		{
 			swap(y1, y2);
@@ -142,11 +140,10 @@ void DrawTexturedTriangle(const RenderingInstance& RI, const Triangle& input, co
 					tex_u = (1.0f - t) * tex_su + t * tex_eu;
 					tex_v = (1.0f - t) * tex_sv + t * tex_ev;
 					tex_w = (1.0f - t) * tex_sw + t * tex_ew;
+          //J is X and I is Y
 					if (tex_w > RI.depthBuffer[i*RI.engine->ScreenWidth() + j])
 					{
-						//Draw(j, i, tex->SampleGlyph(tex_u / tex_w, tex_v / tex_w), tex->SampleColour(tex_u / tex_w, tex_v / tex_w));
             RI.engine->Draw(j, i, texture->Sample(tex_u / tex_w, tex_v / tex_w));
-
 						RI.depthBuffer[i*RI.engine->ScreenWidth() + j] = tex_w;
 					}
 					t += tstep;
@@ -207,6 +204,7 @@ void DrawTexturedTriangle(const RenderingInstance& RI, const Triangle& input, co
 
 					if (tex_w > RI.depthBuffer[i*RI.engine->ScreenWidth() + j])
 					{
+            //J is X and I is Y
 						RI.engine->Draw(j, i, texture->Sample(tex_u / tex_w, tex_v / tex_w));
 						RI.depthBuffer[i*RI.engine->ScreenWidth() + j] = tex_w;
 					}
@@ -214,188 +212,6 @@ void DrawTexturedTriangle(const RenderingInstance& RI, const Triangle& input, co
 				}
 			}	
 		}		
-  /*if(tri.points[1].y < tri.points[0].y)
-  {
-    swap(tri.points[0].y, tri.points[1].y);
-    swap(tri.points[0].x, tri.points[1].x);
-    swap(tri.texels[0].u, tri.texels[1].u);
-    swap(tri.texels[0].v, tri.texels[1].v);
-    swap(tri.texels[0].w, tri.texels[1].w);
-  }
-  
-  if(tri.points[2].y < tri.points[0].y)
-  {
-    swap(tri.points[0].y, tri.points[2].y);
-    swap(tri.points[0].x, tri.points[2].x);
-    swap(tri.texels[0].u, tri.texels[2].u);
-    swap(tri.texels[0].v, tri.texels[2].v);
-    swap(tri.texels[0].w, tri.texels[2].w);
-  }
-
-  if(tri.points[2].y < tri.points[1].y)
-  {
-    swap(tri.points[1].y, tri.points[2].y);
-    swap(tri.points[1].x, tri.points[2].x);
-    swap(tri.texels[1].u, tri.texels[2].u);
-    swap(tri.texels[1].v, tri.texels[2].v);
-    swap(tri.texels[1].w, tri.texels[2].w);
-  }
-  
-  int dx1 = tri.points[1].x - tri.points[0].x;
-  int dy1 = tri.points[1].y - tri.points[0].y;
-  float du1 = tri.texels[1].u - tri.texels[0].u;
-  float dv1 = tri.texels[1].v - tri.texels[0].v;
-  float dw1 = tri.texels[1].w - tri.texels[0].w;
-
-  int dx2 = tri.points[2].x - tri.points[0].x;
-  int dy2 = tri.points[2].y - tri.points[0].y;
-  float du2 = tri.texels[2].u - tri.texels[0].u;
-  float dv2 = tri.texels[2].v - tri.texels[0].v;
-  float dw2 = tri.texels[2].w - tri.texels[0].w;
-
-  float texU, texV, texW;
-
-  float dAxStep = 0, dBxStep = 0,
-        dU1Step = 0, dV1Step = 0,
-        dU2Step = 0, dV2Step = 0,
-        dW1Step = 0, dW2Step = 0;
-
-  if(dy1)
-  {
-    dAxStep = dx1 / (float)abs(dy1);
-    dU1Step = du1 / (float)abs(dy1);
-    dV1Step = dv1 / (float)abs(dy1);
-    dW1Step = dw1 / (float)abs(dy1);
-  }
-
-  if(dy2)
-  {
-    dBxStep = dx2 / (float)abs(dy2);
-    dU2Step = du2 / (float)abs(dy2);
-    dV2Step = dv2 / (float)abs(dy2);
-    dW2Step = dw2 / (float)abs(dy2);
-  }
-
-  //Fill top half of triangle
-  //cout << "DY1(top half): " << dy1 << '\n';
-  if(dy1)
-  {
-    for(int i = tri.points[0].y; i <= tri.points[1].y; i++)
-    {
-      int ax = tri.points[0].x + (float)(i - tri.points[0].y) * dAxStep;
-      int bx = tri.points[0].x + (float)(i - tri.points[0].y) * dBxStep;
-
-      float texSu = tri.texels[0].u + (float)(i - tri.points[0].y) * dU1Step;
-      float texSv = tri.texels[0].v + (float)(i - tri.points[0].y) * dV1Step;
-      float texSw = tri.texels[0].w + (float)(i - tri.points[0].y) * dW1Step;
-
-      float texEu = tri.texels[0].u + (float)(i - tri.points[0].y) * dU2Step;
-      float texEv = tri.texels[0].v + (float)(i - tri.points[0].y) * dV2Step;
-      float texEw = tri.texels[0].w + (float)(i - tri.points[0].y) * dW2Step;
-
-      if(ax > bx)
-      {
-        swap(ax, bx);
-        swap(texSu, texEu);
-        swap(texSv, texEv);
-        swap(texSw, texEw);
-      }
-
-      texU = texSu;
-      texV = texSv;
-      texW = texSw;
-      float tStep = 1.0f / ((float)(bx - ax));
-      float t = 0.0f;
-
-      //Actually draw the triangle 
-      for(int jFirst = ax; jFirst < bx; jFirst++)
-      {
-        texU = (1.0f - t) * texSu + t * texEu;
-        texV = (1.0f - t) * texSv + t * texEv;
-        texW = (1.0f - t) * texSw + t * texEw;
-        int indexedPoint = i * RI.engine->ScreenWidth() + jFirst;
-        //This is a hack but it seems to work quite weel
-        if(indexedPoint > (RI.engine->ScreenWidth() * RI.engine->ScreenHeight()) - 1 || i < 0 || jFirst < 0)
-          continue;
-        if(texW > RI.depthBuffer[indexedPoint])
-        {  
-          olc::Pixel color = texture->Sample(texU / texW, texV / texW);
-          RI.engine->Draw({jFirst,i}, color);
-          RI.depthBuffer[indexedPoint] = texW;
-        }
-        t += tStep;
-      }
-    }
-  }
-
-  dy1 = tri.points[2].y - tri.points[1].y;
-  dx1 = tri.points[2].x - tri.points[1].x;
-  dv1 = tri.texels[2].v - tri.texels[1].v;
-  du1 = tri.texels[2].u - tri.texels[1].u;
-  dw1 = tri.texels[2].w - tri.texels[1].w;
-
-  dU1Step = 0; dV1Step = 0;  
-  if(dy1)
-  {
-    dAxStep = dx1 / (float)abs(dy1);
-    dU1Step = du1 / (float)abs(dy1);
-    dV1Step = dv1 / (float)abs(dy1);
-    dW1Step = dw1 / (float)abs(dy1);
-  }
-    
-  if(dy2)
-  {
-    dBxStep = dx2 / (float)abs(dy2);
-  }
-  //cout << "DY1 (bottom half): " << dy1 << '\n';
-  if(dy1)
-  {
-    for(int i = tri.points[1].y; i <= tri.points[2].y; i++)
-    {
-      int ax = tri.points[1].x + (float)(i - tri.points[1].y) * dAxStep;
-      int bx = tri.points[0].x + (float)(i - tri.points[0].y) * dBxStep;
-
-      float texSu = tri.texels[1].u + (float)(i - tri.points[1].y) * dU1Step;
-      float texSv = tri.texels[1].v + (float)(i - tri.points[1].y) * dV1Step;
-      float texSw = tri.texels[1].w + (float)(i - tri.points[1].y) * dW1Step;
-      
-      float texEu = tri.texels[0].u + (float)(i - tri.points[0].y) * dU2Step;
-      float texEv = tri.texels[0].v + (float)(i - tri.points[0].y) * dV2Step;
-      float texEw = tri.texels[0].w + (float)(i - tri.points[0].y) * dW2Step;
-
-      if(ax > bx)
-      {
-        swap(ax, bx);
-        swap(texSu, texEu);
-        swap(texSv, texEv);
-        swap(texSw, texEw);
-      }
-
-      texU = texSu;
-      texV = texSv;
-      texW = texSw;
-      float tStep = 1.0f / ((float)(bx - ax));
-      float t = 0.0f;
-
-      //Actually draw the triangle(bottom half)
-      for(int jSecond = ax; jSecond < bx; jSecond++)
-      {
-        texU = (1.0f - t) * texSu + t * texEu;
-        texV = (1.0f - t) * texSv + t * texEv;
-        texW = (1.0f - t) * texSw + t * texEw;
-        int indexedPoint = i * RI.engine->ScreenWidth() + jSecond;
-        if(indexedPoint > (RI.engine->ScreenWidth() * RI.engine->ScreenHeight()) - 1 || i < 0 || jSecond < 0)
-          continue;
-        if(texW > RI.depthBuffer[indexedPoint])
-        {
-          olc::Pixel color = texture->Sample(texU / texW, texV / texW);
-          RI.engine->Draw({jSecond,i}, color);
-          RI.depthBuffer[indexedPoint] = texW;
-        }
-        t += tStep;
-      }
-    }
-  }*/
 }
 
 Matrix4x4 DoInputLoop(olc::PixelGameEngine* engine, Player* player)
@@ -596,19 +412,16 @@ void DrawTriangleToScreen(const RenderingInstance& RI, const Triangle& triangleI
   {
     //If visualize clipping is enabled, then we should draw the triangles color, not their actual
     //material
-    if(SETTINGS_MAP[VISUALIZE_CLIPPING] == true)
-    {
-      PopulateOLCPoints(triangleInput, point1, point2, point3);
-      RI.engine->FillTriangle(point1, point2, point3, triangleInput.color);
-      return;
-    }
     switch(materialType)
     {
       case MATERIAL_TYPES::TEXTURE:
         {
           //Just incase
           if(texture != nullptr)
+          {
+            triangleInput.PrintTriangle();
             DrawTexturedTriangle(RI, triangleInput, texture->sprite);
+          }
 
           else
           {
@@ -618,6 +431,7 @@ void DrawTriangleToScreen(const RenderingInstance& RI, const Triangle& triangleI
         }
       case MATERIAL_TYPES::COMPOSITE:
         {
+          cerr << "ERROR: Composite material type note yet supported!\n";
           break;
         }
       case MATERIAL_TYPES::NONE:

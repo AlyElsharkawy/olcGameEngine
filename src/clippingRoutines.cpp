@@ -145,7 +145,7 @@ int TriangleClipWithPlane(const Vector3D& planePoint, const Vector3D& planeNorma
   }
 
   //To make LSP stop complaining
-  return -10;
+  return -1;
 }
 
 void DoScreenSpaceClipping(const RenderingInstance& RI, const vector<Triangle> &trianglesToRaster, const vector<Vector3D>& normalsToRaster, const Mesh& meshInput)
@@ -199,7 +199,7 @@ void DoScreenSpaceClipping(const RenderingInstance& RI, const vector<Triangle> &
         }
         newTrianglesNumber = trianglesQueue.size();
       }
-      
+
       for(int j = 0; j < trianglesQueue.size(); j++)
       {
         DrawTriangleToScreen(RI, trianglesQueue[j], meshInput.GetMaterialType(), meshInput.GetTextureImage());
@@ -238,6 +238,7 @@ void DoViewSpaceClipping(olc::PixelGameEngine* engine, Player* player, vector<Tr
     {
       Triangle projectedTriangle = MultiplyTriangle(clippedTriangles[i], PROJECTION_MATRIX, false);
       NormalizeTriangleTextels(projectedTriangle);
+      //Aka Normalizing
       ConvertToDNCoordinates(projectedTriangle);
       
       //Fixing inverted axes

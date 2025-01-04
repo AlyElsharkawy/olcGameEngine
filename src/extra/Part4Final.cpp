@@ -592,10 +592,10 @@ public:
 			vCamera = Vector_Sub(vCamera, vForward);
 
 		if (GetKey(olc::Key::A).bHeld)
-			fYaw -= 12.0f * fElapsedTime;
+			fYaw -= 3.0f * fElapsedTime;
 
 		if (GetKey(olc::Key::D).bHeld)
-			fYaw += 12.0f * fElapsedTime;
+			fYaw += 3.0f * fElapsedTime;
 
 		// Set up "World Tranmsform" though not updating theta 
 		// makes this a bit redundant
@@ -700,7 +700,7 @@ public:
 					triProjected.t[1] = clipped[n].t[1];
 					triProjected.t[2] = clipped[n].t[2];
 
-
+          //Normalizing triangle textels
 					triProjected.t[0].u = triProjected.t[0].u / triProjected.p[0].w;
 					triProjected.t[1].u = triProjected.t[1].u / triProjected.p[1].w;
 					triProjected.t[2].u = triProjected.t[2].u / triProjected.p[2].w;
@@ -811,6 +811,12 @@ public:
 			// Draw the transformed, viewed, clipped, projected, sorted, clipped triangles
 			for (auto &t : listTriangles)
 			{
+        //Optionally, print the information for the textels
+        cout << "TEXTEL INFORMATION: \n";
+        for(int i = 0; i < 3; i++)
+        {
+          cout << "U: " << t.t[i].u << " V: " << t.t[i].v << '\n';
+        }
 				TexturedTriangle(t.p[0].x, t.p[0].y, t.t[0].u, t.t[0].v, t.t[0].w,
 					t.p[1].x, t.p[1].y, t.t[1].u, t.t[1].v, t.t[1].w,
 					t.p[2].x, t.p[2].y, t.t[2].u, t.t[2].v, t.t[2].w, sprTex1);
