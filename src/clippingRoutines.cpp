@@ -42,7 +42,7 @@ int TriangleClipWithPlane(const Vector3D& planePoint, const Vector3D& planeNorma
   int totalOutsideTextels = 0;
   
   //Now we will get the distances of each point in the input triangle from the clipping plane 
-  for(int i = 0; i < 3; i++)
+  /*for(int i = 0; i < 3; i++)
   {
     float distanceValue = GetDistance(inputTriangle.points[i]);
     if(distanceValue >= 0)
@@ -55,7 +55,42 @@ int TriangleClipWithPlane(const Vector3D& planePoint, const Vector3D& planeNorma
       outsidePoints[totalOutsidePoints++] = &inputTriangle.points[i];
       outsideTextels[totalOutsideTextels++] = &inputTriangle.texels[i];
     }
-  }
+  }*/ 
+		// Get signed distance of each point in triangle to plane
+		float d0 = GetDistance(inputTriangle.points[0]);
+		float d1 = GetDistance(inputTriangle.points[1]);
+		float d2 = GetDistance(inputTriangle.points[2]);
+
+		if (d0 >= 0) 
+    { 
+      insidePoints[totalInsidePoints++] = &inputTriangle.points[0];
+      insideTextels[totalInsideTextels++] = &inputTriangle.texels[0]; 
+    }
+		else 
+    {
+			outsidePoints[totalOutsidePoints++] = &inputTriangle.points[0];
+      outsideTextels[totalOutsideTextels++] = &inputTriangle.texels[0];
+		}
+		if (d1 >= 0) 
+    {
+			insidePoints[totalInsidePoints++] = &inputTriangle.points[1];
+      insideTextels[totalInsideTextels++] = &inputTriangle.texels[1];
+		}
+		else 
+    {
+			outsidePoints[totalOutsidePoints++] = &inputTriangle.points[1];
+      outsideTextels[totalOutsideTextels++] = &inputTriangle.texels[1];
+		}
+		if (d2 >= 0)
+    {
+			insidePoints[totalInsidePoints++] = &inputTriangle.points[2];
+      insideTextels[totalInsideTextels++] = &inputTriangle.texels[2];
+		}
+		else 
+    {
+			outsidePoints[totalOutsidePoints++] = &inputTriangle.points[2];
+      outsideTextels[totalOutsideTextels++] = &inputTriangle.texels[2];
+		}
   
   //Now we must classify the points 
   

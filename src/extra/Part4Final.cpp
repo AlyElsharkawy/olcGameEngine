@@ -407,21 +407,35 @@ private:
 		float d1 = dist(in_tri.p[1]);
 		float d2 = dist(in_tri.p[2]);
 
-		if (d0 >= 0) { inside_points[nInsidePointCount++] = &in_tri.p[0]; inside_tex[nInsideTexCount++] = &in_tri.t[0]; }
-		else {
-			outside_points[nOutsidePointCount++] = &in_tri.p[0]; outside_tex[nOutsideTexCount++] = &in_tri.t[0];
+		if (d0 >= 0) 
+    { 
+      inside_points[nInsidePointCount++] = &in_tri.p[0];
+      inside_tex[nInsideTexCount++] = &in_tri.t[0]; 
+    }
+		else 
+    {
+			outside_points[nOutsidePointCount++] = &in_tri.p[0];
+      outside_tex[nOutsideTexCount++] = &in_tri.t[0];
 		}
-		if (d1 >= 0) {
-			inside_points[nInsidePointCount++] = &in_tri.p[1]; inside_tex[nInsideTexCount++] = &in_tri.t[1];
+		if (d1 >= 0) 
+    {
+			inside_points[nInsidePointCount++] = &in_tri.p[1];
+      inside_tex[nInsideTexCount++] = &in_tri.t[1];
 		}
-		else {
-			outside_points[nOutsidePointCount++] = &in_tri.p[1];  outside_tex[nOutsideTexCount++] = &in_tri.t[1];
+		else 
+    {
+			outside_points[nOutsidePointCount++] = &in_tri.p[1];
+      outside_tex[nOutsideTexCount++] = &in_tri.t[1];
 		}
-		if (d2 >= 0) {
-			inside_points[nInsidePointCount++] = &in_tri.p[2]; inside_tex[nInsideTexCount++] = &in_tri.t[2];
+		if (d2 >= 0)
+    {
+			inside_points[nInsidePointCount++] = &in_tri.p[2];
+      inside_tex[nInsideTexCount++] = &in_tri.t[2];
 		}
-		else {
-			outside_points[nOutsidePointCount++] = &in_tri.p[2];  outside_tex[nOutsideTexCount++] = &in_tri.t[2];
+		else 
+    {
+			outside_points[nOutsidePointCount++] = &in_tri.p[2];
+      outside_tex[nOutsideTexCount++] = &in_tri.t[2];
 		}
 
 		// Now classify triangle points, and break the input triangle into 
