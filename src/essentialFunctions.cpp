@@ -145,6 +145,14 @@ void DrawTexturedTriangle(const RenderingInstance& RI, const Triangle& input, co
 					{
             RI.engine->Draw(j, i, texture->Sample(tex_u / tex_w, tex_v / tex_w));
 						RI.depthBuffer[i*RI.engine->ScreenWidth() + j] = tex_w;
+            if(tex_u / tex_w > 1.0)
+            {
+              cout << "U is greater than 1!: " << tex_u / tex_w << '\n';
+            }
+            else if(tex_v / tex_w > 1.0)
+            {
+              cout << "V is greater than 1!: " << tex_v / tex_w << '\n';
+            }
 					}
 					t += tstep;
 				}
@@ -207,6 +215,14 @@ void DrawTexturedTriangle(const RenderingInstance& RI, const Triangle& input, co
             //J is X and I is Y
 						RI.engine->Draw(j, i, texture->Sample(tex_u / tex_w, tex_v / tex_w));
 						RI.depthBuffer[i*RI.engine->ScreenWidth() + j] = tex_w;
+            if(tex_u / tex_w > 1.0)
+            {
+              cout << "U is greater than 1!: " << tex_u / tex_w << '\n';
+            }
+            else if(tex_v / tex_w > 1.0)
+            {
+              cout << "V is greater than 1!: " << tex_v / tex_w << '\n';
+            }
 					}
 					t += tstep;
 				}
@@ -343,7 +359,7 @@ float GetNoneMaterialLuminances(const Vector3D& normal, const deque<Light>& ligh
 {
   float currentLuminance = 0.0f;
   for(const auto& light : lightsDeque)
-{
+  {
     switch(light.GetLightType())
     {
       case LIGHT_TYPES::LAMP_SUN:
@@ -419,7 +435,6 @@ void DrawTriangleToScreen(const RenderingInstance& RI, const Triangle& triangleI
           //Just incase
           if(texture != nullptr)
           {
-            triangleInput.PrintTriangle();
             DrawTexturedTriangle(RI, triangleInput, texture->sprite);
           }
 

@@ -71,6 +71,10 @@ struct vec2d
 	float u = 0;
 	float v = 0;
 	float w = 1;
+  const string ExtractInfo() const
+  {
+    return "U: " + to_string(this->u) + ", V: " + to_string(this->v);
+  }
 };
 
 struct vec3d
@@ -79,6 +83,11 @@ struct vec3d
 	float y = 0;
 	float z = 0;
 	float w = 1; // Need a 4th term to perform sensible matrix vector multiplication
+  string ExtractInfo() const
+  {
+    return "X: " + to_string(this->x) + ", Y: " + to_string(this->y) + ", Z: " + to_string(this->z);
+  }
+
 };
 
 struct triangle
@@ -86,6 +95,25 @@ struct triangle
 	vec3d p[3];
 	vec2d t[3]; // added a texture coord per vertex
   olc::Pixel color;
+  string ExtractInfo() const
+  { 
+  #define points p
+  string result =  "Triangle: \n";
+  for(int i = 0; i < 3; i++)
+  {
+    result += this->points[i].ExtractInfo() + '\n';
+  }
+  result += "Triangle Textels: \n";
+  for(int i = 0; i < 3; i++)
+  {
+    #define texels t
+    result += this->texels[i].ExtractInfo() + '\n';
+  }
+  result += "Color->\t";
+  result += "R: " + to_string(this->color.r) + " G: " + to_string(this->color.g) + " B: " + to_string(this->color.b) + "\n";
+  return result;
+}
+
 };
 
 struct mesh
@@ -177,6 +205,34 @@ struct mat4x4
 {
 	float m[4][4] = { 0 };
 };
+
+const void PrintMeshToDisk(vector<triangle> trisList, const string& fileName)
+{
+  ofstream outputFile(fileName);
+  vector<triangle> triangleList = trisList;
+  sort(triangleList.begin(), triangleList.end(), [](const triangle& tri1, const triangle& tri2)
+       {
+        #define points p
+        float xPoint1 = (tri1.points[0].x + tri1.points[1].x + tri1.points[2].x) / 3.0f;
+        float xPoint2 = (tri2.points[0].x + tri2.points[1].x + tri2.points[2].x) / 3.0f;
+
+        float yPoint1 = (tri1.points[0].y + tri1.points[1].y + tri1.points[2].y) / 3.0f;
+        float yPoint2 = (tri2.points[0].y + tri2.points[1].y + tri2.points[2].y) / 3.0f;
+
+        float zPoint1 = (tri1.points[0].z + tri1.points[1].z + tri1.points[2].z) / 3.0f;
+        float zPoint2 = (tri2.points[0].z + tri2.points[1].z + tri2.points[2].z) / 3.0f;
+          
+        if(xPoint1 != xPoint2) return xPoint1 < xPoint2;
+        if(yPoint1 != yPoint2) return yPoint1 < yPoint2;
+        return zPoint1 < zPoint2;
+       });
+  for(const auto& triangle : triangleList)
+  {
+    outputFile << triangle.ExtractInfo() << '\n';
+  }
+  outputFile.close();
+}
+
 
 class olcEngine3D : public olc::PixelGameEngine
 {
@@ -575,6 +631,7 @@ public:
 
 		// Projection Matrix
 		matProj = Matrix_MakeProjection(90.0f, (float)ScreenHeight() / (float)ScreenWidth(), 0.1f, 1000.0f);
+    PrintMeshToDisk(meshCube.tris, ConcatenatePaths({GetPathFromResources(), "secondTestMesh.mesh"}));
 		return true;
 	}
 
@@ -825,12 +882,6 @@ public:
 			// Draw the transformed, viewed, clipped, projected, sorted, clipped triangles
 			for (auto &t : listTriangles)
 			{
-        //Optionally, print the information for the textels
-        cout << "TEXTEL INFORMATION: \n";
-        for(int i = 0; i < 3; i++)
-        {
-          cout << "U: " << t.t[i].u << " V: " << t.t[i].v << '\n';
-        }
 				TexturedTriangle(t.p[0].x, t.p[0].y, t.t[0].u, t.t[0].v, t.t[0].w,
 					t.p[1].x, t.p[1].y, t.t[1].u, t.t[1].v, t.t[1].w,
 					t.p[2].x, t.p[2].y, t.t[2].u, t.t[2].v, t.t[2].w, sprTex1);

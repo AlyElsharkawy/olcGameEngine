@@ -93,6 +93,7 @@ public:
   
   bool LoadFromOBJFile(const string& fileName, bool hasTexture = false);
   const void PrintMesh() const;
+  const void PrintMeshToDisk(const string& fileName) const; //This is to verify if two meshes are equal
   Mesh();
   ~Mesh();
 };

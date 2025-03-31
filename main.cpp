@@ -179,25 +179,26 @@ class EngineReborn : public olc::PixelGameEngine
     //allLights.push_back(testLamp);
 
     //Initialize hard coded meshes
-    Mesh* lightObj = new Mesh();
-    lightObj->LoadFromOBJFile(GetPathFromResources({"objectFiles", "Primitives", "GoodCube.obj"}), true);
-    lightObj->SetTranslationOffsets(0.0f,0.0f, 20.0f);
-    lightObj->SetRotationSpeeds(1.0f, 1.0f, 1.0f);
+    Mesh* testMesh = new Mesh();
+    testMesh->LoadFromOBJFile(GetPathFromResources({"objectFiles", "Primitives", "GoodCube.obj"}), true);
+    testMesh->SetTranslationOffsets(0.0f,0.0f, 20.0f);
+    testMesh->SetRotationSpeeds(1.0f, 1.0f, 1.0f);
     //lightObj->SetDiffuseColor(210, 4, 45, 255);
     
-    lightObj->SetTextureImage(GetPathFromResources({"textures", "stoneBrickWall.png"}));
-    lightObj->PrintTextureInformation();
-    lightObj->lookAtVector = mainLamp.GetDirection();
-    lightObj->isStatic = true;
+    testMesh->SetTextureImage(GetPathFromResources({"textures", "stoneBrickWall.png"}));
+    testMesh->PrintTextureInformation();
+    testMesh->lookAtVector = mainLamp.GetDirection();
+    testMesh->isStatic = true;
     //lightObj->doAutomaticRotation = true;
-    lightObj->doAutomaticRotations[1] = true;
+    testMesh->doAutomaticRotations[1] = true;
+    testMesh->PrintMeshToDisk(ConcatenatePaths({GetPathFromResources(), "testmesh1.mesh"}));
     
     /*Mesh mountainsObj;
     mountainsObj.LoadFromOBJFile(GetPathFromResources({"objectFiles", "Primitives", "mountains.obj"}), false);
     mountainsObj.SetScalingOffsets(0.25f, 0.25f, 0.25f);*/
     //allObjects.AppendMesh(mountainsObj);
     
-    allObjects.AppendMesh(lightObj);
+    allObjects.AppendMesh(testMesh);
     allObjects.UpdateTotalCounts();
  
     //Optionall enable normal rasterization
@@ -214,6 +215,9 @@ class EngineReborn : public olc::PixelGameEngine
      Clear(olc::BLACK);
       for(int i = 0; i < ScreenWidth() * ScreenHeight(); i++)
         RI.depthBuffer[i] = 0.0f;
+
+      trianglesToRaster.clear();
+      normalsToRaster.clear();
     }
     
     //Variable aliases
@@ -223,7 +227,7 @@ class EngineReborn : public olc::PixelGameEngine
     //Get the View Matrix after input
     Matrix4x4 viewMatrix = DoInputLoop(this, player);
     //Calculation loop
-    for(auto& mesh : allObjects.GetMeshList())
+    for(const auto& mesh : allObjects.GetMeshList())
     {
       if(mesh->doAutomaticRotation == true)
       {
@@ -232,7 +236,7 @@ class EngineReborn : public olc::PixelGameEngine
             mesh->rotationDegrees[i] += fElapsedTime * 3.0f;
       }
 
-      for(auto& triangle : mesh->triangles)
+      for(const auto& triangle : mesh->triangles)
       {
 
         Vector3D normal;
@@ -342,12 +346,8 @@ class EngineReborn : public olc::PixelGameEngine
     manager.Update();
     manager.Draw();
 
-    trianglesToRaster.clear();
-    normalsToRaster.clear();
-    
     //This is where screenshots are taken
     DoAuxilliaryInputLoop(this);
-    cout << "NEW LOOP BELOW\n\n\n";
     return true;
   }
 };

@@ -5,6 +5,7 @@
 #include <vector>
 #include <string>
 #include "geometricPrimitives.h"
+#include "essentialFunctions.h"
 #include "globalVariables.h"
 #include "miscFunctions.h"
 
@@ -48,11 +49,25 @@ void Triangle::PrintTriangle() const
 
 string Triangle::ExtractInfo() const
 {
-  return '{' + this->points[0].ExtractInfo() + ", " +
+  /*return '{' + this->points[0].ExtractInfo() + ", " +
                this->points[1].ExtractInfo() + ", " + 
                this->points[2].ExtractInfo() + ", " +
                this->texels[0].ExtractInfo() + ", " +
-               this->texels[1].ExtractInfo();
+               this->texels[1].ExtractInfo();*/
+
+  string result =  "Triangle: \n";
+  for(int i = 0; i < 3; i++)
+  {
+    result += this->points[i].ExtractInfo() + '\n';
+  }
+  result += "Triangle Textels: \n";
+  for(int i = 0; i < 3; i++)
+  {
+    result += this->texels[i].ExtractInfo() + '\n';
+  }
+  result += "Color->\t";
+  result += "R: " + to_string(this->color.r) + " G: " + to_string(this->color.g) + " B: " + to_string(this->color.b) + "\n";
+  return result;
 }
 
 void Matrix4x4::PrintMatrix() const
@@ -139,6 +154,32 @@ const void Mesh::PrintMesh() const
   cout << "End of mesh\n";
 }
 
+const void Mesh::PrintMeshToDisk(const string& fileName) const
+{
+  ofstream outputFile(fileName);
+  vector<Triangle> triangleList = this->triangles;
+  sort(triangleList.begin(), triangleList.end(), [](const Triangle& tri1, const Triangle& tri2)
+       {
+        float xPoint1 = (tri1.points[0].x + tri1.points[1].x + tri1.points[2].x) / 3.0f;
+        float xPoint2 = (tri2.points[0].x + tri2.points[1].x + tri2.points[2].x) / 3.0f;
+
+        float yPoint1 = (tri1.points[0].y + tri1.points[1].y + tri1.points[2].y) / 3.0f;
+        float yPoint2 = (tri2.points[0].y + tri2.points[1].y + tri2.points[2].y) / 3.0f;
+
+        float zPoint1 = (tri1.points[0].z + tri1.points[1].z + tri1.points[2].z) / 3.0f;
+        float zPoint2 = (tri2.points[0].z + tri2.points[1].z + tri2.points[2].z) / 3.0f;
+          
+        if(xPoint1 != xPoint2) return xPoint1 < xPoint2;
+        if(yPoint1 != yPoint2) return yPoint1 < yPoint2;
+        return zPoint1 < zPoint2;
+       });
+  for(const auto& triangle : triangleList)
+  {
+    outputFile << triangle.ExtractInfo() << '\n';
+  }
+  outputFile.close();
+}
+
 Mesh::~Mesh()
 {
   if(this->diffuseColor != nullptr)
@@ -219,7 +260,7 @@ bool Mesh::SetNormalImage(const string& pathToImage)
 }
 
 
-	/*bool Mesh::LoadFromOBJFile(const string& sFilename, bool bHasTexture)
+	bool Mesh::LoadFromOBJFile(const string& sFilename, bool bHasTexture)
 	{
 		ifstream f(sFilename);
 		if (!f.is_open())
@@ -300,9 +341,9 @@ bool Mesh::SetNormalImage(const string& pathToImage)
     this->triangles = tris;
     this->totalTriangles = tris.size();
 		return true;
-	}*/
+	}
 
-bool Mesh::LoadFromOBJFile(const string& fileName, bool hasTexture)
+/*bool Mesh::LoadFromOBJFile(const string& fileName, bool hasTexture)
 {
   ifstream inputFile(fileName, std::ios::in);
   vector<Triangle> triangles; 
@@ -379,7 +420,7 @@ bool Mesh::LoadFromOBJFile(const string& fileName, bool hasTexture)
   this->triangles = triangles;
   this->totalTriangles = triangles.size();
   return true;
-}
+}*/
 
 Mesh::Mesh()
 {
