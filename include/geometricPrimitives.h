@@ -129,3 +129,5 @@ public:
   float mat[4][4] = {0};
   void PrintMatrix() const;
 };
+
+void PrintTrianglesToDisk(const vector<Triangle>& input,const string& fileName);

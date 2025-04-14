@@ -54,6 +54,7 @@ add_library(IM_GUI_LIB STATIC
 ./src/External/ImGUI/imgui_tables.cpp
 )
 target_link_libraries(GEOMETRY_LIB PRIVATE MISC_FUNCTIONS_LIB)
+target_link_libraries(CLIPPING_ROUTINES_LIB PRIVATE GEOMETRY_LIB)
 
 add_executable(${PROJECT_NAME} main.cpp)
 add_executable(OBJFileSerializer ./src/extra/OBJFileSerializer.cpp)

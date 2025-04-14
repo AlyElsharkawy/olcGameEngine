@@ -181,7 +181,7 @@ class EngineReborn : public olc::PixelGameEngine
     //Initialize hard coded meshes
     Mesh* testMesh = new Mesh();
     testMesh->LoadFromOBJFile(GetPathFromResources({"objectFiles", "Primitives", "GoodCube.obj"}), true);
-    testMesh->SetTranslationOffsets(0.0f,0.0f, 20.0f);
+    testMesh->SetTranslationOffsets(0.0f,0.0f, 5.0f);
     testMesh->SetRotationSpeeds(1.0f, 1.0f, 1.0f);
     //lightObj->SetDiffuseColor(210, 4, 45, 255);
     
@@ -238,10 +238,11 @@ class EngineReborn : public olc::PixelGameEngine
 
       for(const auto& triangle : mesh->triangles)
       {
-
+        CheckUVInvalid(triangle, "FIRST_TRIANGLE");
         Vector3D normal;
 
         Triangle scaledTriangle = ScaleTriangle(triangle, mesh->scalingOffsets[0], mesh->scalingOffsets[1], mesh->scalingOffsets[2]);
+        CheckUVInvalid(scaledTriangle, "SCALED_TRIANGLE");
         Triangle rotatedTriangle;
         
         if(mesh->isStatic == false)
@@ -255,8 +256,9 @@ class EngineReborn : public olc::PixelGameEngine
           Matrix4x4 rotationMatrix = GetCompoundRotationMatrix(ROT_TYPES::ROT_ZYX, mesh->rotationDegrees[0], mesh->rotationDegrees[1], mesh->rotationDegrees[2]);
           rotatedTriangle = MultiplyTriangle(scaledTriangle, rotationMatrix);
         }
-
+        CheckUVInvalid(rotatedTriangle, "ROTATED_TRIANGLE");
         Triangle translatedTriangle = TranslateTriangle(rotatedTriangle, mesh->translationOffsets[0], mesh->translationOffsets[1], mesh->translationOffsets[2]);
+        CheckUVInvalid(translatedTriangle, "TRANSLATED_TRIANGLE");
         normal = GetNormal(translatedTriangle);
 
         Triangle cameraTransformedTriangle;
@@ -268,6 +270,7 @@ class EngineReborn : public olc::PixelGameEngine
         {
           //materials phase
           cameraTransformedTriangle = MultiplyTriangle(translatedTriangle, viewMatrix);
+          CheckUVInvalid(cameraTransformedTriangle, "CAMERA_TRANSFORMED_TRIANGLE");
 
           //TO-DO: Switch this to a switch case
           if(mesh->GetMaterialType() == MATERIAL_TYPES::NONE)

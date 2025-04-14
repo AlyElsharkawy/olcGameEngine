@@ -147,11 +147,14 @@ void DrawTexturedTriangle(const RenderingInstance& RI, const Triangle& input, co
 						RI.depthBuffer[i*RI.engine->ScreenWidth() + j] = tex_w;
             if(tex_u / tex_w > 1.0)
             {
-              cout << "U is greater than 1!: " << tex_u / tex_w << '\n';
+              cout << "(Lower-half)U is greater than 1!: " << tex_u / tex_w << '\n';
+              cout << "W VALUE IS: " << w1 << ' ' << w2 << ' ' << w3 << '\n';
             }
             else if(tex_v / tex_w > 1.0)
             {
-              cout << "V is greater than 1!: " << tex_v / tex_w << '\n';
+              cout << "(Lower-half)V is greater than 1!: " << tex_v / tex_w << '\n';
+              cout << "W VALUE IS: " << w1 << ' ' << w2 << ' ' << w3 << '\n';
+
             }
 					}
 					t += tstep;
@@ -217,11 +220,11 @@ void DrawTexturedTriangle(const RenderingInstance& RI, const Triangle& input, co
 						RI.depthBuffer[i*RI.engine->ScreenWidth() + j] = tex_w;
             if(tex_u / tex_w > 1.0)
             {
-              cout << "U is greater than 1!: " << tex_u / tex_w << '\n';
+              //cout << "(Upper-half)U is greater than 1!: " << tex_u / tex_w << '\n';
             }
             else if(tex_v / tex_w > 1.0)
             {
-              cout << "V is greater than 1!: " << tex_v / tex_w << '\n';
+              //cout << "(Upper-half)V is greater than 1!: " << tex_v / tex_w << '\n';
             }
 					}
 					t += tstep;
@@ -508,3 +511,17 @@ Vector3D GetProjectedNormal(olc::PixelGameEngine* engine, const Matrix4x4& proje
   return projectedNormal;
 }
 
+void CheckUVInvalid(const Triangle& triangleInput, const string& name)
+{
+  for(int i = 0; i < 3; i++)
+  {
+    if(triangleInput.texels[i].u > 1.0f)
+    {
+      cerr << "U is greater than 1 at " << name << "!\n";
+    }
+    if(triangleInput.texels[i].v > 1.0f)
+    {
+      cerr << "V is greater than 1 at " << name << "!\n";
+    }
+  }
+}

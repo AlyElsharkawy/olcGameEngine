@@ -1,5 +1,7 @@
 #include <deque>
 #include "essentialFunctions.h"
+#include "geometricPrimitives.h"
+#include "miscFunctions.h"
 #include "miscPrimitives.h"
 #include "triangleMathEssentials.h"
 #include "clippingRoutines.h"
@@ -185,6 +187,8 @@ int TriangleClipWithPlane(const Vector3D& planePoint, const Vector3D& planeNorma
 
 void DoScreenSpaceClipping(const RenderingInstance& RI, const vector<Triangle> &trianglesToRaster, const vector<Vector3D>& normalsToRaster, const Mesh& meshInput)
 {
+  //Delete after test is complete
+  vector<Triangle> rasterizedTriangles;
   for(int i = 0; i < trianglesToRaster.size(); i++)
   {
     if(SETTINGS_MAP[DO_SCREEN_SPACE_CLIPPING] == false)
@@ -229,6 +233,7 @@ void DoScreenSpaceClipping(const RenderingInstance& RI, const vector<Triangle> &
 
           for(int k = 0; k < trianglesToAdd; k++)
           {
+            CheckUVInvalid(clippedTriangles[k], "CLIPPED_TRIANGLES_SCREEN_SPACE");
             trianglesQueue.push_back(clippedTriangles[k]);
           }
         }
@@ -238,9 +243,11 @@ void DoScreenSpaceClipping(const RenderingInstance& RI, const vector<Triangle> &
       for(int j = 0; j < trianglesQueue.size(); j++)
       {
         DrawTriangleToScreen(RI, trianglesQueue[j], meshInput.GetMaterialType(), meshInput.GetTextureImage());
+        rasterizedTriangles.push_back(trianglesQueue[j]);
       }
     }
     
+    //When I also clip normals, then I will move this if statement up one scope
     if(SETTINGS_MAP[DRAW_NORMALS] == true)
     {
       olc::vi2d point1;
@@ -252,6 +259,7 @@ void DoScreenSpaceClipping(const RenderingInstance& RI, const vector<Triangle> &
       RI.engine->DrawLine(point1, point2, NORMAL_COLOR);
     }
   }
+  PrintTrianglesToDisk(rasterizedTriangles, ConcatenatePaths({GetPathFromResources(),"3D_ENGINE_REBORN_TRIANGLES.txt"}));
 }
 
 void DoViewSpaceClipping(olc::PixelGameEngine* engine, Player* player, vector<Triangle>& trianglesToRaster, vector<Vector3D>& normalsToRaster, Triangle& cameraTransformedTriangle)
@@ -271,15 +279,21 @@ void DoViewSpaceClipping(olc::PixelGameEngine* engine, Player* player, vector<Tr
     //We are now going from view space(relative to camera) to screen space
     for(int i = 0; i < clippedTrianglesNumber; i++)
     {
+      CheckUVInvalid(clippedTriangles[i], "VIEW_SPACE_CLIPPED_TRIANGLE");
       Triangle projectedTriangle = MultiplyTriangle(clippedTriangles[i], PROJECTION_MATRIX, false);
+      CheckUVInvalid(projectedTriangle, "PROJECTED_TRIANGLE");
       NormalizeTriangleTextels(projectedTriangle);
+      CheckUVInvalid(projectedTriangle, "NORMALIZED_PROJECTED_TRIANGLE");
       //Aka Normalizing
       ConvertToDNCoordinates(projectedTriangle);
+      CheckUVInvalid(projectedTriangle, "NORMALIZED_PROJECTED_TRIANGLE_DNC_NORMALIZED");
       
       //Fixing inverted axes
       InvertTriangleXY(projectedTriangle);
+      CheckUVInvalid(projectedTriangle, "NORMALIZED_PROJECTED_TRIANGLE_DNC_NORMALIZED_INVERTED");
 
       ScreenNormalizeTriangle(projectedTriangle, (float)engine->ScreenWidth(), (float)engine->ScreenHeight());
+      CheckUVInvalid(projectedTriangle, "NORMALIZED_PROJECTED_TRIANGLE_DNC_NORMALIZED_INVERTED_SCREEN");
       trianglesToRaster.push_back(projectedTriangle);
       if(SETTINGS_MAP[DRAW_NORMALS] == true)
       {

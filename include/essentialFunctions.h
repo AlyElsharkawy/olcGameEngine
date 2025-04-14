@@ -15,3 +15,5 @@ void DrawTriangleToScreen(const RenderingInstance& RI, const Triangle& triangleI
 void PopulateOLCPoints(const Triangle& inputTriangle, olc::vf2d& point1, olc::vf2d& point2, olc::vf2d& point3);
 void DoAuxilliaryInputLoop(olc::PixelGameEngine* engine);
 Vector3D GetProjectedNormal(olc::PixelGameEngine* engine, const Matrix4x4& projectionMatrix, const Triangle& rawTriangleInput, const Vector3D& normalInput);
+
+void CheckUVInvalid(const Triangle& triangleInput, const string& name);

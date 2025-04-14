@@ -180,6 +180,34 @@ const void Mesh::PrintMeshToDisk(const string& fileName) const
   outputFile.close();
 }
 
+//Note: Refactor later so the code isn't duplicated
+//Its 4AM and I am too tired to do this now
+void PrintTrianglesToDisk(const vector<Triangle>& input, const string& fileName)
+{
+  ofstream outputFile(fileName);
+  vector<Triangle> triangleList = input;
+  sort(triangleList.begin(), triangleList.end(), [](const Triangle& tri1, const Triangle& tri2)
+       {
+        float xPoint1 = (tri1.points[0].x + tri1.points[1].x + tri1.points[2].x) / 3.0f;
+        float xPoint2 = (tri2.points[0].x + tri2.points[1].x + tri2.points[2].x) / 3.0f;
+
+        float yPoint1 = (tri1.points[0].y + tri1.points[1].y + tri1.points[2].y) / 3.0f;
+        float yPoint2 = (tri2.points[0].y + tri2.points[1].y + tri2.points[2].y) / 3.0f;
+
+        float zPoint1 = (tri1.points[0].z + tri1.points[1].z + tri1.points[2].z) / 3.0f;
+        float zPoint2 = (tri2.points[0].z + tri2.points[1].z + tri2.points[2].z) / 3.0f;
+          
+        if(xPoint1 != xPoint2) return xPoint1 < xPoint2;
+        if(yPoint1 != yPoint2) return yPoint1 < yPoint2;
+        return zPoint1 < zPoint2;
+       });
+  for(const auto& triangle : triangleList)
+  {
+    outputFile << triangle.ExtractInfo() << '\n';
+  }
+  outputFile.close();
+}
+
 Mesh::~Mesh()
 {
   if(this->diffuseColor != nullptr)
