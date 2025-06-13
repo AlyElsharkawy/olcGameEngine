@@ -64,13 +64,12 @@ void ScreenNormalizeTriangle(Triangle& input, const float ScreenWidth, const flo
 void InvertTriangleXY(Triangle& input)
 {
   //This is due to an edit in the projection matrix
-  //input.points[0].x *= 1.0f;
+  input.points[0].x *= -1.0f;
   input.points[0].y *= -1.0f;
-  //input.points[1].x *= 1.0f;
+  input.points[1].x *= -1.0f;
   input.points[1].y *= -1.0f;
-  //input.points[2].x *= 1.0f;
+  input.points[2].x *= -1.0f;
   input.points[2].y *= -1.0f;
-
 }
 
 void NormalizeTriangleTextels(Triangle& input)
@@ -99,5 +98,7 @@ void ConvertToDNCoordinates(Triangle& input)
   DivideVectorScalar(input.points[0], input.points[0].w);
   DivideVectorScalar(input.points[1], input.points[1].w);
   DivideVectorScalar(input.points[2], input.points[2].w);
+  for(int i = 0; i < 3; i++)
+    input.points[i].w = 1.0f;
 }
 

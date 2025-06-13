@@ -54,6 +54,7 @@ Last Updated: 01/09/2018
 // so this file is configured to show the textured Jario cube. Please ensure you have 
 // downloaded the "Jario.spr" file from
 
+#include "geometricPrimitives.h"
 #define OLC_PGE_APPLICATION
 #define OLC_IMAGE_STB
 #include "olcPixelGameEngine.h"
@@ -73,7 +74,7 @@ struct vec2d
 	float w = 1;
   const string ExtractInfo() const
   {
-    return "U: " + to_string(this->u) + ", V: " + to_string(this->v);
+    return "U: " + to_string(this->u) + ", V: " + to_string(this->v) + ", W: " + to_string(this->w);
   }
 };
 
@@ -85,7 +86,7 @@ struct vec3d
 	float w = 1; // Need a 4th term to perform sensible matrix vector multiplication
   string ExtractInfo() const
   {
-    return "X: " + to_string(this->x) + ", Y: " + to_string(this->y) + ", Z: " + to_string(this->z);
+    return "X: " + to_string(this->x) + ", Y: " + to_string(this->y) + ", Z: " + to_string(this->z) + ", W: " + to_string(this->w);
   }
 
 };
@@ -233,6 +234,43 @@ const void PrintMeshToDisk(vector<triangle> trisList, const string& fileName)
   outputFile.close();
 }
 
+void PrintMatrix(const mat4x4& mat)
+{
+  for(int i = 0; i < 4; i++)
+  {
+    for(int j = 0; j < 4; j++)
+    {
+      cout << mat.m[i][j] << ' ';
+    }
+    cout << '\n';
+  }
+}
+
+void PrintTrianglesToDisk(const vector<triangle>& input, const string& fileName)
+{
+  ofstream outputFile(fileName);
+  vector<triangle> triangleList = input;
+  sort(triangleList.begin(), triangleList.end(), [](const triangle& tri1, const triangle& tri2)
+       {
+        float xPoint1 = (tri1.points[0].x + tri1.points[1].x + tri1.points[2].x) / 3.0f;
+        float xPoint2 = (tri2.points[0].x + tri2.points[1].x + tri2.points[2].x) / 3.0f;
+
+        float yPoint1 = (tri1.points[0].y + tri1.points[1].y + tri1.points[2].y) / 3.0f;
+        float yPoint2 = (tri2.points[0].y + tri2.points[1].y + tri2.points[2].y) / 3.0f;
+
+        float zPoint1 = (tri1.points[0].z + tri1.points[1].z + tri1.points[2].z) / 3.0f;
+        float zPoint2 = (tri2.points[0].z + tri2.points[1].z + tri2.points[2].z) / 3.0f;
+          
+        if(xPoint1 != xPoint2) return xPoint1 < xPoint2;
+        if(yPoint1 != yPoint2) return yPoint1 < yPoint2;
+        return zPoint1 < zPoint2;
+       });
+  for(const auto& triangle : triangleList)
+  {
+    outputFile << triangle.ExtractInfo() << '\n';
+  }
+  outputFile.close();
+}
 
 class olcEngine3D : public olc::PixelGameEngine
 {
@@ -502,7 +540,7 @@ private:
 		{
 			// All points lie on the outside of plane, so clip whole triangle
 			// It ceases to exist
-
+			
 			return 0; // No returned triangles are valid
 		}
 
@@ -594,6 +632,7 @@ public:
 	{
 
 		pDepthBuffer = new float[ScreenWidth() * ScreenHeight()];
+
 
 		// Load object file
     meshCube.LoadFromObjectFile(GetPathFromResources({"objectFiles", "Primitives", "GoodCube.obj"}), true);
@@ -696,6 +735,8 @@ public:
 
 		// Store triagles for rastering later
 		vector<triangle> vecTrianglesToRaster;
+		vector<triangle> preClipTriangles;
+		vector<triangle> postViewTris;
 
 		// Draw Triangles
 		for (auto tri : meshCube.tris)
@@ -725,7 +766,6 @@ public:
 			
 			// Get Ray from triangle to camera
 			vec3d vCameraRay = Vector_Sub(triTransformed.p[0], vCamera);
-
 			// If ray is aligned with normal, then triangle is visible
 			if (Vector_DotProduct(normal, vCameraRay) < 0.0f)
 			{
@@ -752,6 +792,10 @@ public:
 				triViewed.t[1] = triTransformed.t[1];
 				triViewed.t[2] = triTransformed.t[2];
 
+				preClipTriangles.push_back(triViewed);
+				//PrintMatrix(matView);
+				cout << '\n';
+
 				// Clip Viewed Triangle against near plane, this could form two additional
 				// additional triangles. 
 				int nClippedTriangles = 0;
@@ -766,6 +810,7 @@ public:
 					triProjected.p[0] = Matrix_MultiplyVector(matProj, clipped[n].p[0]);
 					triProjected.p[1] = Matrix_MultiplyVector(matProj, clipped[n].p[1]);
 					triProjected.p[2] = Matrix_MultiplyVector(matProj, clipped[n].p[2]);
+					//PrintMatrix(matProj);
 					triProjected.color = clipped[n].color;
 					triProjected.t[0] = clipped[n].t[0];
 					triProjected.t[1] = clipped[n].t[1];
@@ -791,6 +836,7 @@ public:
 					triProjected.p[0] = Vector_Div(triProjected.p[0], triProjected.p[0].w);
 					triProjected.p[1] = Vector_Div(triProjected.p[1], triProjected.p[1].w);
 					triProjected.p[2] = Vector_Div(triProjected.p[2], triProjected.p[2].w);
+					cout << "TRI PROJECTED 0 W VALUE: " << triProjected.p[0].w << '\n';
 
 					// X/Y are inverted so put them back
 					triProjected.p[0].x *= -1.0f;
@@ -814,6 +860,7 @@ public:
 
 					// Store triangle for sorting
 					vecTrianglesToRaster.push_back(triProjected);
+					postViewTris.push_back(triProjected);
 				}			
 			}
 		}
@@ -828,6 +875,8 @@ public:
 
 		// Clear Screen
     Clear(olc::CYAN);
+	PrintTrianglesToDisk(preClipTriangles, ConcatenatePaths({GetPathFromResources(), "JAVID_PRE_CLIP.txt"}));
+	PrintTrianglesToDisk(postViewTris, ConcatenatePaths({GetPathFromResources(), "JAVID_POST_VIEW_TRIS.txt"}));
 		// Clear Depth Buffer
 		for (int i = 0; i < ScreenWidth()*ScreenHeight(); i++)
 			pDepthBuffer[i] = 0.0f;
@@ -999,7 +1048,6 @@ public:
 					{
 						//Draw(j, i, tex->SampleGlyph(tex_u / tex_w, tex_v / tex_w), tex->SampleColour(tex_u / tex_w, tex_v / tex_w));
             Draw(j, i, tex->Sample(tex_u / tex_w, tex_v / tex_w));
-            cout << "W VALUES: " << w1 << ' ' << w2 << ' ' << w3 << '\n';
 
 						pDepthBuffer[i*ScreenWidth() + j] = tex_w;
 					}
@@ -1063,8 +1111,6 @@ public:
 					{
 						Draw(j, i, tex->Sample(tex_u / tex_w, tex_v / tex_w));
 						pDepthBuffer[i*ScreenWidth() + j] = tex_w;
-
-            cout << "W VALUES: " << w1 << ' ' << w2 << ' ' << w3 << '\n';
 					}
 					t += tstep;
 				}

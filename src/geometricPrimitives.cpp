@@ -13,22 +13,22 @@ using namespace std;
 
 const string Vector2D::ExtractInfo() const
 {
-  return "U: " + to_string(this->u) + ", V: " + to_string(this->v);
+  return "U: " + to_string(this->u) + ", V: " + to_string(this->v) + ", W: " + to_string(this->w);
 }
 
 const void Vector2D::PrintPoint() const
 {
-  cout << "U: " << this->u << " V: " << this->v << '\n';
+  cout << "U: " << this->u << " V: " << this->v << " W: " << this->w << '\n';
 }
 
 void Vector3D::PrintPoint() const
 {
-  cout << "X: " << this->x << " Y: " << this->y << " Z: " << this->z << "\n";
+  cout << "X: " << this->x << " Y: " << this->y << " Z: " << this->z << " W: " << this->w << '\n';
 }
 
 string Vector3D::ExtractInfo() const
 {
-  return "X: " + to_string(this->x) + ", Y: " + to_string(this->y) + ", Z: " + to_string(this->z);
+  return "X: " + to_string(this->x) + ", Y: " + to_string(this->y) + ", Z: " + to_string(this->z) + ", W: " + to_string(this->w);
 }
 
 void Triangle::PrintTriangle() const

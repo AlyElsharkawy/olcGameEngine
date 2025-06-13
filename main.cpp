@@ -182,7 +182,7 @@ class EngineReborn : public olc::PixelGameEngine
     Mesh* testMesh = new Mesh();
     testMesh->LoadFromOBJFile(GetPathFromResources({"objectFiles", "Primitives", "GoodCube.obj"}), true);
     testMesh->SetTranslationOffsets(0.0f,0.0f, 5.0f);
-    testMesh->SetRotationSpeeds(1.0f, 1.0f, 1.0f);
+    testMesh->SetRotationSpeeds(1.0f, 0.0f, 0.0f);
     //lightObj->SetDiffuseColor(210, 4, 45, 255);
     
     testMesh->SetTextureImage(GetPathFromResources({"textures", "stoneBrickWall.png"}));
@@ -190,8 +190,9 @@ class EngineReborn : public olc::PixelGameEngine
     testMesh->lookAtVector = mainLamp.GetDirection();
     testMesh->isStatic = true;
     //lightObj->doAutomaticRotation = true;
-    testMesh->doAutomaticRotations[1] = true;
-    testMesh->PrintMeshToDisk(ConcatenatePaths({GetPathFromResources(), "testmesh1.mesh"}));
+    testMesh->doAutomaticRotations[2] = true;
+    //testMesh->doAutomaticRotation = true;
+    //testMesh->PrintMeshToDisk(ConcatenatePaths({GetPathFromResources(), "testmesh1.mesh"}));
     
     /*Mesh mountainsObj;
     mountainsObj.LoadFromOBJFile(GetPathFromResources({"objectFiles", "Primitives", "mountains.obj"}), false);
@@ -201,7 +202,7 @@ class EngineReborn : public olc::PixelGameEngine
     allObjects.AppendMesh(testMesh);
     allObjects.UpdateTotalCounts();
  
-    //Optionall enable normal rasterization
+    //Optionally enable normal rasterization
     SETTINGS_MAP[DRAW_NORMALS] = false;
     return true;
   }
@@ -212,7 +213,7 @@ class EngineReborn : public olc::PixelGameEngine
      ClearScreenPerformance(this, trianglesToRaster);
     else
     {
-     Clear(olc::BLACK);
+      Clear(olc::BLACK);
       for(int i = 0; i < ScreenWidth() * ScreenHeight(); i++)
         RI.depthBuffer[i] = 0.0f;
 
@@ -238,11 +239,9 @@ class EngineReborn : public olc::PixelGameEngine
 
       for(const auto& triangle : mesh->triangles)
       {
-        CheckUVInvalid(triangle, "FIRST_TRIANGLE");
         Vector3D normal;
 
         Triangle scaledTriangle = ScaleTriangle(triangle, mesh->scalingOffsets[0], mesh->scalingOffsets[1], mesh->scalingOffsets[2]);
-        CheckUVInvalid(scaledTriangle, "SCALED_TRIANGLE");
         Triangle rotatedTriangle;
         
         if(mesh->isStatic == false)
@@ -256,21 +255,16 @@ class EngineReborn : public olc::PixelGameEngine
           Matrix4x4 rotationMatrix = GetCompoundRotationMatrix(ROT_TYPES::ROT_ZYX, mesh->rotationDegrees[0], mesh->rotationDegrees[1], mesh->rotationDegrees[2]);
           rotatedTriangle = MultiplyTriangle(scaledTriangle, rotationMatrix);
         }
-        CheckUVInvalid(rotatedTriangle, "ROTATED_TRIANGLE");
         Triangle translatedTriangle = TranslateTriangle(rotatedTriangle, mesh->translationOffsets[0], mesh->translationOffsets[1], mesh->translationOffsets[2]);
-        CheckUVInvalid(translatedTriangle, "TRANSLATED_TRIANGLE");
         normal = GetNormal(translatedTriangle);
-
         Triangle cameraTransformedTriangle;
 
         //Only draw triangles if the normal says its fits on screen
         Vector3D cameraRay = SubtractVector(translatedTriangle.points[0], cameraPosition);
-        if(GetDotProduct(normal, cameraRay) < 0.0f &&
-          GetDistanceBetweenPoints(player->camera.cameraPosition, normal) <= farPlane)
+        if(GetDotProduct(normal, cameraRay) < 0.0f)
         {
           //materials phase
           cameraTransformedTriangle = MultiplyTriangle(translatedTriangle, viewMatrix);
-          CheckUVInvalid(cameraTransformedTriangle, "CAMERA_TRANSFORMED_TRIANGLE");
 
           //TO-DO: Switch this to a switch case
           if(mesh->GetMaterialType() == MATERIAL_TYPES::NONE)
@@ -286,10 +280,13 @@ class EngineReborn : public olc::PixelGameEngine
             cameraTransformedTriangle.color = finalColor;
           }
 
-          //View space clipping phase
+          //View space clipping phase          
           DoViewSpaceClipping(this, player, trianglesToRaster, normalsToRaster, cameraTransformedTriangle);
         }
       }
+      //Arifacts from solving bug number 2
+      //PrintTrianglesToDisk(preClipTris, ConcatenatePaths({GetPathFromResources(), "TRIANGLES_PRE_SCREEN_SPACE_CLIPPING.txt"}));
+      //PrintTrianglesToDisk(trianglesToRaster, ConcatenatePaths({GetPathFromResources(), "SCREEN_SPACE_CLIP_TRIS.txt"}));
       
       //Sorting section
       //They are sorted according to distance from camera, furthest objects are drawn first
@@ -299,6 +296,7 @@ class EngineReborn : public olc::PixelGameEngine
 
       //Screen edges clipping and rasterization section
       //Rasterizing normals(if settings allow it)
+      
       DoScreenSpaceClipping(RI, trianglesToRaster, normalsToRaster, *mesh);
     }
 

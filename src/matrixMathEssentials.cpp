@@ -35,8 +35,8 @@ Matrix4x4 GetRotationMatrix(short ROT_TYPE, float fRadians)
       {
         toReturn.mat[1][1] = cosf(fRadians);
         toReturn.mat[2][2] = cosf(fRadians);
-        toReturn.mat[2][1] = sinf(fRadians);
-        toReturn.mat[1][2] = -sinf(fRadians);
+        toReturn.mat[2][1] = -sinf(fRadians);
+        toReturn.mat[1][2] = sinf(fRadians);
         break;
       }
     case ROT_TYPES::ROT_Y:

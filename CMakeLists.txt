@@ -112,7 +112,7 @@ set(OLC_CUSTOM_FONT_LIBS
 
 # For Linux and windows support
 if(UNIX)
-    set(PLATFORM_LIBRARIES X11 GL pthread stdc++fs ${X11_LIBRARIES})
+    set(PLATFORM_LIBRARIES X11 GL pthread stdc++fs png ${X11_LIBRARIES})
 elseif(WIN32)
     set(PLATFORM_LIBRARIES user32 gdi32 opengl32 gdiplus Shlwapi dwmapi stdc++fs)
     #set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static")

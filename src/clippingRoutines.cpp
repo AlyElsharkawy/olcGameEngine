@@ -8,6 +8,7 @@
 #include "vectorMathEssentials.h"
 #include "normalMathEssentials.h"
 #include "globalVariables.h"
+#include "matrixMathEssentials.h"
 
 Vector3D VectorIntersectPlane(const Vector3D& planePoint, const Vector3D& planeNormal, const Vector3D& lineStart, const Vector3D& lineEnd, float& tVal)
 {
@@ -119,7 +120,6 @@ int TriangleClipWithPlane(const Vector3D& planePoint, const Vector3D& planeNorma
       outputTriangle1.color = olc::BLUE;
     else
       outputTriangle1.color = inputTriangle.color;
-
     //We will now assign the output triangle 
     //The inside point is already valid
     outputTriangle1.points[0] = *insidePoints[0];
@@ -233,7 +233,6 @@ void DoScreenSpaceClipping(const RenderingInstance& RI, const vector<Triangle> &
 
           for(int k = 0; k < trianglesToAdd; k++)
           {
-            CheckUVInvalid(clippedTriangles[k], "CLIPPED_TRIANGLES_SCREEN_SPACE");
             trianglesQueue.push_back(clippedTriangles[k]);
           }
         }
@@ -259,15 +258,14 @@ void DoScreenSpaceClipping(const RenderingInstance& RI, const vector<Triangle> &
       RI.engine->DrawLine(point1, point2, NORMAL_COLOR);
     }
   }
-  PrintTrianglesToDisk(rasterizedTriangles, ConcatenatePaths({GetPathFromResources(),"3D_ENGINE_REBORN_TRIANGLES.txt"}));
+  //PrintTrianglesToDisk(rasterizedTriangles, ConcatenatePaths({GetPathFromResources(),"3D_ENGINE_REBORN_TRIANGLES.txt"}));
 }
 
 void DoViewSpaceClipping(olc::PixelGameEngine* engine, Player* player, vector<Triangle>& trianglesToRaster, vector<Vector3D>& normalsToRaster, Triangle& cameraTransformedTriangle)
 {
-  //Alias for readibility and to make refactoring easier
+  //Alias for readability and to make refactoring easier
   const float& VISION_NEAR = player->camera.GetFacingPlanes().first;
   const Matrix4x4& PROJECTION_MATRIX = player->camera.GetCameraProjectionMatrix();
-
   if(SETTINGS_MAP[DO_VIEW_SPACE_CLIPPING] == true)
   {
     //The below section will clip objects that are closer than VISION_NEAR
@@ -279,21 +277,19 @@ void DoViewSpaceClipping(olc::PixelGameEngine* engine, Player* player, vector<Tr
     //We are now going from view space(relative to camera) to screen space
     for(int i = 0; i < clippedTrianglesNumber; i++)
     {
-      CheckUVInvalid(clippedTriangles[i], "VIEW_SPACE_CLIPPED_TRIANGLE");
       Triangle projectedTriangle = MultiplyTriangle(clippedTriangles[i], PROJECTION_MATRIX, false);
-      CheckUVInvalid(projectedTriangle, "PROJECTED_TRIANGLE");
+      projectedTriangle.color = clippedTriangles[i].color;
+      for(int j = 0; j < 3; j++)
+        projectedTriangle.texels[j] = clippedTriangles[i].texels[j];
+
       NormalizeTriangleTextels(projectedTriangle);
-      CheckUVInvalid(projectedTriangle, "NORMALIZED_PROJECTED_TRIANGLE");
+
       //Aka Normalizing
       ConvertToDNCoordinates(projectedTriangle);
-      CheckUVInvalid(projectedTriangle, "NORMALIZED_PROJECTED_TRIANGLE_DNC_NORMALIZED");
       
       //Fixing inverted axes
       InvertTriangleXY(projectedTriangle);
-      CheckUVInvalid(projectedTriangle, "NORMALIZED_PROJECTED_TRIANGLE_DNC_NORMALIZED_INVERTED");
-
       ScreenNormalizeTriangle(projectedTriangle, (float)engine->ScreenWidth(), (float)engine->ScreenHeight());
-      CheckUVInvalid(projectedTriangle, "NORMALIZED_PROJECTED_TRIANGLE_DNC_NORMALIZED_INVERTED_SCREEN");
       trianglesToRaster.push_back(projectedTriangle);
       if(SETTINGS_MAP[DRAW_NORMALS] == true)
       {

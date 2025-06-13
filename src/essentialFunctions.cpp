@@ -137,6 +137,8 @@ void DrawTexturedTriangle(const RenderingInstance& RI, const Triangle& input, co
 
 				for (int j = ax; j < bx; j++)
 				{
+          if(tex_u / tex_w > 1.0 || tex_v / tex_w > 1.0)
+            continue;
 					tex_u = (1.0f - t) * tex_su + t * tex_eu;
 					tex_v = (1.0f - t) * tex_sv + t * tex_ev;
 					tex_w = (1.0f - t) * tex_sw + t * tex_ew;
@@ -145,17 +147,6 @@ void DrawTexturedTriangle(const RenderingInstance& RI, const Triangle& input, co
 					{
             RI.engine->Draw(j, i, texture->Sample(tex_u / tex_w, tex_v / tex_w));
 						RI.depthBuffer[i*RI.engine->ScreenWidth() + j] = tex_w;
-            if(tex_u / tex_w > 1.0)
-            {
-              cout << "(Lower-half)U is greater than 1!: " << tex_u / tex_w << '\n';
-              cout << "W VALUE IS: " << w1 << ' ' << w2 << ' ' << w3 << '\n';
-            }
-            else if(tex_v / tex_w > 1.0)
-            {
-              cout << "(Lower-half)V is greater than 1!: " << tex_v / tex_w << '\n';
-              cout << "W VALUE IS: " << w1 << ' ' << w2 << ' ' << w3 << '\n';
-
-            }
 					}
 					t += tstep;
 				}
@@ -209,6 +200,8 @@ void DrawTexturedTriangle(const RenderingInstance& RI, const Triangle& input, co
 
 				for (int j = ax; j < bx; j++)
 				{
+          if(tex_u / tex_w > 1.0 || tex_v / tex_w > 1.0)
+            continue;
 					tex_u = (1.0f - t) * tex_su + t * tex_eu;
 					tex_v = (1.0f - t) * tex_sv + t * tex_ev;
 					tex_w = (1.0f - t) * tex_sw + t * tex_ew;
@@ -218,14 +211,6 @@ void DrawTexturedTriangle(const RenderingInstance& RI, const Triangle& input, co
             //J is X and I is Y
 						RI.engine->Draw(j, i, texture->Sample(tex_u / tex_w, tex_v / tex_w));
 						RI.depthBuffer[i*RI.engine->ScreenWidth() + j] = tex_w;
-            if(tex_u / tex_w > 1.0)
-            {
-              //cout << "(Upper-half)U is greater than 1!: " << tex_u / tex_w << '\n';
-            }
-            else if(tex_v / tex_w > 1.0)
-            {
-              //cout << "(Upper-half)V is greater than 1!: " << tex_v / tex_w << '\n';
-            }
 					}
 					t += tstep;
 				}
@@ -259,11 +244,11 @@ Matrix4x4 DoInputLoop(olc::PixelGameEngine* engine, Player* player)
 
   //Add Yaw (Look left. Aka, rotate left along y axis)
   if(InputManager::KeyHeld(engine, {LOOK_LEFT}))
-    fYaw += CAMERA_ROTATION_SPEED * fElapsedTime;
+    fYaw -= CAMERA_ROTATION_SPEED * fElapsedTime;
   
   //Subtract Yaw (Look right. Aka, Rotate right along y axis)
   else if(InputManager::KeyHeld(engine, {LOOK_RIGHT}))
-    fYaw -= CAMERA_ROTATION_SPEED * fElapsedTime;
+    fYaw += CAMERA_ROTATION_SPEED * fElapsedTime;
 
   //Add pitch (Look up. Aka, rotate up along local x axis)
   if(InputManager::KeyHeld(engine, {ROTATE_UP}) && fPitch <= 45.0f)
@@ -294,10 +279,10 @@ Matrix4x4 DoInputLoop(olc::PixelGameEngine* engine, Player* player)
   // Calculate side movements
   Vector3D rightVector = GetCrossProduct(UP_DIRECTION, LookDirection);
   if(InputManager::KeyHeld(engine, {MOVE_LEFT}))
-    SubtractVectorIP(desiredMovement, rightVector);
+    AddVectorIP(desiredMovement, rightVector);
   
   else if(InputManager::KeyHeld(engine, {MOVE_RIGHT}))
-    AddVectorIP(desiredMovement, rightVector);
+    SubtractVectorIP(desiredMovement, rightVector);
 
   // Normalize the desired movement vector if it's not zero to prevent div by 0 exception
   if(IsZeroVector(desiredMovement) == false)
@@ -509,19 +494,4 @@ Vector3D GetProjectedNormal(olc::PixelGameEngine* engine, const Matrix4x4& proje
   projectedNormal.x *= 0.5f * (float)engine->ScreenWidth(); 
   projectedNormal.y *= 0.5f * (float)engine->ScreenHeight();
   return projectedNormal;
-}
-
-void CheckUVInvalid(const Triangle& triangleInput, const string& name)
-{
-  for(int i = 0; i < 3; i++)
-  {
-    if(triangleInput.texels[i].u > 1.0f)
-    {
-      cerr << "U is greater than 1 at " << name << "!\n";
-    }
-    if(triangleInput.texels[i].v > 1.0f)
-    {
-      cerr << "V is greater than 1 at " << name << "!\n";
-    }
-  }
 }
