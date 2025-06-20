@@ -186,6 +186,7 @@ void PrintTrianglesToDisk(const vector<Triangle>& input, const string& fileName)
 {
   ofstream outputFile(fileName);
   vector<Triangle> triangleList = input;
+  outputFile << "Total Triangles: " << input.size() << '\n';
   sort(triangleList.begin(), triangleList.end(), [](const Triangle& tri1, const Triangle& tri2)
        {
         float xPoint1 = (tri1.points[0].x + tri1.points[1].x + tri1.points[2].x) / 3.0f;

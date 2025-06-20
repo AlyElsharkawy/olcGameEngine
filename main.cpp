@@ -81,6 +81,7 @@ class EngineReborn : public olc::PixelGameEngine
     //Consideration: Should this be another data structure?
     vector<Triangle> trianglesToRaster;
     vector<Vector3D> normalsToRaster;
+    vector<Triangle> preClipTris;
     
   bool OnUserCreate() override
   {
@@ -106,7 +107,7 @@ class EngineReborn : public olc::PixelGameEngine
 
     //Initialize missing texture sprite. Will crash if fails
     MISSING_TEXTURE_SPRITE = new olc::Sprite(GetPathFromResources({"textures","missingTexture.png"}));
-    //Initalize RenderingInstance
+    //Initialize RenderingInstance
     RI.InitializeRenderingInstance(this);
     RI.SetProjectionMatrix(player->camera.GetCameraProjectionMatrix());
 
@@ -219,6 +220,7 @@ class EngineReborn : public olc::PixelGameEngine
 
       trianglesToRaster.clear();
       normalsToRaster.clear();
+      preClipTris.clear();
     }
     
     //Variable aliases
@@ -236,7 +238,7 @@ class EngineReborn : public olc::PixelGameEngine
           if(mesh->doAutomaticRotations[i] == true)
             mesh->rotationDegrees[i] += fElapsedTime * 3.0f;
       }
-
+      
       for(const auto& triangle : mesh->triangles)
       {
         Vector3D normal;
@@ -281,6 +283,7 @@ class EngineReborn : public olc::PixelGameEngine
           }
 
           //View space clipping phase          
+          preClipTris.push_back(cameraTransformedTriangle);
           DoViewSpaceClipping(this, player, trianglesToRaster, normalsToRaster, cameraTransformedTriangle);
         }
       }

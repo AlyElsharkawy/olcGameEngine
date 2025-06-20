@@ -85,8 +85,14 @@ const inline float MINIMUM_ROTATION_SPEED = 30.0f;
 const inline float MINIMUM_NEAR_DISTANCE = 0.1f;
 const inline float MINIMUM_FAR_DISTANCE = 1000.0f;
 const inline float DEFAULT_FOV = 90.0f;
-const inline Vector3D DEFAULT_POSITION = {0.0f,0.0f, 0.0f};
-const inline Vector3D DEFAULT_FACING_VECTOR = {0.0f, 0.0f, 1.0f};
+
+//This is an artificat...this position along with its below rotation would cause bug number 2
+//const inline Vector3D DEFAULT_POSITION = {-0.391247f, 2.033193f, 2.371213};
+const inline Vector3D DEFAULT_POSITION = {0.0f, 0.0f, 0.0f};
+
+//This is an artifact...this rotation degree caused the infamous bug number 2
+//const inline float DEFAULT_ROTATION_DEGREES = 5.24655f;
+const inline float DEFAULT_ROTATION_DEGREES = 0.0;
 
 const inline Vector3D UP_DIRECTION = {0.0f, 1.0f, 0.0f};
 

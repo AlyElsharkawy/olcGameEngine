@@ -101,6 +101,7 @@ int TriangleClipWithPlane(const Vector3D& planePoint, const Vector3D& planeNorma
   if(totalInsidePoints == 0)
   {
     //The triangle has been clipped from existence
+    //cout << "CASE 1\n";
     return 0;
   }
 
@@ -108,6 +109,7 @@ int TriangleClipWithPlane(const Vector3D& planePoint, const Vector3D& planeNorma
   if(totalInsidePoints == 3)
   {
     outputTriangle1 = inputTriangle;
+    //cout << "CASE 2\n";
     return 1;
   }
 
@@ -115,6 +117,7 @@ int TriangleClipWithPlane(const Vector3D& planePoint, const Vector3D& planeNorma
   //When the outside region is clipped, the triangle simply becomes smaller
   if(totalInsidePoints == 1 && totalOutsidePoints == 2)
   {
+    //cout << "CASE 3\n";
     //Copy color information to smaller output Triangle
     if(SETTINGS_MAP[VISUALIZE_CLIPPING] == true)
       outputTriangle1.color = olc::BLUE;
@@ -144,6 +147,7 @@ int TriangleClipWithPlane(const Vector3D& planePoint, const Vector3D& planeNorma
   {
     //We will return 2 triangles
     //Copy the color information
+    //cout << "CASE 4\n";
     if(SETTINGS_MAP[VISUALIZE_CLIPPING] == true)
       outputTriangle1.color = olc::GREEN;
     else
@@ -273,7 +277,7 @@ void DoViewSpaceClipping(olc::PixelGameEngine* engine, Player* player, vector<Tr
     Triangle clippedTriangles[2];
 
     clippedTrianglesNumber = TriangleClipWithPlane({0.0f, 0.0f, VISION_NEAR}, {0.0f, 0.0f, 1.0f}, cameraTransformedTriangle, clippedTriangles[0], clippedTriangles[1]);
-
+    //cout << "Clipped Triangles Number: " << clippedTrianglesNumber << "\n\n";
     //We are now going from view space(relative to camera) to screen space
     for(int i = 0; i < clippedTrianglesNumber; i++)
     {

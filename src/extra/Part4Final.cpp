@@ -211,6 +211,7 @@ const void PrintMeshToDisk(vector<triangle> trisList, const string& fileName)
 {
   ofstream outputFile(fileName);
   vector<triangle> triangleList = trisList;
+  outputFile << "Total Triangles: " << trisList.size() << '\n';
   sort(triangleList.begin(), triangleList.end(), [](const triangle& tri1, const triangle& tri2)
        {
         #define points p
@@ -250,6 +251,7 @@ void PrintTrianglesToDisk(const vector<triangle>& input, const string& fileName)
 {
   ofstream outputFile(fileName);
   vector<triangle> triangleList = input;
+  outputFile << "Total Triangles: " << input.size() << '\n';
   sort(triangleList.begin(), triangleList.end(), [](const triangle& tri1, const triangle& tri2)
        {
         float xPoint1 = (tri1.points[0].x + tri1.points[1].x + tri1.points[2].x) / 3.0f;
@@ -284,9 +286,9 @@ public:
 private:
 	mesh meshCube;
 	mat4x4 matProj;	// Matrix that converts from view space to screen space
-	vec3d vCamera;	// Location of camera in world space
+	vec3d vCamera = {-0.391247f, 2.033193f, 2.371213};	// Location of camera in world space
 	vec3d vLookDir;	// Direction vector along the direction camera points
-	float fYaw;		// FPS Camera rotation in XZ plane
+	float fYaw = 5.24655f * (mathPI / 180);		// FPS Camera rotation in XZ plane
 	float fTheta = 0.0f;	// Spins World transform
 
   olc::Sprite *sprTex1;
@@ -540,7 +542,7 @@ private:
 		{
 			// All points lie on the outside of plane, so clip whole triangle
 			// It ceases to exist
-			
+			//cout << "CASE 1\n";
 			return 0; // No returned triangles are valid
 		}
 
@@ -549,7 +551,7 @@ private:
 			// All points lie on the inside of plane, so do nothing
 			// and allow the triangle to simply pass through
 			out_tri1 = in_tri;
-
+			//cout << "CASE 2\n";
 			return 1; // Just the one returned original triangle is valid
 		}
 
@@ -577,7 +579,7 @@ private:
 			out_tri1.t[2].u = t * (outside_tex[1]->u - inside_tex[0]->u) + inside_tex[0]->u;
 			out_tri1.t[2].v = t * (outside_tex[1]->v - inside_tex[0]->v) + inside_tex[0]->v;
 			out_tri1.t[2].w = t * (outside_tex[1]->w - inside_tex[0]->w) + inside_tex[0]->w;
-
+			//cout << "CASE 3\n";
 			return 1; // Return the newly formed single triangle
 		}
 
@@ -618,6 +620,7 @@ private:
 			out_tri2.t[2].u = t * (outside_tex[0]->u - inside_tex[1]->u) + inside_tex[1]->u;
 			out_tri2.t[2].v = t * (outside_tex[0]->v - inside_tex[1]->v) + inside_tex[1]->v;
 			out_tri2.t[2].w = t * (outside_tex[0]->w - inside_tex[1]->w) + inside_tex[1]->w;
+			//cout << "CASE 4\n";
 			return 2; // Return two newly formed triangles which form a quad
 		}
 	}
@@ -794,14 +797,12 @@ public:
 
 				preClipTriangles.push_back(triViewed);
 				//PrintMatrix(matView);
-				cout << '\n';
 
 				// Clip Viewed Triangle against near plane, this could form two additional
 				// additional triangles. 
 				int nClippedTriangles = 0;
 				triangle clipped[2];
 				nClippedTriangles = Triangle_ClipAgainstPlane({ 0.0f, 0.0f, 0.1f }, { 0.0f, 0.0f, 1.0f }, triViewed, clipped[0], clipped[1]);
-
 				// We may end up with multiple triangles form the clip, so project as
 				// required
 				for (int n = 0; n < nClippedTriangles; n++)
@@ -836,7 +837,6 @@ public:
 					triProjected.p[0] = Vector_Div(triProjected.p[0], triProjected.p[0].w);
 					triProjected.p[1] = Vector_Div(triProjected.p[1], triProjected.p[1].w);
 					triProjected.p[2] = Vector_Div(triProjected.p[2], triProjected.p[2].w);
-					cout << "TRI PROJECTED 0 W VALUE: " << triProjected.p[0].w << '\n';
 
 					// X/Y are inverted so put them back
 					triProjected.p[0].x *= -1.0f;
@@ -875,8 +875,8 @@ public:
 
 		// Clear Screen
     Clear(olc::CYAN);
-	PrintTrianglesToDisk(preClipTriangles, ConcatenatePaths({GetPathFromResources(), "JAVID_PRE_CLIP.txt"}));
-	PrintTrianglesToDisk(postViewTris, ConcatenatePaths({GetPathFromResources(), "JAVID_POST_VIEW_TRIS.txt"}));
+	//PrintTrianglesToDisk(preClipTriangles, ConcatenatePaths({GetPathFromResources(), "JAVID_PRE_CLIP.txt"}));
+	//PrintTrianglesToDisk(postViewTris, ConcatenatePaths({GetPathFromResources(), "JAVID_POST_VIEW_TRIS.txt"}));
 		// Clear Depth Buffer
 		for (int i = 0; i < ScreenWidth()*ScreenHeight(); i++)
 			pDepthBuffer[i] = 0.0f;
@@ -943,7 +943,7 @@ public:
 		}
 
     
-    PrintMeshToDisk(rasterizedTriangles, ConcatenatePaths({GetPathFromResources(), "PART_FOUR_FINAL_TRIS.txt"}));
+    //PrintMeshToDisk(rasterizedTriangles, ConcatenatePaths({GetPathFromResources(), "PART_FOUR_FINAL_TRIS.txt"}));
 		return true;
 	}
 

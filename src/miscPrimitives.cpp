@@ -85,7 +85,8 @@ Camera::Camera()
 {
   this->speedVertical = MINIMUM_VERTICAL_SPEED; this->speedHorizontal = MINIMUM_HORIZONTAL_SPEED;
   this->nearPlane = MINIMUM_NEAR_DISTANCE; this->farPlane = MINIMUM_FAR_DISTANCE;
-  this->facingVector = DEFAULT_FACING_VECTOR;
+  this->fYaw = DEFAULT_ROTATION_DEGREES;
+  this->cameraPosition = DEFAULT_POSITION;
   this->FOV = DEFAULT_FOV;
 }
 

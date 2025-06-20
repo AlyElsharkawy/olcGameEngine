@@ -24,17 +24,14 @@ void SortTriangles(vector<Triangle>& vecToSort)
 
 void DrawTexturedTriangle(const RenderingInstance& RI, const Triangle& input, const olc::Sprite* texture)
 {
-  float y1 = input.points[0].y;
-  float y2 = input.points[1].y;
-  float y3 = input.points[2].y;
 
-  float z1 = input.points[0].z;
-  float z2 = input.points[1].z;
-  float z3 = input.points[2].z;
+  int x1 = input.points[0].x;
+  int x2 = input.points[1].x;
+  int x3 = input.points[2].x;
 
-  float x1 = input.points[0].x;
-  float x2 = input.points[1].x;
-  float x3 = input.points[2].x;
+  int y1 = input.points[0].y;
+  int y2 = input.points[1].y;
+  int y3 = input.points[2].y;
 
   float u1 = input.texels[0].u;
   float u2 = input.texels[1].u;
@@ -137,8 +134,8 @@ void DrawTexturedTriangle(const RenderingInstance& RI, const Triangle& input, co
 
 				for (int j = ax; j < bx; j++)
 				{
-          if(tex_u / tex_w > 1.0 || tex_v / tex_w > 1.0)
-            continue;
+          //if(tex_u / tex_w > 1.0 || tex_v / tex_w > 1.0)
+            //continue;
 					tex_u = (1.0f - t) * tex_su + t * tex_eu;
 					tex_v = (1.0f - t) * tex_sv + t * tex_ev;
 					tex_w = (1.0f - t) * tex_sw + t * tex_ew;
@@ -200,8 +197,8 @@ void DrawTexturedTriangle(const RenderingInstance& RI, const Triangle& input, co
 
 				for (int j = ax; j < bx; j++)
 				{
-          if(tex_u / tex_w > 1.0 || tex_v / tex_w > 1.0)
-            continue;
+          //if(tex_u / tex_w > 1.0 || tex_v / tex_w > 1.0)
+            //continue;
 					tex_u = (1.0f - t) * tex_su + t * tex_eu;
 					tex_v = (1.0f - t) * tex_sv + t * tex_ev;
 					tex_w = (1.0f - t) * tex_sw + t * tex_ew;
@@ -215,7 +212,7 @@ void DrawTexturedTriangle(const RenderingInstance& RI, const Triangle& input, co
 					t += tstep;
 				}
 			}	
-		}		
+		}
 }
 
 Matrix4x4 DoInputLoop(olc::PixelGameEngine* engine, Player* player)
@@ -293,15 +290,15 @@ Matrix4x4 DoInputLoop(olc::PixelGameEngine* engine, Player* player)
   }
 
   Vector3D TARGET = {0.0f,0.0f, 1.0f};
-  Vector3D newLookDirection = LookDirection;
+  Vector3D newLookDirection;
   Matrix4x4 cameraYRotationMatrix = GetRotationMatrix(ROT_TYPES::ROT_Y, fYaw * (mathPI / 180));
 
   //LookDirection is now updated in the Y direction
   MultiplyMatrixVector(TARGET, cameraYRotationMatrix, newLookDirection);
 
+  TARGET = AddVector(CAMERA, newLookDirection);
   //Set the facing vector to the new one
   player->camera.SetFacingVector(newLookDirection);
-  TARGET = AddVector(CAMERA, newLookDirection);
   Matrix4x4 cameraMatrix = GetPointAtMatrix(CAMERA, TARGET, UP_DIRECTION);
   Matrix4x4 viewMatrix  = InvertPointAtMatrix(cameraMatrix); 
 
