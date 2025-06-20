@@ -673,7 +673,7 @@ public:
 
 		// Projection Matrix
 		matProj = Matrix_MakeProjection(90.0f, (float)ScreenHeight() / (float)ScreenWidth(), 0.1f, 1000.0f);
-    PrintMeshToDisk(meshCube.tris, ConcatenatePaths({GetPathFromResources(), "secondTestMesh.mesh"}));
+    //PrintMeshToDisk(meshCube.tris, ConcatenatePaths({GetPathFromResources(), "secondTestMesh.mesh"}));
 		return true;
 	}
 
