@@ -222,7 +222,7 @@ class EngineReborn : public olc::PixelGameEngine
       normalsToRaster.clear();
       preClipTris.clear();
     }
-    
+
     //Variable aliases
     Vector3D& cameraPosition = player->camera.cameraPosition;
     const float& farPlane = player->camera.GetFacingPlanes().second;

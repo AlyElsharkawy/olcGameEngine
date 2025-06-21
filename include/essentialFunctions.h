@@ -5,7 +5,6 @@
 #include "olcPixelGameEngine.h"
 
 void SortTriangles(vector<Triangle>& vecToSort);
-void DrawTexturedTriangle(const RenderingInstance& RI, const Triangle& input, const olc::Sprite* texture);
 //Returns the view matrix or look at matrix
 Matrix4x4 DoInputLoop(olc::PixelGameEngine* engine, Player* player);
 void ClearScreenPerformance(olc::PixelGameEngine* engine, const vector<Triangle>& trianglesToRaster);

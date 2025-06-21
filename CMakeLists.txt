@@ -57,6 +57,7 @@ add_library(drawing STATIC ./src/drawingRoutines.cpp)
 target_link_libraries(geometry PRIVATE misc_functions)
 target_link_libraries(clipping PRIVATE geometry)
 target_link_libraries(normal PRIVATE vector)
+target_link_libraries(essential_functions PRIVATE drawing)
 
 add_executable(${PROJECT_NAME} main.cpp)
 add_executable(OBJFileSerializer ./src/extra/OBJFileSerializer.cpp)
