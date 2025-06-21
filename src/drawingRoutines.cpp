@@ -1,4 +1,5 @@
 #include "drawingRoutines.h"
+#include "miscPrimitives.h"
 
 void DrawTexturedTriangle(const RenderingInstance& RI, const Triangle& input, const olc::Sprite* texture)
 {
@@ -116,7 +117,7 @@ void DrawTexturedTriangle(const RenderingInstance& RI, const Triangle& input, co
 					tex_v = (1.0f - t) * tex_sv + t * tex_ev;
 					tex_w = (1.0f - t) * tex_sw + t * tex_ew;
           //J is X and I is Y
-					if (tex_w > RI.depthBuffer[i*RI.engine->ScreenWidth() + j])
+					if (tex_w < RI.depthBuffer[i*RI.engine->ScreenWidth() + j])
 					{
                         RI.engine->Draw(j, i, texture->Sample(tex_u / tex_w, tex_v / tex_w));
 						RI.depthBuffer[i*RI.engine->ScreenWidth() + j] = tex_w;
@@ -177,7 +178,7 @@ void DrawTexturedTriangle(const RenderingInstance& RI, const Triangle& input, co
 					tex_v = (1.0f - t) * tex_sv + t * tex_ev;
 					tex_w = (1.0f - t) * tex_sw + t * tex_ew;
 
-					if (tex_w > RI.depthBuffer[i*RI.engine->ScreenWidth() + j])
+					if (tex_w < RI.depthBuffer[i*RI.engine->ScreenWidth() + j])
 					{
             //J is X and I is Y
 						RI.engine->Draw(j, i, texture->Sample(tex_u / tex_w, tex_v / tex_w));
@@ -189,31 +190,38 @@ void DrawTexturedTriangle(const RenderingInstance& RI, const Triangle& input, co
 		}
 }
 
-void DrawTriangleWithDepthBuffer(const Triangle& triangleInput, olc::Pixel p)
+void DrawTriangleWithDepthBuffer(const Triangle& triangleInput, const RenderingInstance& RI, olc::Pixel p)
 {
-    DrawTriangleWithDepthBuffer(triangleInput.points[0].x, triangleInput.points[0].y, triangleInput.points[0].z,
+    DrawTriangleWithDepthBufferInline(triangleInput.points[0].x, triangleInput.points[0].y, triangleInput.points[0].z,
                                 triangleInput.points[1].x, triangleInput.points[1].y, triangleInput.points[1].z,
                                 triangleInput.points[2].x, triangleInput.points[2].y, triangleInput.points[2].z,
+                                RI,
                                 p);
 }
 
-void DrawTriangleWithDepthBuffer(int32_t x1, int32_t y1, int32_t x2, int32_t y2, int32_t x3, int32_t y3, olc::Pixel p)
+void DrawTriangleWithDepthBufferInline(int32_t x1, int32_t y1, float z1,
+                                 int32_t x2, int32_t y2, float z2,
+                                 int32_t x3, int32_t y3, float z3,
+                                 const RenderingInstance& RI,
+                                 olc::Pixel p)
 {
 
 }
 
 
-void FillTriangleWithDepthBuffer(const Triangle& triangleInput, olc::Pixel p)
+void FillTriangleWithDepthBuffer(const Triangle& triangleInput, const RenderingInstance& RI, olc::Pixel p)
 {
-    FillTriangleWithDepthBuffer(triangleInput.points[0].x, triangleInput.points[0].y, triangleInput.points[0].z,
+    FillTriangleWithDepthBufferInline(triangleInput.points[0].x, triangleInput.points[0].y, triangleInput.points[0].z,
                                 triangleInput.points[1].x, triangleInput.points[1].y, triangleInput.points[1].z, 
                                 triangleInput.points[2].x, triangleInput.points[2].y, triangleInput.points[2].z,
+                                RI,
                                 p);
 }
 
-void FillTriangleWithDepthBuffer(int32_t x1, int32_t y1, int32_t z1,
-                                 int32_t x2, int32_t y2, int32_t z2, 
-                                 int32_t x3, int32_t y3, int32_t z3,
+void FillTriangleWithDepthBufferInline(int32_t x1, int32_t y1, float z1,
+                                 int32_t x2, int32_t y2, float z2, 
+                                 int32_t x3, int32_t y3, float z3,
+                                 const RenderingInstance& RI,
                                  olc::Pixel p)
 {
     if (y2 < y1)
@@ -244,11 +252,16 @@ void FillTriangleWithDepthBuffer(int32_t x1, int32_t y1, int32_t z1,
     int dy2 = y3 - y1;
     int dx2 = x3 - x1;
     int dz2 = z3 - z1;
-
-    float dax_step = 0, dbx_step = 0;
+    
+    float tex_z;
+    float dax_step = 0, dbx_step = 0, 
+          dz1_step = 0, dz2_step;
 
     if (dy1) dax_step = dx1 / (float)abs(dy1);
     if (dy2) dbx_step = dx2 / (float)abs(dy2);
+    
+    if(dy1) dz1_step = dz1 / (float)abs(dy1);
+    if(dy2) dz2_step = dz2 / (float)abs(dy2);
 
     if (dy1)
     {
@@ -257,21 +270,69 @@ void FillTriangleWithDepthBuffer(int32_t x1, int32_t y1, int32_t z1,
             int ax = x1 + (float)(i - y1) * dax_step;
             int bx = x1 + (float)(i - y1) * dbx_step;
             
+            float tex_sz = z1 + (float)(i - y1) * dz1_step;
+            float tex_ez = z1 + (float)(i - y1) * dz2_step;
             if (ax > bx)
             {
                 swap(ax, bx);
+                swap(tex_sz, tex_ez);
             }
 
+            tex_z = tex_sz;
             float tstep = 1.0f / ((float)(bx - ax));
             float t = 0.0f;
 
             for (int j = ax; j < bx; j++)
             {
                 //J is X and I is Y
-                if (tex_w > RI.depthBuffer[i*RI.engine->ScreenWidth() + j])
+                tex_z = (1.0f - t) * tex_sz + t * tex_ez;
+                if (tex_z < RI.depthBuffer[i*RI.engine->ScreenWidth() + j])
                 {
-                    RI.engine->Draw(j, i, texture->Sample(tex_u / tex_w, tex_v / tex_w));
-                    RI.depthBuffer[i*RI.engine->ScreenWidth() + j] = tex_w;
+                    RI.engine->Draw(j, i, p);
+                    RI.depthBuffer[i*RI.engine->ScreenWidth() + j] = tex_z;
+                }
+                t += tstep;
+            }
+        }
+    }
+
+    dy1 = y3 - y2;
+    dx1 = x3 - x2;
+    dz1 = z3 - z2;
+
+    if (dy1) dax_step = dx1 / (float)abs(dy1);
+    if (dy2) dbx_step = dx2 / (float)abs(dy2);
+
+    dz1_step = 0;
+    if (dy1) dz1_step = dz1 / (float)abs(dy1);
+
+    if (dy1)
+    {
+        for (int i = y2; i <= y3; i++)
+        {
+            int ax = x2 + (float)(i - y2) * dax_step;
+            int bx = x1 + (float)(i - y1) * dbx_step;
+            
+            float tex_sz = z2 + (float)(i - y2) * dz1_step;
+            float tex_ez = z1 + (float)(i - y1) * dz2_step;
+            if (ax > bx)
+            {
+                swap(ax, bx);
+                swap(tex_sz, tex_ez);
+            }
+
+            tex_z = tex_sz;
+            float tstep = 1.0f / ((float)(bx - ax));
+            float t = 0.0f;
+
+            for (int j = ax; j < bx; j++)
+            {
+                //J is X and I is Y
+                tex_z = (1.0f - t) * tex_sz + t * tex_ez;
+                if (tex_z < RI.depthBuffer[i*RI.engine->ScreenWidth() + j])
+                {
+                    RI.engine->Draw(j, i, p);
+                    RI.depthBuffer[i*RI.engine->ScreenWidth() + j] = tex_z;
                 }
                 t += tstep;
             }

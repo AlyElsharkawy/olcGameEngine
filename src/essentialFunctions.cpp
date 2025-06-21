@@ -249,7 +249,8 @@ void DrawTriangleToScreen(const RenderingInstance& RI, const Triangle& triangleI
       case MATERIAL_TYPES::DIFFUSE:
         {
           PopulateOLCPoints(triangleInput, point1, point2, point3);
-          RI.engine->FillTriangle(point1, point2 , point3, triangleInput.color);
+          //RI.engine->FillTriangle(point1, point2 , point3, triangleInput.color);
+          FillTriangleWithDepthBuffer(triangleInput, RI, triangleInput.color);
           break;
         }
       default:

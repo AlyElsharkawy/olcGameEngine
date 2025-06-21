@@ -181,12 +181,12 @@ class EngineReborn : public olc::PixelGameEngine
 
     //Initialize hard coded meshes
     Mesh* testMesh = new Mesh();
-    testMesh->LoadFromOBJFile(GetPathFromResources({"objectFiles", "Primitives", "GoodCube.obj"}), true);
+    testMesh->LoadFromOBJFile(GetPathFromResources({"objectFiles", "Primitives", "monkey.obj"}), false);
     testMesh->SetTranslationOffsets(0.0f,0.0f, 5.0f);
     testMesh->SetRotationSpeeds(1.0f, 0.0f, 0.0f);
     //lightObj->SetDiffuseColor(210, 4, 45, 255);
     
-    testMesh->SetTextureImage(GetPathFromResources({"textures", "stoneBrickWall.png"}));
+    //testMesh->SetTextureImage(GetPathFromResources({"textures", "stoneBrickWall.png"}));
     testMesh->PrintTextureInformation();
     testMesh->lookAtVector = mainLamp.GetDirection();
     testMesh->isStatic = true;
@@ -216,7 +216,7 @@ class EngineReborn : public olc::PixelGameEngine
     {
       Clear(olc::BLACK);
       for(int i = 0; i < ScreenWidth() * ScreenHeight(); i++)
-        RI.depthBuffer[i] = 0.0f;
+        RI.depthBuffer[i] = 1.0f;
 
       trianglesToRaster.clear();
       normalsToRaster.clear();
