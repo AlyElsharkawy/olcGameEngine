@@ -263,8 +263,9 @@ void DrawTriangleToScreen(const RenderingInstance& RI, const Triangle& triangleI
   //Drawing Wireframe
   if(SETTINGS_MAP[DRAW_LINES] == true)
   {
-    PopulateOLCPoints(triangleInput, point1, point2, point3);
-    RI.engine->DrawTriangle(point1, point2, point3, WIREFRAME_COLOR);
+    //PopulateOLCPoints(triangleInput, point1, point2, point3);
+    //RI.engine->DrawTriangle(point1, point2, point3, WIREFRAME_COLOR);
+    DrawTriangleWithDepthBuffer(triangleInput, RI, WIREFRAME_COLOR);
   }
 }
 

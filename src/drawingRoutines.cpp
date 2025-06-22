@@ -1,5 +1,6 @@
 #include "drawingRoutines.h"
 #include "miscPrimitives.h"
+#include <X11/Xlib.h>
 
 void DrawTexturedTriangle(const RenderingInstance& RI, const Triangle& input, const olc::Sprite* texture)
 {
@@ -205,10 +206,114 @@ void DrawTriangleWithDepthBufferInline(int32_t x1, int32_t y1, float z1,
                                  const RenderingInstance& RI,
                                  olc::Pixel p)
 {
+    if (y2 < y1)
+    {
+        swap(y1, y2);
+        swap(x1, x2);
+        swap(z1, z2);
+    }
 
+    if (y3 < y1)
+    {
+        swap(y1, y3);
+        swap(x1, x3);
+        swap(z1, z3);
+    }
+
+    if (y3 < y2)
+    {
+	    swap(y2, y3);
+	    swap(x2, x3);
+        swap(z2, z3);
+    }
+
+    int dy1 = y2 - y1;
+    int dx1 = x2 - x1;
+    int dz1 = z2 - z1;
+
+    int dy2 = y3 - y1;
+    int dx2 = x3 - x1;
+    int dz2 = z3 - z1;
+    
+    float tex_z;
+    float dax_step = 0, dbx_step = 0, 
+          dz1_step = 0, dz2_step;
+
+    if (dy1) dax_step = dx1 / (float)abs(dy1);
+    if (dy2) dbx_step = dx2 / (float)abs(dy2);
+    
+    if(dy1) dz1_step = dz1 / (float)abs(dy1);
+    if(dy2) dz2_step = dz2 / (float)abs(dy2);
+
+    if (dy1)
+    {
+        for (int i = y1; i <= y2; i++)
+        {
+            int ax = x1 + (float)(i - y1) * dax_step;
+            int bx = x1 + (float)(i - y1) * dbx_step;
+            
+            float tex_sz = z1 + (float)(i - y1) * dz1_step;
+            float tex_ez = z1 + (float)(i - y1) * dz2_step;
+            if (ax > bx)
+            {
+                swap(ax, bx);
+                swap(tex_sz, tex_ez);
+            }
+            if(tex_sz <= RI.depthBuffer[RI.engine->ScreenWidth() * i + ax])
+            {
+                RI.engine->Draw(ax, i, p);
+                RI.depthBuffer[RI.engine->ScreenWidth() * i + ax] = tex_sz;
+            }
+            
+            if(tex_ez <= RI.depthBuffer[RI.engine->ScreenWidth() * i + bx])
+            {
+                RI.engine->Draw(bx, i, p);
+                RI.depthBuffer[RI.engine->ScreenWidth() * i + bx] = tex_ez;
+            }
+        }
+    }
+
+    dy1 = y3 - y2;
+    dx1 = x3 - x2;
+    dz1 = z3 - z2;
+
+    if (dy1) dax_step = dx1 / (float)abs(dy1);
+    if (dy2) dbx_step = dx2 / (float)abs(dy2);
+
+    dz1_step = 0;
+    if (dy1) dz1_step = dz1 / (float)abs(dy1);
+
+    if (dy1)
+    {
+        for (int i = y2; i <= y3; i++)
+        {
+            int ax = x2 + (float)(i - y2) * dax_step;
+            int bx = x1 + (float)(i - y1) * dbx_step;
+            
+            float tex_sz = z2 + (float)(i - y2) * dz1_step;
+            float tex_ez = z1 + (float)(i - y1) * dz2_step;
+            if (ax > bx)
+            {
+                swap(ax, bx);
+                swap(tex_sz, tex_ez);
+            }
+
+            if(tex_sz <= RI.depthBuffer[RI.engine->ScreenWidth() * i + ax])
+            {
+                RI.engine->Draw(ax, i, p);
+                RI.depthBuffer[RI.engine->ScreenWidth() * i + ax] = tex_sz;
+            }
+            
+            if(tex_ez <= RI.depthBuffer[RI.engine->ScreenWidth() * i + bx])
+            {
+                RI.engine->Draw(bx, i, p);
+                RI.depthBuffer[RI.engine->ScreenWidth() * i + bx] = tex_ez;
+            }
+        }
+    }
 }
 
-
+//WARNING: This implementation will leave "holes" while drawing triangle. I will fix this later
 void FillTriangleWithDepthBuffer(const Triangle& triangleInput, const RenderingInstance& RI, olc::Pixel p)
 {
     FillTriangleWithDepthBufferInline(triangleInput.points[0].x, triangleInput.points[0].y, triangleInput.points[0].z,
