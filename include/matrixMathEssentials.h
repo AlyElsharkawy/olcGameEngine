@@ -8,6 +8,7 @@ Matrix4x4 GetCompoundRotationMatrix(short ROT_TYPE, float fRadiansX, float fRadi
 Matrix4x4 GetInverseRotationMatrix(short ROT_TYPE, float fRadians);
 Matrix4x4 GetArbitraryRotationMatrix(const Vector3D& axis, float fRadians);
 Matrix4x4 GetTranslationMatrix(float xTrans, float yTrans, float zTrans);
+Matrix4x4 GetScalingMatrix(float xScale, float yScale, float zScale);
 Matrix4x4 GetPointAtMatrix(const Vector3D& position, const Vector3D& target, const Vector3D& up);
 void UpdateTranslationmatrix(Matrix4x4& inputMatrix, float xTrans, float yTrans, float zTrans);
 void UpdateRotationMatrix(Matrix4x4& inputMatrix, short ROT_TYPE, float fNewRadians);

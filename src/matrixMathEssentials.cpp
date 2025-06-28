@@ -56,7 +56,7 @@ Matrix4x4 GetRotationMatrix(short ROT_TYPE, float fRadians)
         break;
       }
     default:
-      cerr << "FATAL ERROR: Unkown matrix initialized. Please report to developer!\n";
+      cerr << "FATAL ERROR: Unknown matrix initialized. Please report to developer!\n";
   }
   return toReturn;
 }
@@ -76,7 +76,7 @@ Matrix4x4 GetCompoundRotationMatrix(short ROT_TYPE, float fRadiansX, float fRadi
         break;
       }
     default:
-      cerr << "FATAL ERROR: Unkown matrix initialized. Please report to developer";
+      cerr << "FATAL ERROR: Unknown matrix initialized. Please report to developer";
     //STFU clangd!
     return GetIdentityMatrix();
   }
@@ -113,7 +113,7 @@ Matrix4x4 GetInverseRotationMatrix(short ROT_TYPE, float fRadians)
         break;
       }
     default:
-      cerr << "FATAL ERROR: Unkown matrix type initialized. Please report to developer";
+      cerr << "FATAL ERROR: Unknown matrix type initialized. Please report to developer";
   }
   return toReturn;
 }
@@ -319,6 +319,15 @@ Matrix4x4 GetTranslationMatrix(float xTrans, float yTrans, float zTrans)
   toReturn.mat[3][1] = yTrans;
   toReturn.mat[3][2] = zTrans;
   return toReturn;
+}
+
+Matrix4x4 GetScalingMatrix(float xScale, float yScale, float zScale)
+{
+    Matrix4x4 toReturn = GetIdentityMatrix();
+    toReturn.mat[0][0] = xScale;
+    toReturn.mat[1][1] = yScale;
+    toReturn.mat[2][2] = zScale;
+    return toReturn;
 }
 
 void UpdateTranslationmatrix(Matrix4x4& inputMatrix, float xTrans, float yTrans, float zTrans)

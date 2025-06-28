@@ -182,6 +182,7 @@ class EngineReborn : public olc::PixelGameEngine
     //Initialize hard coded meshes
     Mesh* testMesh = new Mesh();
     testMesh->LoadFromOBJFile(GetPathFromResources({"objectFiles", "Primitives", "monkey.obj"}), false);
+        testMesh->rotationDegrees[1] = 3.14f;
     testMesh->SetTranslationOffsets(0.0f,0.0f, 5.0f);
     testMesh->SetRotationSpeeds(1.0f, 0.0f, 0.0f);
     //lightObj->SetDiffuseColor(210, 4, 45, 255);
@@ -238,35 +239,33 @@ class EngineReborn : public olc::PixelGameEngine
           if(mesh->doAutomaticRotations[i] == true)
             mesh->rotationDegrees[i] += fElapsedTime * 3.0f;
       }
-      
+      //TODO: implement the WORLD MATRIX calculations 
+      Matrix4x4 scalingMatrix, rotationMatrix, translationMatrix;
+      scalingMatrix = GetScalingMatrix(mesh->scalingOffsets[0], mesh->scalingOffsets[1], mesh->scalingOffsets[2]);
+      if(mesh->isStatic == true)
+        rotationMatrix = GetCompoundRotationMatrix(ROT_TYPES::ROT_ZYX, mesh->rotationDegrees[0], 
+                                                 mesh->rotationDegrees[1], mesh->rotationDegrees[2]);
+      else //mesh->isStatic == false
+        rotationMatrix = GetLookAtRotationMatrix(mesh->forwardVector, mesh->lookAtVector);
+
+      translationMatrix = GetTranslationMatrix(mesh->translationOffsets[0], mesh->translationOffsets[1],
+                                               mesh->translationOffsets[2]);
+      Matrix4x4 tempMatrix = MultiplyMatrixMatrix(scalingMatrix, rotationMatrix);
+      Matrix4x4 worldMatrix = MultiplyMatrixMatrix(tempMatrix, translationMatrix);
       for(const auto& triangle : mesh->triangles)
       {
         Vector3D normal;
-
-        Triangle scaledTriangle = ScaleTriangle(triangle, mesh->scalingOffsets[0], mesh->scalingOffsets[1], mesh->scalingOffsets[2]);
-        Triangle rotatedTriangle;
-        
-        if(mesh->isStatic == false)
-        {
-          Matrix4x4 lookAtRotMatrix = GetLookAtRotationMatrix(mesh->forwardVector, mesh->lookAtVector);
-          rotatedTriangle = MultiplyTriangle(scaledTriangle, lookAtRotMatrix);
-        }
-
-        if(mesh->isStatic == true)
-        {
-          Matrix4x4 rotationMatrix = GetCompoundRotationMatrix(ROT_TYPES::ROT_ZYX, mesh->rotationDegrees[0], mesh->rotationDegrees[1], mesh->rotationDegrees[2]);
-          rotatedTriangle = MultiplyTriangle(scaledTriangle, rotationMatrix);
-        }
-        Triangle translatedTriangle = TranslateTriangle(rotatedTriangle, mesh->translationOffsets[0], mesh->translationOffsets[1], mesh->translationOffsets[2]);
-        normal = GetNormal(translatedTriangle);
+        Triangle transformedTriangle;
+        transformedTriangle = MultiplyTriangle(triangle, worldMatrix);
+        normal = GetNormal(transformedTriangle);
         Triangle cameraTransformedTriangle;
 
         //Only draw triangles if the normal says its fits on screen
-        Vector3D cameraRay = SubtractVector(translatedTriangle.points[0], cameraPosition);
+        Vector3D cameraRay = SubtractVector(transformedTriangle.points[0], cameraPosition);
         if(GetDotProduct(normal, cameraRay) < 0.0f)
         {
           //materials phase
-          cameraTransformedTriangle = MultiplyTriangle(translatedTriangle, viewMatrix);
+          cameraTransformedTriangle = MultiplyTriangle(transformedTriangle, viewMatrix);
 
           //TO-DO: Switch this to a switch case
           if(mesh->GetMaterialType() == MATERIAL_TYPES::NONE)
@@ -361,7 +360,7 @@ int main(int argc, char** argv)
   //Initialize the pwd of the program
   PROGRAM_ROOT_DIRECTORY = GetExecutableDirectory(argv[0]);
   EngineReborn engine;
-  if(engine.Construct(1920, 1080, 1, 1))
+  if(engine.Construct(1920, 1080, 1, 1, true, true))
   {
     engine.Start();
   }
