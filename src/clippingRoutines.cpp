@@ -27,10 +27,12 @@ Vector3D VectorIntersectPlane(const Vector3D& planePoint, const Vector3D& planeN
 
 int TriangleClipWithPlane(const Vector3D& planePoint, const Vector3D& planeNormal, Triangle& inputTriangle, Triangle& outputTriangle1, Triangle& outputTriangle2)
 {
+  Vector3D planeNormal2 = planeNormal;
+  NormalizeVector(planeNormal2);
   auto GetDistance = [&](const Vector3D& point)
     {
       //This is the plane equation
-      return (planeNormal.x * point.x + planeNormal.y * point.y + planeNormal.z * point.z - GetDotProduct(planeNormal, planePoint));
+      return (planeNormal2.x * point.x + planeNormal2.y * point.y + planeNormal2.z * point.z - GetDotProduct(planeNormal2, planePoint));
     };
 
   //These are containers for storing the points that are inside or outside of the plane to
@@ -44,21 +46,6 @@ int TriangleClipWithPlane(const Vector3D& planePoint, const Vector3D& planeNorma
   Vector2D* outsideTextels[3];
   int totalOutsideTextels = 0;
   
-  //Now we will get the distances of each point in the input triangle from the clipping plane 
-  /*for(int i = 0; i < 3; i++)
-  {
-    float distanceValue = GetDistance(inputTriangle.points[i]);
-    if(distanceValue >= 0)
-    {
-      insidePoints[totalInsidePoints++] = &inputTriangle.points[i];
-      insideTextels[totalInsideTextels++] = &inputTriangle.texels[i];
-    }
-    else
-    {
-      outsidePoints[totalOutsidePoints++] = &inputTriangle.points[i];
-      outsideTextels[totalOutsideTextels++] = &inputTriangle.texels[i];
-    }
-  }*/ 
 		// Get signed distance of each point in triangle to plane
 		float d0 = GetDistance(inputTriangle.points[0]);
 		float d1 = GetDistance(inputTriangle.points[1]);
@@ -130,12 +117,12 @@ int TriangleClipWithPlane(const Vector3D& planePoint, const Vector3D& planeNorma
 
     //The 2 remaining points are on the intersection between the plane and the triangle
     float tVal;
-    outputTriangle1.points[1] = VectorIntersectPlane(planePoint, planeNormal, *insidePoints[0], *outsidePoints[0], tVal);
+    outputTriangle1.points[1] = VectorIntersectPlane(planePoint, planeNormal2, *insidePoints[0], *outsidePoints[0], tVal);
     outputTriangle1.texels[1].u = tVal * (outsideTextels[0]->u - insideTextels[0]->u) + insideTextels[0]->u; 
     outputTriangle1.texels[1].v = tVal * (outsideTextels[0]->v - insideTextels[0]->v) + insideTextels[0]->v;
     outputTriangle1.texels[1].w = tVal * (outsideTextels[0]->w - insideTextels[0]->w) + insideTextels[0]->w;
 
-    outputTriangle1.points[2] = VectorIntersectPlane(planePoint, planeNormal, *insidePoints[0], *outsidePoints[1], tVal);
+    outputTriangle1.points[2] = VectorIntersectPlane(planePoint, planeNormal2, *insidePoints[0], *outsidePoints[1], tVal);
     outputTriangle1.texels[2].u = tVal * (outsideTextels[1]->u - insideTextels[0]->u) + insideTextels[0]->u; 
     outputTriangle1.texels[2].v = tVal * (outsideTextels[1]->v - insideTextels[0]->v) + insideTextels[0]->v;
     outputTriangle1.texels[2].w = tVal * (outsideTextels[1]->w - insideTextels[0]->w) + insideTextels[0]->w;
@@ -166,7 +153,7 @@ int TriangleClipWithPlane(const Vector3D& planePoint, const Vector3D& planeNorma
     outputTriangle1.texels[0] = *insideTextels[0];
     outputTriangle1.texels[1] = *insideTextels[1];
 
-    outputTriangle1.points[2] = VectorIntersectPlane(planePoint, planeNormal, *insidePoints[0], *outsidePoints[0], tVal);
+    outputTriangle1.points[2] = VectorIntersectPlane(planePoint, planeNormal2, *insidePoints[0], *outsidePoints[0], tVal);
     outputTriangle1.texels[2].u = tVal * (outsideTextels[0]->u - insideTextels[0]->u) + insideTextels[0]->u;
     outputTriangle1.texels[2].v = tVal * (outsideTextels[0]->v - insideTextels[0]->v) + insideTextels[0]->v;
     outputTriangle1.texels[2].w = tVal * (outsideTextels[0]->w - insideTextels[0]->w) + insideTextels[0]->w;
@@ -178,7 +165,7 @@ int TriangleClipWithPlane(const Vector3D& planePoint, const Vector3D& planeNorma
     //This used to be different, check backup of 8/11/2024
     outputTriangle2.texels[1] = outputTriangle1.texels[2];
 
-    outputTriangle2.points[2] = VectorIntersectPlane(planePoint, planeNormal, *insidePoints[1], *outsidePoints[0], tVal);
+    outputTriangle2.points[2] = VectorIntersectPlane(planePoint, planeNormal2, *insidePoints[1], *outsidePoints[0], tVal);
 		outputTriangle2.texels[2].u = tVal * (outsideTextels[0]->u - insideTextels[1]->u) + insideTextels[1]->u;
 		outputTriangle2.texels[2].v = tVal * (outsideTextels[0]->v - insideTextels[1]->v) + insideTextels[1]->v;
 		outputTriangle2.texels[2].w = tVal * (outsideTextels[0]->w - insideTextels[1]->w) + insideTextels[1]->w;
@@ -189,15 +176,25 @@ int TriangleClipWithPlane(const Vector3D& planePoint, const Vector3D& planeNorma
   return -1;
 }
 
-void DoScreenSpaceClipping(const RenderingInstance& RI, const vector<Triangle> &trianglesToRaster, const vector<Vector3D>& normalsToRaster, const Mesh& meshInput)
+void DoScreenSpaceClipping(const RenderingInstance& RI, const vector<Triangle> &trianglesToRaster, const vector<Vector3D>& normalsToRaster, const Mesh* const meshInput)
 {
-  //Delete after test is complete
-  vector<Triangle> rasterizedTriangles;
-  for(int i = 0; i < trianglesToRaster.size(); i++)
+for(int i = 0; i < trianglesToRaster.size(); i++)
   {
+    //When I also clip normals, then I will move this if statement up one scope
+    if(SETTINGS_MAP[DRAW_NORMALS] == true)
+    {
+      olc::vi2d point1;
+      olc::vi2d point2;
+      point1.x = trianglesToRaster[i].points[1].x;
+      point1.y = trianglesToRaster[i].points[1].y;
+      point2.x = normalsToRaster[i].x;
+      point2.y = normalsToRaster[i].y;
+      RI.engine->DrawLine(point1, point2, NORMAL_COLOR);
+    }
+
     if(SETTINGS_MAP[DO_SCREEN_SPACE_CLIPPING] == false)
     {
-      DrawTriangleToScreen(RI, trianglesToRaster[i], meshInput.GetMaterialType(), meshInput.GetTextureImage());
+      DrawTriangleToScreen(RI, trianglesToRaster[i], meshInput->GetMaterialType(), meshInput->GetTextureImage());
     }
 
     if(SETTINGS_MAP[DO_SCREEN_SPACE_CLIPPING] == true)
@@ -245,21 +242,8 @@ void DoScreenSpaceClipping(const RenderingInstance& RI, const vector<Triangle> &
 
       for(int j = 0; j < trianglesQueue.size(); j++)
       {
-        DrawTriangleToScreen(RI, trianglesQueue[j], meshInput.GetMaterialType(), meshInput.GetTextureImage());
-        rasterizedTriangles.push_back(trianglesQueue[j]);
+        DrawTriangleToScreen(RI, trianglesQueue[j], meshInput->GetMaterialType(), meshInput->GetTextureImage());
       }
-    }
-    
-    //When I also clip normals, then I will move this if statement up one scope
-    if(SETTINGS_MAP[DRAW_NORMALS] == true)
-    {
-      olc::vi2d point1;
-      olc::vi2d point2;
-      point1.x = trianglesToRaster[i].points[1].x;
-      point1.y = trianglesToRaster[i].points[1].y;
-      point2.x = normalsToRaster[i].x;
-      point2.y = normalsToRaster[i].y;
-      RI.engine->DrawLine(point1, point2, NORMAL_COLOR);
     }
   }
   //PrintTrianglesToDisk(rasterizedTriangles, ConcatenatePaths({GetPathFromResources(),"3D_ENGINE_REBORN_TRIANGLES.txt"}));

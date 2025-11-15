@@ -883,7 +883,7 @@ public:
 
 
 		// Loop through all transformed, viewed, projected, and sorted triangles
-    vector<triangle> rasterizedTriangles;
+    	vector<triangle> rasterizedTriangles;
 		for (auto &triToRaster : vecTrianglesToRaster)
 		{
 			// Clip triangles against all four screen edges, this could yield

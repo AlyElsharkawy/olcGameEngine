@@ -34,7 +34,7 @@ find_package(yaml-cpp REQUIRED)
 add_library(gui_essentials STATIC ./src/guiEssentials.cpp)
 add_library(misc_functions STATIC ./src/miscFunctions.cpp ./src/stbImageWriteImplementation.cpp)
 add_library(clipping STATIC ./src/clippingRoutines.cpp)
-add_library(essential_functions STATIC ./src/essentialFunctions.cpp)
+add_library(essential STATIC ./src/essentialFunctions.cpp)
 add_library(mesh STATIC ./src/meshMathEssentials.cpp)
 add_library(geometry STATIC ./src/geometricPrimitives.cpp)
 add_library(matrix STATIC ./src/matrixMathEssentials.cpp)
@@ -57,7 +57,7 @@ add_library(drawing STATIC ./src/drawingRoutines.cpp)
 target_link_libraries(geometry PRIVATE misc_functions)
 target_link_libraries(clipping PRIVATE geometry)
 target_link_libraries(normal PRIVATE vector)
-target_link_libraries(essential_functions PRIVATE drawing)
+target_link_libraries(essential PRIVATE drawing)
 
 add_executable(${PROJECT_NAME} main.cpp)
 add_executable(OBJFileSerializer ./src/extra/OBJFileSerializer.cpp)
@@ -73,7 +73,7 @@ add_executable(IM_GUI_TEST ./src/extra/ImGUITest.cpp)
 
 #Additional libraries for each project 
 set(PROJECT_NAME_LIBS
-  essential_functions
+  essential
   misc_functions
   geometry
   matrix
@@ -111,6 +111,10 @@ set(TEST_APP_LIBS
 set(OLC_CUSTOM_FONT_LIBS
   misc_functions
 )
+
+if (CMAKE_BUILD_TYPE STREQUAL "release")
+    target_compile_definitions(${PROJECT_NAME} PRIVATE BUILD_RELEASE)
+endif()
 
 # For Linux and windows support
 if(UNIX)

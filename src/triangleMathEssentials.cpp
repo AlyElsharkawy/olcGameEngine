@@ -98,7 +98,9 @@ void ConvertToDNCoordinates(Triangle& input)
   DivideVectorScalar(input.points[0], input.points[0].w);
   DivideVectorScalar(input.points[1], input.points[1].w);
   DivideVectorScalar(input.points[2], input.points[2].w);
-  for(int i = 0; i < 3; i++)
-    input.points[i].w = 1.0f;
+  //I don't know why this is here
+  //Removing it made things work though!
+  //for(int i = 0; i < 3; i++)
+    //input.points[i].w = 1.0f;
 }
 

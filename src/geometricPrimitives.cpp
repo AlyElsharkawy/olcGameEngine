@@ -173,11 +173,62 @@ const void Mesh::PrintMeshToDisk(const string& fileName) const
         if(yPoint1 != yPoint2) return yPoint1 < yPoint2;
         return zPoint1 < zPoint2;
        });
+
   for(const auto& triangle : triangleList)
   {
     outputFile << triangle.ExtractInfo() << '\n';
   }
   outputFile.close();
+}
+
+Mesh* Mesh::Duplicate()
+{
+    Mesh* result = new Mesh();
+    BULK_COPY_ARRAY(this->translationOffsets, result->translationOffsets, 3)
+    BULK_COPY_ARRAY(this->rotationDegrees, result->rotationDegrees, 3);
+    BULK_COPY_ARRAY(this->rotationSpeeds, result->rotationSpeeds, 3);
+    BULK_COPY_ARRAY(this->scalingOffsets, result->scalingOffsets, 3);
+    BULK_COPY_ARRAY(this->doAutomaticRotations, result->doAutomaticRotations, 3);
+
+    result->doAutomaticRotation = this->doAutomaticRotation;
+    result->triangles = this->triangles;
+    result->fTheta = this->fTheta;
+    result->isStatic = this->isStatic;
+
+    result->forwardVector = this->forwardVector;
+    result->lookAtVector = this->lookAtVector;
+
+    result->textureImagePath = this->textureImagePath;
+    result->normalImagePath = this->normalImagePath;
+    result->materialType = this->materialType;
+
+    result->totalTriangles = this->totalTriangles;
+    result->visibleTriangles = this->visibleTriangles;
+    result->totalVertices = this->totalVertices;
+    result->visibleVertices = this->visibleVertices;
+
+    if(this->textureImageSprite != nullptr)
+    {
+        result->textureImageSprite = this->textureImageSprite->Duplicate();
+        result->textureImageDecal = new olc::Decal(result->textureImageSprite);
+    }
+
+    if(this->normalImageSprite != nullptr)
+    {
+        result->normalImageSprite = this->normalImageSprite->Duplicate();
+        result->normalImageDecal = new olc::Decal(result->normalImageSprite);
+    }
+
+    if(this->diffuseColor != nullptr)
+    {
+        olc::Pixel* newColor = new olc::Pixel();
+        newColor->a = this->diffuseColor->a;
+        newColor->r = this->diffuseColor->r;
+        newColor->g = this->diffuseColor->g;
+        result->diffuseColor = newColor;
+    }
+    
+    return result;
 }
 
 //Note: Refactor later so the code isn't duplicated
@@ -289,7 +340,7 @@ bool Mesh::SetNormalImage(const string& pathToImage)
 }
 
 
-	bool Mesh::LoadFromOBJFile(const string& sFilename, bool bHasTexture)
+	/*bool Mesh::LoadFromOBJFile(const string& sFilename, bool bHasTexture)
 	{
 		ifstream f(sFilename);
 		if (!f.is_open())
@@ -370,9 +421,9 @@ bool Mesh::SetNormalImage(const string& pathToImage)
     this->triangles = tris;
     this->totalTriangles = tris.size();
 		return true;
-	}
+	}*/
 
-/*bool Mesh::LoadFromOBJFile(const string& fileName, bool hasTexture)
+bool Mesh::LoadFromOBJFile(const string& fileName, bool hasTexture)
 {
   ifstream inputFile(fileName, std::ios::in);
   vector<Triangle> triangles; 
@@ -449,7 +500,7 @@ bool Mesh::SetNormalImage(const string& pathToImage)
   this->triangles = triangles;
   this->totalTriangles = triangles.size();
   return true;
-}*/
+}
 
 Mesh::Mesh()
 {

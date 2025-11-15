@@ -32,21 +32,24 @@ void DrawStringDelay(olc::PixelGameEngine* engine, const string& input, const ol
   }
 }
 
-bool MouseInArea(olc::PixelGameEngine* engine, const olc::vi2d& boundry1, const olc::vi2d& boundry2)
+bool MouseInArea(olc::PixelGameEngine* engine, const olc::vi2d& boundary1, const olc::vi2d& boundary2)
 {
   olc::vi2d mousePosition = engine->GetMousePos();
-  if(mousePosition.x >= min(boundry1.x, boundry2.x) && mousePosition.x <= max(boundry1.x,boundry2.x) &&
-     mousePosition.y >= min(boundry1.y, boundry2.y) && mousePosition.y <= max(boundry1.y, boundry2.y))
+  if(mousePosition.x >= min(boundary1.x, boundary2.x) && mousePosition.x <= max(boundary1.x,boundary2.x) &&
+     mousePosition.y >= min(boundary1.y, boundary2.y) && mousePosition.y <= max(boundary1.y, boundary2.y))
   {
     return true;
   }
   return false;
 }
 
-CheckBox::CheckBox(olc::PixelGameEngine* engine, void* manager, olc::Font* font, const string& text, const olc::vi2d& position, const olc::Pixel& color, const float& angle, const olc::vi2d& padding, const bool& defaultState, const bool& enabled)
+CheckBox::CheckBox(olc::PixelGameEngine* engine, void* manager, olc::Font* font, const string& text, const olc::vi2d& position, 
+                   const olc::Pixel& fontColor, const olc::Pixel& enabledColor, const olc::Pixel& disabledColor, 
+                   const float& angle, const olc::vi2d& padding, const bool& defaultState, const bool& enabled)
 {
   this->font = font; this->text = text; this->engine = engine;
-  this->position = position; this->color = color;
+  this->position = position; 
+  this->disabledColor = disabledColor; this->enabledColor = enabledColor; this->fontColor = fontColor;
   this->angle = angle; this->padding = padding;
   this->state = defaultState;
   this->isEnabled = enabled;
@@ -67,11 +70,11 @@ void CheckBox::Draw()
   olc::vi2d rectangleSize = {0,0};
   rectangleSize.x += 2 * padding.x + stringLength;
   rectangleSize.y += 2 * padding.y + stringHeight;
-  engine->FillRect(this->position.x, this->position.y, rectangleSize.x, rectangleSize.y, olc::GREEN);
+  engine->FillRect(this->position.x, this->position.y, rectangleSize.x, rectangleSize.y, CHECK_COLOR);
   
   //Secondly draw the string 
   olc::vi2d stringPosition = {this->position.x + padding.x, this->position.y + padding.y + stringHeight};
-  font->DrawString(tempString, stringPosition, this->color, this->angle);
+  font->DrawString(tempString, stringPosition, this->fontColor, this->angle);
   this->topLeft = position;
   this->bottomRight = position + rectangleSize;
 }

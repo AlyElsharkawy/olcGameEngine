@@ -3,6 +3,8 @@
 #include <deque>
 #include "olcPixelGameEngine.h"
 
+#define BULK_COPY_ARRAY(src, dst, size) for(int i = 0; i < size; i++) dst[i] = src[i];
+
 using namespace std;
 
 class Vector2D
@@ -87,13 +89,15 @@ public:
   void SetRotationSpeeds(const float& newX, const float& newY, const float& newZ);
   void SetScalingOffsets(const float& newX, const float& newY, const float& newZ);
   void SetDiffuseColor(const uint8_t& rVal, const uint8_t& gVal, const uint8_t& bVal, const uint8_t& aVal);
-  //The 2 bottom functions return whether the operation was succesful or not
+  //The 2 bottom functions return whether the operation was successful or not
   bool SetTextureImage(const string& localPathToImage);
   bool SetNormalImage(const string& localPathToImage);
   
   bool LoadFromOBJFile(const string& fileName, bool hasTexture = false);
   const void PrintMesh() const;
   const void PrintMeshToDisk(const string& fileName) const; //This is to verify if two meshes are equal
+
+  Mesh* Duplicate();
   Mesh();
   ~Mesh();
 };

@@ -24,6 +24,8 @@
 #include "inputManager.h"
 #include "audioManager.h"
 
+#define DEFAULT_COLORS olc::BLUE, olc::GREEN, olc::RED
+
 using namespace std;
 
 unsigned long long totalFPS = 0;
@@ -40,7 +42,7 @@ class EngineReborn : public olc::PixelGameEngine
   CheckBox* checkDrawLines = nullptr;
   CheckBox* checkDrawFaces = nullptr;
   CheckBox* checkDoDebugMenu = nullptr;
-  CheckBox* checkPlaceHolder = nullptr;
+  CheckBox* checkDrawNormals = nullptr;
   CheckBox* checkVisualizeClipping = nullptr;
   CheckBox* checkDoScreenSpaceClipping = nullptr;
   CheckBox* checkDoViewSpaceClipping = nullptr;   
@@ -57,15 +59,9 @@ class EngineReborn : public olc::PixelGameEngine
     EngineReborn()
     {
       sAppName = "3D Viewer Reborn";
-      if(SETTINGS_MAP[DO_SPLASH_SCREEN] == true)
-      {
-        sps = new olc::SplashScreen(); 
-      }
-
-      if(sps != nullptr && SETTINGS_MAP[DO_SPLASH_SCREEN] == true)
-      {
-        delete sps;
-      }
+      #ifdef BUILD_RELEASE
+        sps = new olc::SplashScreen();
+      #endif
     }
 
   public:
@@ -81,7 +77,9 @@ class EngineReborn : public olc::PixelGameEngine
     //Consideration: Should this be another data structure?
     vector<Triangle> trianglesToRaster;
     vector<Vector3D> normalsToRaster;
-    vector<Triangle> preClipTris;
+    int trianglesRasteredCount = 0;
+    //Artifact from bug number 2 hunting
+    //vector<Triangle> preClipTris;
     
   bool OnUserCreate() override
   {
@@ -117,14 +115,14 @@ class EngineReborn : public olc::PixelGameEngine
     fontHackButtons = new olc::Font(GetPathFromResources({"fonts", "TTF", "FreeSans.ttf"}), 25);
 
     //Initialize GUI elements
-    checkDoDebugMenu = new CheckBox(this, &manager, fontHackButtons, "Do Debug Menu", {0,420}, olc::BLUE, 0.0f, {20,20}, SETTINGS_MAP[DO_DEBUG_MENU]);
-    checkDrawLines = new CheckBox(this, &manager, fontHackButtons, "Draw Lines", {0,500}, olc::BLUE, 0.0f, {20,20}, SETTINGS_MAP[DRAW_LINES]);
-    checkDrawFaces = new CheckBox(this, &manager, fontHackButtons, "Draw Faces", {0, 580}, olc::BLUE, 0.0f, {20,20}, SETTINGS_MAP[DRAW_FACES]);
-    checkVisualizeClipping = new CheckBox(this, &manager, fontHackButtons, "Visualize Clipping", {0, 660}, olc::BLUE, 0.0f, {20,20}, SETTINGS_MAP[VISUALIZE_CLIPPING]);
-    checkDoScreenSpaceClipping = new CheckBox(this, &manager, fontHackButtons, "Do Screen Space Clipping", {0, 740}, olc::BLUE, 0.0f, {20,20}, SETTINGS_MAP[DO_SCREEN_SPACE_CLIPPING]);
-    checkDoViewSpaceClipping = new CheckBox(this, &manager, fontHackButtons, "Do View Space Clipping", {0,820}, olc::BLUE, 0.0f, {20,20}, SETTINGS_MAP[DO_VIEW_SPACE_CLIPPING]);
-    checkPlaceHolder = new CheckBox(this, &manager,fontHackButtons, "PLACEHOLDER", {0,900}, olc::BLUE, 0.0f, {20,20}, SETTINGS_MAP[DO_PERFORMANCE_CLEARING], true);
-    checkShowOptionsMenu = new CheckBox(this, &manager, fontHackButtons, "Show Options", {0,980}, olc::BLUE, 0.0f,{20,20}, true);
+    checkDoDebugMenu = new CheckBox(this, &manager, fontHackButtons, "Do Debug Menu", {0,420}, DEFAULT_COLORS, 0.0f, {20,20}, SETTINGS_MAP[DO_DEBUG_MENU]);
+    checkDrawLines = new CheckBox(this, &manager, fontHackButtons, "Draw Lines", {0,500}, DEFAULT_COLORS, 0.0f, {20,20}, SETTINGS_MAP[DRAW_LINES]);
+    checkDrawFaces = new CheckBox(this, &manager, fontHackButtons, "Draw Faces", {0, 580}, DEFAULT_COLORS, 0.0f, {20,20}, SETTINGS_MAP[DRAW_FACES]);
+    checkVisualizeClipping = new CheckBox(this, &manager, fontHackButtons, "Visualize Clipping", {0, 660}, DEFAULT_COLORS, 0.0f, {20,20}, SETTINGS_MAP[VISUALIZE_CLIPPING]);
+    checkDoScreenSpaceClipping = new CheckBox(this, &manager, fontHackButtons, "Do Screen Space Clipping", {0, 740}, DEFAULT_COLORS, 0.0f, {20,20}, SETTINGS_MAP[DO_SCREEN_SPACE_CLIPPING]);
+    checkDoViewSpaceClipping = new CheckBox(this, &manager, fontHackButtons, "Do View Space Clipping", {0,820}, DEFAULT_COLORS, 0.0f, {20,20}, SETTINGS_MAP[DO_VIEW_SPACE_CLIPPING]);
+    checkDrawNormals = new CheckBox(this, &manager, fontHackButtons, "Draw Normals", {0,900}, DEFAULT_COLORS, 0.0f, {20,20}, SETTINGS_MAP[DRAW_NORMALS], true);
+    checkShowOptionsMenu = new CheckBox(this, &manager, fontHackButtons, "Show Options", {0,980}, DEFAULT_COLORS, 0.0f,{20,20}, true);
 
     /*
       * UPDATE: As of 9/9/2024, mesh objects are now heap allocated!
@@ -181,31 +179,40 @@ class EngineReborn : public olc::PixelGameEngine
 
     //Initialize hard coded meshes
     Mesh* testMesh = new Mesh();
-    testMesh->LoadFromOBJFile(GetPathFromResources({"objectFiles", "Primitives", "monkey.obj"}), false);
-        testMesh->rotationDegrees[1] = 3.14f;
-    testMesh->SetTranslationOffsets(0.0f,0.0f, 5.0f);
+    testMesh->LoadFromOBJFile(GetPathFromResources({"objectFiles", "Primitives", "GoodCube.obj"}), true);
+    testMesh->SetTranslationOffsets(0.0f,0.0f, 0.0f);
     testMesh->SetRotationSpeeds(1.0f, 0.0f, 0.0f);
-    //lightObj->SetDiffuseColor(210, 4, 45, 255);
+    testMesh->SetTextureImage(GetPathFromResources({"textures", "stoneBrickWall.png"}));
+    //testMesh->SetDiffuseColor(210, 100, 45, 255);
     
-    //testMesh->SetTextureImage(GetPathFromResources({"textures", "stoneBrickWall.png"}));
-    testMesh->PrintTextureInformation();
+    //testMesh->PrintTextureInformation();
     testMesh->lookAtVector = mainLamp.GetDirection();
     testMesh->isStatic = true;
-    //lightObj->doAutomaticRotation = true;
-    testMesh->doAutomaticRotations[2] = true;
-    //testMesh->doAutomaticRotation = true;
+
+    Mesh* testMesh2 = testMesh->Duplicate();
+    testMesh2->SetTranslationOffsets(0, 0, 3);
+    testMesh2->SetDiffuseColor(210, 4, 45, 255);
+    //testMesh2->SetTextureImage(GetPathFromResources({"textures", "ground.png"}));
+    //testMesh2->doAutomaticRotation = true;
+    //testMesh2->doAutomaticRotations[1] = true;
     //testMesh->PrintMeshToDisk(ConcatenatePaths({GetPathFromResources(), "testmesh1.mesh"}));
     
-    /*Mesh mountainsObj;
-    mountainsObj.LoadFromOBJFile(GetPathFromResources({"objectFiles", "Primitives", "mountains.obj"}), false);
-    mountainsObj.SetScalingOffsets(0.25f, 0.25f, 0.25f);*/
-    //allObjects.AppendMesh(mountainsObj);
+    Mesh* testMesh3 = testMesh2->Duplicate();
+    //testMesh3->SetTextureImage(GetPathFromResources({"textures", "brickWall.png"}));
+    testMesh3->SetDiffuseColor(0, 0, 139, 255);
+    testMesh3->SetTranslationOffsets(0, 3, 0);
+    testMesh3->doAutomaticRotation = true;
+    //testMesh3->doAutomaticRotations[1] = true;
+
+    /*Mesh* mountainsObj = new Mesh();
+    mountainsObj->LoadFromOBJFile(GetPathFromResources({"objectFiles", "Primitives", "mountains.obj"}), false);
+    mountainsObj->SetScalingOffsets(0.1f, 0.1f, 0.1f);
+    allObjects.AppendMesh(mountainsObj);*/
     
     allObjects.AppendMesh(testMesh);
+    allObjects.AppendMesh(testMesh2);
+    allObjects.AppendMesh(testMesh3);
     allObjects.UpdateTotalCounts();
- 
-    //Optionally enable normal rasterization
-    SETTINGS_MAP[DRAW_NORMALS] = false;
     return true;
   }
 
@@ -217,11 +224,12 @@ class EngineReborn : public olc::PixelGameEngine
     {
       Clear(olc::BLACK);
       for(int i = 0; i < ScreenWidth() * ScreenHeight(); i++)
-        RI.depthBuffer[i] = 1.0f;
+        RI.depthBuffer[i] = 0.0f;
 
       trianglesToRaster.clear();
       normalsToRaster.clear();
-      preClipTris.clear();
+      trianglesRasteredCount = 0;
+      //preClipTris.clear();
     }
 
     //Variable aliases
@@ -282,7 +290,6 @@ class EngineReborn : public olc::PixelGameEngine
           }
 
           //View space clipping phase          
-          preClipTris.push_back(cameraTransformedTriangle);
           DoViewSpaceClipping(this, player, trianglesToRaster, normalsToRaster, cameraTransformedTriangle);
         }
       }
@@ -299,13 +306,16 @@ class EngineReborn : public olc::PixelGameEngine
       //Screen edges clipping and rasterization section
       //Rasterizing normals(if settings allow it)
       
-      DoScreenSpaceClipping(RI, trianglesToRaster, normalsToRaster, *mesh);
+      DoScreenSpaceClipping(RI, trianglesToRaster, normalsToRaster, mesh);
+      trianglesRasteredCount += trianglesToRaster.size();
+      trianglesToRaster.clear();
+      normalsToRaster.clear();
     }
 
     if(SETTINGS_MAP[DO_DEBUG_MENU] == true)
     {
       u32string currentPosition = GetU32String(cameraPosition.ExtractInfo());
-      u32string trianglesCount = GetU32String(to_string(trianglesToRaster.size()));
+      u32string trianglesCount = GetU32String(to_string(trianglesRasteredCount));
       olc::vi2d mousePosition = this->GetMousePos();
       u32string mouseString = GetU32String(mousePosition.str());
       u32string facingString = GetU32String(player->camera.GetFacingVector().ExtractInfo());
@@ -321,6 +331,7 @@ class EngineReborn : public olc::PixelGameEngine
     SETTINGS_MAP[VISUALIZE_CLIPPING] = checkVisualizeClipping->state;
     SETTINGS_MAP[DO_SCREEN_SPACE_CLIPPING] = checkDoScreenSpaceClipping->state;
     SETTINGS_MAP[DO_VIEW_SPACE_CLIPPING] = checkDoViewSpaceClipping->state;
+    SETTINGS_MAP[DRAW_NORMALS] = checkDrawNormals->state;
 
     bool temp = checkShowOptionsMenu->state;
     //There must be something about Stupid void* that I dont understand
@@ -333,6 +344,7 @@ class EngineReborn : public olc::PixelGameEngine
       checkVisualizeClipping->isEnabled = true;
       checkDoScreenSpaceClipping->isEnabled = true;
       checkDoViewSpaceClipping->isEnabled = true;
+      checkDrawNormals->isEnabled = true;
     }
 
     else if(temp == false)
@@ -344,13 +356,14 @@ class EngineReborn : public olc::PixelGameEngine
       checkVisualizeClipping->isEnabled = false;
       checkDoScreenSpaceClipping->isEnabled = false;
       checkDoViewSpaceClipping->isEnabled = false;
+      checkDrawNormals->isEnabled = false;
     }
     //Draw Updated GUI Components
     manager.Update();
     manager.Draw();
 
     //This is where screenshots are taken
-    DoAuxilliaryInputLoop(this);
+    DoAuxiliaryInputLoop(this);
     return true;
   }
 };
@@ -360,7 +373,7 @@ int main(int argc, char** argv)
   //Initialize the pwd of the program
   PROGRAM_ROOT_DIRECTORY = GetExecutableDirectory(argv[0]);
   EngineReborn engine;
-  if(engine.Construct(1920, 1080, 1, 1, true, true))
+  if(engine.Construct(1920, 1080, 1, 1, false, false))
   {
     engine.Start();
   }

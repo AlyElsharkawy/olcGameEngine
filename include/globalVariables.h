@@ -35,7 +35,7 @@ inline unordered_map<uint8_t,bool> SETTINGS_MAP
 };
 
 //Composite rotations like XZ, ZX, XY may be added in the future
-//But frankly, I don't see a reason for their existance now
+//But frankly, I don't see a reason for their existence now
 enum ROT_TYPES : short
 {
   ROT_X,

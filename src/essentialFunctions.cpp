@@ -37,7 +37,7 @@ Matrix4x4 DoInputLoop(olc::PixelGameEngine* engine, Player* player)
   const float& CAMERA_ROTATION_SPEED = player->camera.GetRotationSpeed();
 
   //Print currently pressed inputs
-  InputManager::PrintPressedKeys(engine);
+  //InputManager::PrintPressedKeys(engine);
 
   //Move down
   if(InputManager::KeyHeld(engine, {MOVE_DOWN}))
@@ -276,7 +276,7 @@ void PopulateOLCPoints(const Triangle& inputTriangle, olc::vf2d& point1, olc::vf
   point3.x = inputTriangle.points[2].x; point3.y = inputTriangle.points[2].y;
 }
 
-void DoAuxilliaryInputLoop(olc::PixelGameEngine* engine)
+void DoAuxiliaryInputLoop(olc::PixelGameEngine* engine)
 {
   if(InputManager::KeyHeld(engine, {SPECIAL_ONE}) && InputManager::KeyHeld(engine,{SPECIAL_TWO}) && engine->GetKey(olc::Key::S).bHeld)
   {
