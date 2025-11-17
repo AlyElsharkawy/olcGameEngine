@@ -1,4 +1,5 @@
 #include <deque>
+#include "drawingRoutines.h"
 #include "essentialFunctions.h"
 #include "geometricPrimitives.h"
 #include "miscFunctions.h"
@@ -12,7 +13,7 @@
 
 Vector3D VectorIntersectPlane(const Vector3D& planePoint, const Vector3D& planeNormal, const Vector3D& lineStart, const Vector3D& lineEnd, float& tVal)
 {
-  //This is math that I do not understand
+  /*//This is math that I do not understand
   Vector3D normalizedPlaneNormal = planeNormal;
   NormalizeVector(normalizedPlaneNormal);
   float planeDValue = -GetDotProduct(normalizedPlaneNormal, planePoint);
@@ -22,17 +23,24 @@ Vector3D VectorIntersectPlane(const Vector3D& planePoint, const Vector3D& planeN
   Vector3D lineStartToEnd = SubtractVector(lineEnd, lineStart);
   Vector3D lineIntersect = lineStartToEnd;
   MultiplyVectorScalar(lineIntersect, tVal);
-  return AddVector(lineStart, lineIntersect);
+  return AddVector(lineStart, lineIntersect);*/ 
+
+		Vector3D plane_n = NormalizeVectorOP(planeNormal);
+		float plane_d = -GetDotProduct(plane_n, planePoint);
+		float ad = GetDotProduct(lineStart, plane_n);
+		float bd = GetDotProduct(lineEnd, plane_n);
+		tVal = (-plane_d - ad) / (bd - ad);
+		Vector3D lineStartToEnd = SubtractVector(lineEnd, lineStart);
+		Vector3D lineToIntersect = MultiplyVectorScalarOP(lineStartToEnd, tVal);
+		return AddVector(lineStart, lineToIntersect);
 }
 
 int TriangleClipWithPlane(const Vector3D& planePoint, const Vector3D& planeNormal, Triangle& inputTriangle, Triangle& outputTriangle1, Triangle& outputTriangle2)
 {
-  Vector3D planeNormal2 = planeNormal;
-  NormalizeVector(planeNormal2);
   auto GetDistance = [&](const Vector3D& point)
     {
       //This is the plane equation
-      return (planeNormal2.x * point.x + planeNormal2.y * point.y + planeNormal2.z * point.z - GetDotProduct(planeNormal2, planePoint));
+      return (planeNormal.x * point.x + planeNormal.y * point.y + planeNormal.z * point.z - GetDotProduct(planeNormal, planePoint));
     };
 
   //These are containers for storing the points that are inside or outside of the plane to
@@ -117,12 +125,12 @@ int TriangleClipWithPlane(const Vector3D& planePoint, const Vector3D& planeNorma
 
     //The 2 remaining points are on the intersection between the plane and the triangle
     float tVal;
-    outputTriangle1.points[1] = VectorIntersectPlane(planePoint, planeNormal2, *insidePoints[0], *outsidePoints[0], tVal);
+    outputTriangle1.points[1] = VectorIntersectPlane(planePoint, planeNormal, *insidePoints[0], *outsidePoints[0], tVal);
     outputTriangle1.texels[1].u = tVal * (outsideTextels[0]->u - insideTextels[0]->u) + insideTextels[0]->u; 
     outputTriangle1.texels[1].v = tVal * (outsideTextels[0]->v - insideTextels[0]->v) + insideTextels[0]->v;
     outputTriangle1.texels[1].w = tVal * (outsideTextels[0]->w - insideTextels[0]->w) + insideTextels[0]->w;
 
-    outputTriangle1.points[2] = VectorIntersectPlane(planePoint, planeNormal2, *insidePoints[0], *outsidePoints[1], tVal);
+    outputTriangle1.points[2] = VectorIntersectPlane(planePoint, planeNormal, *insidePoints[0], *outsidePoints[1], tVal);
     outputTriangle1.texels[2].u = tVal * (outsideTextels[1]->u - insideTextels[0]->u) + insideTextels[0]->u; 
     outputTriangle1.texels[2].v = tVal * (outsideTextels[1]->v - insideTextels[0]->v) + insideTextels[0]->v;
     outputTriangle1.texels[2].w = tVal * (outsideTextels[1]->w - insideTextels[0]->w) + insideTextels[0]->w;
@@ -153,7 +161,7 @@ int TriangleClipWithPlane(const Vector3D& planePoint, const Vector3D& planeNorma
     outputTriangle1.texels[0] = *insideTextels[0];
     outputTriangle1.texels[1] = *insideTextels[1];
 
-    outputTriangle1.points[2] = VectorIntersectPlane(planePoint, planeNormal2, *insidePoints[0], *outsidePoints[0], tVal);
+    outputTriangle1.points[2] = VectorIntersectPlane(planePoint, planeNormal, *insidePoints[0], *outsidePoints[0], tVal);
     outputTriangle1.texels[2].u = tVal * (outsideTextels[0]->u - insideTextels[0]->u) + insideTextels[0]->u;
     outputTriangle1.texels[2].v = tVal * (outsideTextels[0]->v - insideTextels[0]->v) + insideTextels[0]->v;
     outputTriangle1.texels[2].w = tVal * (outsideTextels[0]->w - insideTextels[0]->w) + insideTextels[0]->w;
@@ -165,10 +173,10 @@ int TriangleClipWithPlane(const Vector3D& planePoint, const Vector3D& planeNorma
     //This used to be different, check backup of 8/11/2024
     outputTriangle2.texels[1] = outputTriangle1.texels[2];
 
-    outputTriangle2.points[2] = VectorIntersectPlane(planePoint, planeNormal2, *insidePoints[1], *outsidePoints[0], tVal);
-		outputTriangle2.texels[2].u = tVal * (outsideTextels[0]->u - insideTextels[1]->u) + insideTextels[1]->u;
-		outputTriangle2.texels[2].v = tVal * (outsideTextels[0]->v - insideTextels[1]->v) + insideTextels[1]->v;
-		outputTriangle2.texels[2].w = tVal * (outsideTextels[0]->w - insideTextels[1]->w) + insideTextels[1]->w;
+    outputTriangle2.points[2] = VectorIntersectPlane(planePoint, planeNormal, *insidePoints[1], *outsidePoints[0], tVal);
+	outputTriangle2.texels[2].u = tVal * (outsideTextels[0]->u - insideTextels[1]->u) + insideTextels[1]->u;
+	outputTriangle2.texels[2].v = tVal * (outsideTextels[0]->v - insideTextels[1]->v) + insideTextels[1]->v;
+	outputTriangle2.texels[2].w = tVal * (outsideTextels[0]->w - insideTextels[1]->w) + insideTextels[1]->w;
     return 2;
   }
 
@@ -183,13 +191,20 @@ for(int i = 0; i < trianglesToRaster.size(); i++)
     //When I also clip normals, then I will move this if statement up one scope
     if(SETTINGS_MAP[DRAW_NORMALS] == true)
     {
-      olc::vi2d point1;
+      /*olc::vi2d point1;
       olc::vi2d point2;
       point1.x = trianglesToRaster[i].points[1].x;
       point1.y = trianglesToRaster[i].points[1].y;
       point2.x = normalsToRaster[i].x;
       point2.y = normalsToRaster[i].y;
-      RI.engine->DrawLine(point1, point2, NORMAL_COLOR);
+      RI.engine->DrawLine(point1, point2, NORMAL_COLOR);*/
+      const float& x1 = trianglesToRaster[i].points[1].x;
+      const float& y1 = trianglesToRaster[i].points[1].y;
+      const float& x2 = normalsToRaster[i].x;
+      const int& y2 = normalsToRaster[i].y;
+      float w1 = trianglesToRaster[i].points[1].w;
+      float w2 = normalsToRaster[i].w;
+      DrawLineWithDepthBufferInline(x1, y1, 1.0f / w1, x2, y2, 1.0f / w2, RI, NORMAL_COLOR);
     }
 
     if(SETTINGS_MAP[DO_SCREEN_SPACE_CLIPPING] == false)
@@ -266,9 +281,6 @@ void DoViewSpaceClipping(olc::PixelGameEngine* engine, Player* player, vector<Tr
     for(int i = 0; i < clippedTrianglesNumber; i++)
     {
       Triangle projectedTriangle = MultiplyTriangle(clippedTriangles[i], PROJECTION_MATRIX, false);
-      projectedTriangle.color = clippedTriangles[i].color;
-      for(int j = 0; j < 3; j++)
-        projectedTriangle.texels[j] = clippedTriangles[i].texels[j];
 
       NormalizeTriangleTextels(projectedTriangle);
 
@@ -298,5 +310,11 @@ void DoViewSpaceClipping(olc::PixelGameEngine* engine, Player* player, vector<Tr
 
     ScreenNormalizeTriangle(projectedTriangle, (float)engine->ScreenWidth(), (float)engine->ScreenHeight());
     trianglesToRaster.push_back(projectedTriangle);
+    if(SETTINGS_MAP[DRAW_NORMALS] == true)
+    {
+        Vector3D tempNormal = GetNormal(projectedTriangle);
+        Vector3D normalPoint = GetProjectedNormal(engine, PROJECTION_MATRIX, projectedTriangle, tempNormal);
+        normalsToRaster.push_back(normalPoint);
+    }
   }
 }

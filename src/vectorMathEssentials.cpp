@@ -8,6 +8,16 @@ void NormalizeVector(Vector3D& input)
   DivideVectorScalar(input, vectorLength);
 }
 
+Vector3D NormalizeVectorOP(const Vector3D& input)
+{
+  float vectorLength = GetVectorLength(input);
+  if(vectorLength == 0.0f)
+    return Vector3D();
+  Vector3D result = input;
+  DivideVectorScalar(result, vectorLength);
+  return result;
+}
+
 Vector3D AddVector(const Vector3D& input1, const Vector3D& input2)
 {
   Vector3D toReturn;

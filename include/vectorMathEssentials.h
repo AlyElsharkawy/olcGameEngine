@@ -2,6 +2,7 @@
 #include "geometricPrimitives.h"
 
 void NormalizeVector(Vector3D& input);
+Vector3D NormalizeVectorOP(const Vector3D& input);
 Vector3D AddVector(const Vector3D& input1, const Vector3D& input2);
 void AddVectorIP(Vector3D& input1, const Vector3D& input2);
 Vector2D AddVector(const Vector2D& input1, const Vector2D& input2);

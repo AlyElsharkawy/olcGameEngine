@@ -23,4 +23,5 @@ void WaitTillFPS(const float& fElapsedTime, const int& targetFPS);
 u32string GetU32String(const string& stringInput);
 string GetCurrentDate(bool twelveHour = false);
 void TakeScreenshot(olc::PixelGameEngine* engine);
+void HexToRGB(const std::string& hex, uint8_t& r, uint8_t& g, uint8_t& b);
 

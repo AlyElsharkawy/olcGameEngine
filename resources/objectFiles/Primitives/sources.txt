@@ -1,0 +1,1 @@
+Bunny: https://graphics.stanford.edu/~mdfisher/Data/Meshes/bunny.obj

@@ -63,13 +63,26 @@ void ScreenNormalizeTriangle(Triangle& input, const float ScreenWidth, const flo
 //I will fix the projection matrix later
 void InvertTriangleXY(Triangle& input)
 {
-  //This is due to an edit in the projection matrix
-  input.points[0].x *= -1.0f;
-  input.points[0].y *= -1.0f;
-  input.points[1].x *= -1.0f;
-  input.points[1].y *= -1.0f;
-  input.points[2].x *= -1.0f;
-  input.points[2].y *= -1.0f;
+    /*input.points[0].x *= -1.0f;
+	input.points[1].x *= -1.0f;
+	input.points[2].x *= -1.0f;*/
+	input.points[0].y *= -1.0f;
+	input.points[1].y *= -1.0f;
+	input.points[2].y *= -1.0f;
+}
+
+void InvertTriangleX(Triangle& input)
+{
+    input.points[0].x *= -1.0f;
+    input.points[1].x *= -1.0f;
+    input.points[2].x *= -1.0f;
+}
+
+void InvertTriangleY(Triangle& input)
+{
+    input.points[0].y *= -1.0f;
+    input.points[1].y *= -1.0f;
+    input.points[2].y *= -1.0f;
 }
 
 void NormalizeTriangleTextels(Triangle& input)

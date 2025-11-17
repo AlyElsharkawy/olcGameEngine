@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <thread>
 #include <ctime>
+#include <tuple>
 #include "miscFunctions.h"
 #include "globalVariables.h"
 #include "stb_image_write.h"
@@ -211,4 +212,24 @@ void TakeScreenshot(olc::PixelGameEngine* engine)
   string path = ConcatenatePaths({GetPath({"..","..","screenshots"}), name});
   cout << "Screenshot Path: " << path << '\n';
   stbi_write_png(path.c_str(), screenWidth, screenHeight, 4, screenBuffer.data(), screenWidth * 4);
+}
+
+void HexToRGB(const std::string& hex, uint8_t& r, uint8_t& g, uint8_t& b)
+{
+    std::string h = hex;
+
+    // Remove leading '#'
+    if (!h.empty() && h[0] == '#')
+        h.erase(0, 1);
+
+
+    if (h.size() != 6)
+    {
+        r = 0; g = 0; b = 0;
+        throw std::invalid_argument("Hex color must be characters.");
+    }
+
+    r = std::stoi(h.substr(0, 2), nullptr, 16);
+    g = std::stoi(h.substr(2, 2), nullptr, 16);
+    b = std::stoi(h.substr(4, 2), nullptr, 16);
 }

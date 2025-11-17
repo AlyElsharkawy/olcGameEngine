@@ -23,6 +23,7 @@
 #include "miscPrimitives.h"
 #include "inputManager.h"
 #include "audioManager.h"
+#include "timerUtility.h"
 
 #define DEFAULT_COLORS olc::BLUE, olc::GREEN, olc::RED
 
@@ -183,19 +184,11 @@ class EngineReborn : public olc::PixelGameEngine
     testMesh->SetTranslationOffsets(0.0f,0.0f, 0.0f);
     testMesh->SetRotationSpeeds(1.0f, 0.0f, 0.0f);
     testMesh->SetTextureImage(GetPathFromResources({"textures", "stoneBrickWall.png"}));
-    //testMesh->SetDiffuseColor(210, 100, 45, 255);
     
-    //testMesh->PrintTextureInformation();
-    testMesh->lookAtVector = mainLamp.GetDirection();
-    testMesh->isStatic = true;
 
     Mesh* testMesh2 = testMesh->Duplicate();
     testMesh2->SetTranslationOffsets(0, 0, 3);
     testMesh2->SetDiffuseColor(210, 4, 45, 255);
-    //testMesh2->SetTextureImage(GetPathFromResources({"textures", "ground.png"}));
-    //testMesh2->doAutomaticRotation = true;
-    //testMesh2->doAutomaticRotations[1] = true;
-    //testMesh->PrintMeshToDisk(ConcatenatePaths({GetPathFromResources(), "testmesh1.mesh"}));
     
     Mesh* testMesh3 = testMesh2->Duplicate();
     //testMesh3->SetTextureImage(GetPathFromResources({"textures", "brickWall.png"}));
@@ -204,34 +197,44 @@ class EngineReborn : public olc::PixelGameEngine
     testMesh3->doAutomaticRotation = true;
     //testMesh3->doAutomaticRotations[1] = true;
 
-    /*Mesh* mountainsObj = new Mesh();
-    mountainsObj->LoadFromOBJFile(GetPathFromResources({"objectFiles", "Primitives", "mountains.obj"}), false);
-    mountainsObj->SetScalingOffsets(0.1f, 0.1f, 0.1f);
-    allObjects.AppendMesh(mountainsObj);*/
+
+    Mesh* bunny = new Mesh();
+    bunny->LoadFromOBJFile(GetPathFromResources({"objectFiles", "Primitives", "bunny.obj"}));
+    bunny->doAutomaticRotation = true;
+    bunny->doAutomaticRotations[1] = true;
+    bunny->SetTranslationOffsets(0, 0, 9);
+    bunny->SetScalingOffsets(60, 60, 60);
+    uint8_t rVal, bVal, gVal;
+    HexToRGB("d5e1f0", rVal, gVal, bVal);
+    bunny->SetDiffuseColor(rVal, gVal, bVal, 255);
     
     allObjects.AppendMesh(testMesh);
     allObjects.AppendMesh(testMesh2);
     allObjects.AppendMesh(testMesh3);
+    allObjects.AppendMesh(bunny);
     allObjects.UpdateTotalCounts();
     return true;
   }
 
   bool OnUserUpdate(float fElapsedTime) override
   {
-    if(SETTINGS_MAP[DO_PERFORMANCE_CLEARING] == true)
-     ClearScreenPerformance(this, trianglesToRaster);
-    else
+    ScopedTimer totalTimeTimer("TOTAL TIME");
     {
-      Clear(olc::BLACK);
-      for(int i = 0; i < ScreenWidth() * ScreenHeight(); i++)
-        RI.depthBuffer[i] = 0.0f;
+      ScopedTimer clearTimer("CLEAR SCREEN TIMER");
+      //Clear(olc::BLACK);
+      ClearOptimized();
+    }
+
+    {
+      ScopedTimer clearDepthBufferTimer("CLEAR DEPTH BUFFER");
+      //for(int i = 0; i < ScreenWidth() * ScreenHeight(); i++)
+        //RI.depthBuffer[i] = 0.0f;
+      std::memset(RI.depthBuffer, 0, ScreenHeight() * ScreenWidth() * sizeof(float));
+    }
 
       trianglesToRaster.clear();
       normalsToRaster.clear();
       trianglesRasteredCount = 0;
-      //preClipTris.clear();
-    }
-
     //Variable aliases
     Vector3D& cameraPosition = player->camera.cameraPosition;
     const float& farPlane = player->camera.GetFacingPlanes().second;
@@ -245,7 +248,7 @@ class EngineReborn : public olc::PixelGameEngine
       {
         for(int i = 0; i < 3; i++)
           if(mesh->doAutomaticRotations[i] == true)
-            mesh->rotationDegrees[i] += fElapsedTime * 3.0f;
+            mesh->rotationDegrees[i] += fElapsedTime * 0.4f;
       }
       //TODO: implement the WORLD MATRIX calculations 
       Matrix4x4 scalingMatrix, rotationMatrix, translationMatrix;
@@ -270,7 +273,8 @@ class EngineReborn : public olc::PixelGameEngine
 
         //Only draw triangles if the normal says its fits on screen
         Vector3D cameraRay = SubtractVector(transformedTriangle.points[0], cameraPosition);
-        if(GetDotProduct(normal, cameraRay) < 0.0f)
+        if(GetDotProduct(normal, cameraRay) < 0.0f &&
+          GetDistanceBetweenPoints(player->camera.cameraPosition, normal) <= farPlane)
         {
           //materials phase
           cameraTransformedTriangle = MultiplyTriangle(transformedTriangle, viewMatrix);
@@ -290,6 +294,7 @@ class EngineReborn : public olc::PixelGameEngine
           }
 
           //View space clipping phase          
+          ScopedTimer viewSpaceClippingTimer("VIEW SPACE CLIPPING");
           DoViewSpaceClipping(this, player, trianglesToRaster, normalsToRaster, cameraTransformedTriangle);
         }
       }
@@ -306,7 +311,10 @@ class EngineReborn : public olc::PixelGameEngine
       //Screen edges clipping and rasterization section
       //Rasterizing normals(if settings allow it)
       
-      DoScreenSpaceClipping(RI, trianglesToRaster, normalsToRaster, mesh);
+        {
+            ScopedTimer screenSpaceClippingTimer("SCREEN SPACE CLIPPING");
+            DoScreenSpaceClipping(RI, trianglesToRaster, normalsToRaster, mesh);
+        }
       trianglesRasteredCount += trianglesToRaster.size();
       trianglesToRaster.clear();
       normalsToRaster.clear();

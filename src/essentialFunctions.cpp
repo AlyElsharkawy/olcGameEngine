@@ -49,11 +49,11 @@ Matrix4x4 DoInputLoop(olc::PixelGameEngine* engine, Player* player)
 
   //Add Yaw (Look left. Aka, rotate left along y axis)
   if(InputManager::KeyHeld(engine, {LOOK_LEFT}))
-    fYaw -= CAMERA_ROTATION_SPEED * fElapsedTime;
+    fYaw += CAMERA_ROTATION_SPEED * fElapsedTime;
   
   //Subtract Yaw (Look right. Aka, Rotate right along y axis)
   else if(InputManager::KeyHeld(engine, {LOOK_RIGHT}))
-    fYaw += CAMERA_ROTATION_SPEED * fElapsedTime;
+    fYaw -= CAMERA_ROTATION_SPEED * fElapsedTime;
 
   //Add pitch (Look up. Aka, rotate up along local x axis)
   if(InputManager::KeyHeld(engine, {ROTATE_UP}) && fPitch <= 45.0f)
@@ -65,7 +65,7 @@ Matrix4x4 DoInputLoop(olc::PixelGameEngine* engine, Player* player)
 
   //This is where we will deal with forward and backward movement
   //Getting the camera to traverse in the relative forward direction is more involved
-  //We will create a new vector in the look direciton of the camera and scale its
+  //We will create a new vector in the look direction of the camera and scale its
   //This is essentially a velocity vector
 
   Vector3D tempForward = LookDirection;
@@ -84,10 +84,10 @@ Matrix4x4 DoInputLoop(olc::PixelGameEngine* engine, Player* player)
   // Calculate side movements
   Vector3D rightVector = GetCrossProduct(UP_DIRECTION, LookDirection);
   if(InputManager::KeyHeld(engine, {MOVE_LEFT}))
-    AddVectorIP(desiredMovement, rightVector);
+    SubtractVectorIP(desiredMovement, rightVector);
   
   else if(InputManager::KeyHeld(engine, {MOVE_RIGHT}))
-    SubtractVectorIP(desiredMovement, rightVector);
+    AddVectorIP(desiredMovement, rightVector);
 
   // Normalize the desired movement vector if it's not zero to prevent div by 0 exception
   if(IsZeroVector(desiredMovement) == false)
@@ -111,41 +111,6 @@ Matrix4x4 DoInputLoop(olc::PixelGameEngine* engine, Player* player)
   Matrix4x4 viewMatrix  = InvertPointAtMatrix(cameraMatrix); 
 
   return viewMatrix;
-}
-
-void ClearScreenPerformance(olc::PixelGameEngine* engine, const vector<Triangle>& trianglesToRaster)
-{
-  /*
-  //These are the previous points on the screen that we should clear
-  olc::vf2d pointTriPrevious1;
-  olc::vf2d pointTriPrevious2;
-  olc::vf2d pointTriPrevious3;
-  olc::vf2d pointNormPrevious1;
-  olc::vf2d pointNormPrevious2;
-
-  //I think iterating over the 2 vectors is more cache efficient
-  if(SETTINGS_MAP[DRAW_FACES] == true || SETTINGS_MAP[DRAW_LINES] == true)
-  {
-    for(int i = 0; i < trianglesToRaster.size(); i++)
-    {
-      pointTriPrevious1.x = trianglesToRaster[i].points[0].x; pointTriPrevious1.y = trianglesToRaster[i].points[0].y;
-      pointTriPrevious2.x = trianglesToRaster[i].points[1].x; pointTriPrevious2.y = trianglesToRaster[i].points[1].y;
-      pointTriPrevious3.x = trianglesToRaster[i].points[2].x; pointTriPrevious3.y = trianglesToRaster[i].points[2].y;
-      engine->FillTriangle(pointTriPrevious1, pointTriPrevious2, pointTriPrevious3, olc::BLACK);
-    }
-  }
-
-  if(SETTINGS_MAP[DRAW_NORMALS] == true)
-  {
-    for(int i = 0; i < normalsToRaster.size(); i++)
-    {
-      pointNormPrevious1.x = normalsToRaster[i].x; pointNormPrevious2.y = normalsToRaster[i].y;
-      pointNormPrevious2.x = trianglesToRaster[i].points[0].x;
-      pointNormPrevious2.y = trianglesToRaster[i].points[0].y;
-      engine->DrawLine(pointNormPrevious1, pointNormPrevious2, olc::BLACK);
-    }
-  }
-  */
 }
 
 float GetNoneMaterialLuminances(const Vector3D& normal, const deque<Light>& lightsDeque)

@@ -214,7 +214,7 @@ int x, y, dx, dy, dx1, dy1, px, py, xe, ye, i;
 
 		auto rol = [&](void) { pattern = (pattern << 1) | (pattern >> 31); return pattern & 1; };
 		olc::vi2d p1(x1, y1), p2(x2, y2);
-    float wVal = (w1 + w2) / 2.0f;
+    float wVal = std::min(w1, w2);
 		if (!RI.engine->ClipLineToScreen(p1, p2))
 			return;
 		x1 = p1.x; y1 = p1.y;
@@ -348,11 +348,9 @@ void DrawTriangleWithDepthBufferInline(int32_t x1, int32_t y1, float w1,
 void FillTriangleWithDepthBuffer(const Triangle &triangleInput,
                                  const RenderingInstance &RI, olc::Pixel p) {
   FillTriangleWithDepthBufferInline(
-      triangleInput.points[0].x, triangleInput.points[0].y,
-      1.0f / triangleInput.points[0].w, triangleInput.points[1].x,
-      triangleInput.points[1].y, 1.0f / triangleInput.points[1].w,
-      triangleInput.points[2].x, triangleInput.points[2].y,
-      1.0f / triangleInput.points[2].w, RI, p);
+      triangleInput.points[0].x, triangleInput.points[0].y, 1.0f / triangleInput.points[0].w, 
+      triangleInput.points[1].x, triangleInput.points[1].y, 1.0f / triangleInput.points[1].w,
+      triangleInput.points[2].x, triangleInput.points[2].y, 1.0f / triangleInput.points[2].w, RI, p);
 }
 
 void FillTriangleWithDepthBufferInline(int32_t x1, int32_t y1, float w1,

@@ -7,6 +7,8 @@ Triangle TranslateTriangle(const Triangle& input, float moveX, float moveY, floa
 void TranslateTriangleIP(Triangle& input, float moveX, float moveY, float moveZ);
 void ScreenNormalizeTriangle(Triangle& input, const float ScreenWidth, const float ScreenHeight);
 void InvertTriangleXY(Triangle& input);
+void InvertTriangleX(Triangle& input);
+void InvertTriangleY(Triangle& input);
 void NormalizeTriangleTextels(Triangle& input);
 Vector3D GetMidpoint(const Triangle& input);
 void ConvertToDNCoordinates(Triangle& input);

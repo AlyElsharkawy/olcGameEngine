@@ -1150,6 +1150,7 @@ namespace olc
 		void DrawRotatedStringPropDecal(const olc::vf2d& pos, const std::string& sText, const float fAngle, const olc::vf2d& center = { 0.0f, 0.0f }, const olc::Pixel col = olc::WHITE, const olc::vf2d& scale = { 1.0f, 1.0f });
 		// Clears entire draw target to Pixel
 		void Clear(Pixel p);
+		void ClearOptimized();
 		// Clears the rendering back buffer
 		void ClearBuffer(Pixel p, bool bDepth = true);
 		// Returns the font image
@@ -2374,6 +2375,14 @@ namespace olc
 		Pixel* m = GetDrawTarget()->GetData();
 		for (int i = 0; i < pixels; i++) m[i] = p;
 	}
+
+	void PixelGameEngine::ClearOptimized()
+	{
+		int pixels = GetDrawTargetWidth() * GetDrawTargetHeight();
+		Pixel* m = GetDrawTarget()->GetData();
+		std::fill(m, m + pixels, Pixel(0,0,0,255));
+	}
+
 
 	void PixelGameEngine::ClearBuffer(Pixel p, bool bDepth)
 	{ renderer->ClearBuffer(p, bDepth);	}

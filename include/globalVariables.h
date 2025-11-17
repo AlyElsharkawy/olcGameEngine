@@ -7,9 +7,6 @@ enum SETTINGS_ENUM : uint8_t
   DRAW_LINES,
   DRAW_FACES,
 
-  DO_SPLASH_SCREEN,
-  DO_PERFORMANCE_CLEARING,
-
   DO_DEBUG_MENU,
 
   VISUALIZE_CLIPPING,
@@ -23,10 +20,6 @@ inline unordered_map<uint8_t,bool> SETTINGS_MAP
   {DRAW_LINES , true},
   {DRAW_FACES, true},
 
-  {DO_SPLASH_SCREEN, false},
-
-  {DO_PERFORMANCE_CLEARING, false},
-  
   {DO_DEBUG_MENU, true},
 
   {VISUALIZE_CLIPPING, false},
