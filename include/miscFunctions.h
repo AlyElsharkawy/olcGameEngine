@@ -15,7 +15,7 @@ filesystem::path GetPathObject(std::initializer_list<string> input, bool interup
 string __CheckPathValidity(const filesystem::path& pathToCheck, bool interrupting, const string& failLocation); 
 string GetPath(std::initializer_list<string> input = {}, bool interupting = false);
 string GetPathFromResources(std::initializer_list<string> input = {}, bool interupting = false);
-string GetPathFromConfig(std::initializer_list<string> input = {}, bool interupting = false);
+string GetPathFromConfig(std::initializer_list<string> input = {});
 string GetPathFromAudio(std::initializer_list<string> input = {}, bool interrupting = false);
 string ConcatenatePaths(std::initializer_list<string> input);
 void PrintColor(const olc::Pixel& color);

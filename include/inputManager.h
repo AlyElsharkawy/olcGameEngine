@@ -34,6 +34,38 @@ enum BASIC_CONTROLS_ENUM
   SPECIAL_TWO, //e.g control
   SPECIAL_THREE, //e.g enter
   SPECIAL_FOUR, //placeholder. Alt isn't supported
+
+  //Miscellaneous keys. These are intended to be used for special abilities and such
+  MISC_1,
+  MISC_2,
+  MISC_3,
+  MISC_4,
+  MISC_5,
+
+  //Numeric keys (top row of keyboard)
+  NUM_1,
+  NUM_2,
+  NUM_3,
+  NUM_4,
+  NUM_5,
+  NUM_6,
+  NUM_7,
+  NUM_8,
+  NUM_9,
+  NUM_0,
+
+  //Numpad keys (side of keyboard)
+  NUMPAD_1,
+  NUMPAD_2,
+  NUMPAD_3,
+  NUMPAD_4,
+  NUMPAD_5,
+  NUMPAD_6,
+  NUMPAD_7,
+  NUMPAD_8,
+  NUMPAD_9,
+  NUMPAD_0,
+
   BASIC_CONTROLS_SIZE, //Will always contain the size of the enum
 };
 
@@ -59,5 +91,5 @@ public:
   static bool KeyPressed(olc::PixelGameEngine* engine, int input);
   static bool KeyHeld(olc::PixelGameEngine* engine, std::initializer_list<int> input);
   static bool KeyReleased(olc::PixelGameEngine* engine, std::initializer_list<int> input);
-  static void ReassignKey(olc::Key input, const string& newKey);
+  static bool ReassignKey(olc::Key input, const string& newKey);
 };

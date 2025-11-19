@@ -121,15 +121,15 @@ string GetPathFromResources(std::initializer_list<string> input, bool interrupti
   return __CheckPathValidity(tempPath, interrupting, "resources");
 }
 
-string GetPathFromConfig(std::initializer_list<string> input, bool interrupting)
+string GetPathFromConfig(std::initializer_list<string> input)
 {
-  filesystem::path tempPath = GetPathObject({"..", "..", "resources","config"}, interrupting);
+  filesystem::path tempPath = GetPathObject({"..", "..", "resources","config"}, false);
   for(const auto& elm : input)
   {
     tempPath /= elm;
   }
   
-  return __CheckPathValidity(tempPath, interrupting, "config");
+  return std::filesystem::weakly_canonical(tempPath);
 }
 
 string GetPathFromAudio(std::initializer_list<string> input, bool interrupting)
@@ -165,7 +165,7 @@ void WaitTillFPS(const float& fElapsedTime, const int& targetFPS)
   if(timeToWait >= 0)
   {
     int timeToWaitMillis = ceil(timeToWait * 1000.0f);
-    cout << "We will wait for " << timeToWaitMillis << " miliseconds\n";
+    cout << "We will wait for " << timeToWaitMillis << " milliseconds\n";
     this_thread::sleep_for(chrono::milliseconds(timeToWaitMillis));
   }
 }

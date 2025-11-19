@@ -1,3 +1,4 @@
+#include <string>
 #include <yaml-cpp/yaml.h>
 #include <fstream>
 #include <vector>
@@ -6,16 +7,22 @@
 
 InputManager::InputManager()
 {
+  //The keypad had to be added to give applications a way to differentiate between keypad and numpad
+  //number presses
   this->KEY_TO_STRING_LEGEND = 
   unordered_map<olc::Key, string>
   {
     {olc::Key::UP, "UP"}, {olc::Key::DOWN, "DOWN"},
     {olc::Key::LEFT, "LEFT"}, {olc::Key::RIGHT, "RIGHT"},
-    {olc::Key::CTRL, "CTRL"}, {olc::Key::SPACE, "SPACE"}, {olc::Key::SHIFT, "SHIFT"}, {olc::Key::DEL, "DEL"},
+    {olc::Key::CTRL, "CTRL"}, {olc::Key::SHIFT, "SHIFT"}, {olc::Key::DEL, "DEL"},
     {olc::Key::SPACE, "SPACE"} , {olc::Key::ESCAPE, "ESCAPE"},
     {olc::Key::F1, "F1"}, {olc::Key::F2, "F2"}, {olc::Key::F3, "F3"}, {olc::Key::F4, "F4"},
     {olc::Key::F5, "F5"}, {olc::Key::F6, "F6"}, {olc::Key::F7, "F7"}, {olc::Key::F8, "F8"},
     {olc::Key::F9, "F9"}, {olc::Key::F10, "F10"}, {olc::Key::F11, "F11"}, {olc::Key::F12, "F12"},
+    {olc::Key::K1, "K1"}, {olc::Key::K2, "K2"}, {olc::Key::K3, "K3"}, {olc::Key::K4, "K4"}, {olc::Key::K5, "K5"},
+    {olc::Key::K6, "K6"}, {olc::Key::K7, "K7"}, {olc::Key::K8, "K8"}, {olc::Key::K9, "K9"}, {olc::Key::K0, "K0"},
+    {olc::Key::NP1, "NP1"}, {olc::Key::NP2, "NP2"}, {olc::Key::NP3, "NP3"}, {olc::Key::NP4, "NP4"}, {olc::Key::NP5, "NP5"},
+    {olc::Key::NP6, "NP6"}, {olc::Key::NP7, "NP7"}, {olc::Key::NP8, "NP8"}, {olc::Key::NP9, "NP9"}, {olc::Key::NP0, "NP0"},
   };
   
   this->STRING_TO_KEY_LEGEND =
@@ -23,16 +30,20 @@ InputManager::InputManager()
   {
     {"UP", olc::Key::UP}, {"DOWN", olc::Key::DOWN},
     {"LEFT", olc::Key::LEFT} , {"RIGHT", olc::Key::RIGHT},
-    {"CTRL", olc::Key::CTRL} , {"SHIFT", olc::Key::SHIFT}, {"SHIFT", olc::Key::SHIFT}, {"DEL", olc::Key::DEL},
+    {"CTRL", olc::Key::CTRL} , {"SHIFT", olc::Key::SHIFT}, {"DEL", olc::Key::DEL},
     {"SPACE", olc::Key::SPACE}, {"ESCAPE", olc::Key::ESCAPE},
     {"F1", olc::Key::F1}, {"F2", olc::Key::F2}, {"F3", olc::Key::F3}, {"F4", olc::Key::F4},
     {"F5", olc::Key::F5}, {"F6", olc::Key::F6}, {"F7", olc::Key::F7}, {"F8", olc::Key::F8},
     {"F9", olc::Key::F9}, {"F10", olc::Key::F10}, {"F11", olc::Key::F11}, {"F12", olc::Key::F12},
+    {"K1", olc::Key::K1}, {"K2", olc::Key::K2}, {"K3", olc::Key::K3}, {"K4", olc::Key::K4}, {"K5", olc::Key::K5},
+    {"K6", olc::Key::K6}, {"K7", olc::Key::K7}, {"K8", olc::Key::K8}, {"K9", olc::Key::K9}, {"K0", olc::Key::K0},
+    {"NP1", olc::Key::NP1}, {"NP2", olc::Key::NP2}, {"NP3", olc::Key::NP3}, {"NP4", olc::Key::NP4}, {"NP5", olc::Key::NP5},
+    {"NP6", olc::Key::NP6}, {"NP7", olc::Key::NP7}, {"NP8", olc::Key::NP8}, {"NP9", olc::Key::NP9}, {"NP0", olc::Key::NP0},
   };
   
   this->BASIC_CONTROLS = vector<olc::Key>(BASIC_CONTROLS_SIZE);
-  InitializeInputMaps();
   WriteInitialInputs();
+  InitializeInputMaps();
 }
 
 InputManager& InputManager::Get()
@@ -66,6 +77,7 @@ void InputManager::InitializeInputMaps()
 
 bool InputManager::InitializeInputs(const string& yamlFile)
 {
+  Get().WriteInitialInputs();
   YAML::Node root = YAML::LoadFile(GetPathFromConfig({"input.yaml"}));
   if(root.IsMap() == true)
   {
@@ -107,7 +119,32 @@ void InputManager::WriteInitialInputs()
   root[to_string(SPECIAL_ONE)] = "SHIFT";
   root[to_string(SPECIAL_TWO)] = "CTRL";
   root[to_string(SPECIAL_THREE)] = "DEL";
-  root[to_string(SPECIAL_FOUR)] = "X"; //Placeholder. Alt isn't supported
+
+  //Numeric keys (top row of keyboard)
+  root[to_string(NUM_1)] = "K1";
+  root[to_string(NUM_2)] = "K2";
+  root[to_string(NUM_3)] = "K3";
+  root[to_string(NUM_4)] = "K4";
+  root[to_string(NUM_5)] = "K5";
+  root[to_string(NUM_6)] = "K6";
+  root[to_string(NUM_7)] = "K7";
+  root[to_string(NUM_8)] = "K8";
+  root[to_string(NUM_9)] = "K9";
+  root[to_string(NUM_0)] = "K0";
+
+  //Numpad keys (side of keyboard)
+  root[to_string(NUMPAD_1)] = "NP1";
+  root[to_string(NUMPAD_2)] = "NP2";
+  root[to_string(NUMPAD_3)] = "NP3";
+  root[to_string(NUMPAD_4)] = "NP4";
+  root[to_string(NUMPAD_5)] = "NP5";
+  root[to_string(NUMPAD_6)] = "NP6";
+  root[to_string(NUMPAD_7)] = "NP7";
+  root[to_string(NUMPAD_8)] = "NP8";
+  root[to_string(NUMPAD_9)] = "NP9";
+  root[to_string(NUMPAD_0)] = "NP0";
+
+  //root[to_string(SPECIAL_FOUR)] = "X"; //Placeholder. Alt isn't supported
   filesystem::path configFilePath = ConcatenatePaths({GetPathFromConfig(), "input.yaml"});
   cout << "The configFilePath is: " << configFilePath.string() << '\n';
   ofstream outputFile(configFilePath);
@@ -170,9 +207,16 @@ bool InputManager::KeyReleased(olc::PixelGameEngine* engine ,std::initializer_li
   return true;
 }
 
-void InputManager::ReassignKey(olc::Key input, const string& newKey)
+bool InputManager::ReassignKey(olc::Key input, const string& newKey)
 {
-  olc::Key newInput = Get().STRING_TO_KEY_LEGEND.at(newKey);
-  Get().BASIC_CONTROLS[input] = newInput;
+  try
+  {
+    olc::Key newInput = Get().STRING_TO_KEY_LEGEND.at(newKey);
+    Get().BASIC_CONTROLS[input] = newInput;
+  }
+  catch(const exception& e)
+  {
+    return false;
+  }
 }
 
