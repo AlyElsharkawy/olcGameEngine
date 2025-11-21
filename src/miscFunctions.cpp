@@ -7,10 +7,13 @@
 #include <ctime>
 #include <tuple>
 #include "miscFunctions.h"
+#include "miscPrimitives.h"
 #include "globalVariables.h"
 #include "stb_image_write.h"
 
 using namespace std;
+
+#define EASY_PRINT_SIZE(primitiveName) cout << "Size of " #primitiveName ": " << sizeof(primitiveName) << " bytes\n"; 
 
 olc::Pixel GetNoneMaterialColorCode(float luminance)
 {
@@ -217,20 +220,42 @@ void HexToRGB(const std::string& hex, uint8_t& r, uint8_t& g, uint8_t& b)
 
 void PrintGeometricPrimitivesSize()
 {
-
+  cout << "GEOMETRIC PRIMITIVES SIZE: " << '\n';
+  EASY_PRINT_SIZE(Vector2D);
+  EASY_PRINT_SIZE(Vector3D);
+  EASY_PRINT_SIZE(Triangle);
+  EASY_PRINT_SIZE(std::span<Vector2D>);
+  EASY_PRINT_SIZE(std::span<Vector3D>);
+  EASY_PRINT_SIZE(Mesh);
+  cout << "\tMesh also contains 2 olc::Decal, 2 olc::Sprite, and 1 olc::Pixel pointers\n";
+  EASY_PRINT_SIZE(MeshList);
+  EASY_PRINT_SIZE(Matrix4x4);
+  cout << '\n';
 }
 
 void PrintMiscellaneousPrimitivesSize()
 {
-
+  cout << "MISCELLANROUS PRIMITIVES SIZE: \n";
+  EASY_PRINT_SIZE(Light);
+  EASY_PRINT_SIZE(RenderingInstance);
+  EASY_PRINT_SIZE(Camera);
+  EASY_PRINT_SIZE(Player);
+  cout << '\n';
 }
 
 void PrintOLCObjectsSize()
 {
-
+  cout << "OLC PRIMITIVES SIZE: " << '\n';
+  EASY_PRINT_SIZE(olc::Pixel);
+  EASY_PRINT_SIZE(olc::Decal);
+  cout << "\tDecal also contains a olc::Sprite pointer\n"; 
+  EASY_PRINT_SIZE(olc::Sprite);
+  cout << '\n';
 }
 
 void PrintAllPrimitiveSizes()
 {
-
+  PrintGeometricPrimitivesSize();
+  PrintMiscellaneousPrimitivesSize();
+  PrintOLCObjectsSize();
 }

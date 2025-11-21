@@ -300,7 +300,6 @@ void SetInitialObjects(olc::PixelGameEngine* engine, MeshList& allObjects, deque
   if(sceneNumber.has_value()) 
   {
     chosenScene = *sceneNumber;
-    cout << "CHOSEN SCENE: " << chosenScene << '\n';
   }
 
   //Standard testing environment

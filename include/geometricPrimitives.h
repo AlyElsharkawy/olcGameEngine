@@ -1,7 +1,6 @@
 #pragma once
 #include <string>
 #include <deque>
-#include <span>
 #include "olcPixelGameEngine.h"
 
 #define BULK_COPY_ARRAY(src, dst, size) for(int i = 0; i < size; i++) dst[i] = src[i];
@@ -35,8 +34,8 @@ public:
   Vector3D points[3];
   //TO-DO: Make this optionally assignable
   Vector2D texels[3];
-  std::span<Vector3D> p = points;
-  std::span<Vector2D> t = texels;
+  //std::span<Vector3D> p = points;
+  //std::span<Vector2D> t = texels;
   olc::Pixel color;
   void PrintTriangle() const;
   string ExtractInfo() const;

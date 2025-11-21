@@ -116,6 +116,10 @@ if (CMAKE_BUILD_TYPE STREQUAL "release")
     target_compile_definitions(${PROJECT_NAME} PRIVATE BUILD_RELEASE)
 endif()
 
+if (CMAKE_BUILD_TYPE STREQUAL "debug")
+    target_compile_definitions(${PROJECT_NAME} PRIVATE BUILD_DEBUG)
+endif()
+
 # For Linux and windows support
 if(UNIX)
     set(PLATFORM_LIBRARIES X11 GL pthread stdc++fs png ${X11_LIBRARIES})

@@ -126,6 +126,9 @@ class EngineReborn : public olc::PixelGameEngine
     checkShowOptionsMenu = new CheckBox(this, &manager, fontHackButtons, "Show Options", {0,980}, DEFAULT_COLORS, 0.0f,{20,20}, true);
   
     SetInitialObjects(this, allObjects, allLights, NUM_1);
+    #ifdef BUILD_DEBUG
+      PrintAllPrimitiveSizes();
+    #endif
     return true;
   }
 
