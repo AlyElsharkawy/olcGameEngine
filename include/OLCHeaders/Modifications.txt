@@ -1,5 +1,6 @@
 olcPixelGameEngine.h:
     Made it so that I could see valueToIndex on line 1622
+    Created a ClearOptimized function that clears the screen using std::fill instead of a for loop
 
 olcSplashScreen:
     Made it so that it says an optional Aly Elsharkawy 2024 message instead of the normal one.

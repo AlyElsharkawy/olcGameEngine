@@ -26,29 +26,9 @@ void MultiplyPixel(olc::Pixel& inputPixel, const float& valueToMultiply)
   inputPixel.a *= valueToMultiply;
 }
 
-//LINUX ONLY
 //Actually, its now cross platform. Thank you C++17 filesystem header!
 string GetExecutableDirectory(char* argvInput) 
 {
-  /*char path[PATH_MAX];
-  ssize_t count = readlink("/proc/self/exe", path, PATH_MAX);
-
-  if (count == -1) {
-      // Handle error
-      return "";
-  }
-
-  // Convert the path to a string
-  string fullPath(path, count);
-
-  // Find the last slash in the path
-  size_t pos = fullPath.find_last_of("/");
-
-  // Extract the directory part of the path
-  return (string::npos == pos) ? "" : fullPath.substr(0, pos);*/ 
-
-  //This is the path to the directory from which you launched the program from
-  //This can vary cause you can supply a relative address if you launch the program from a terminal
   filesystem::path launchPath = filesystem::current_path() / filesystem::path(argvInput);
   try
   {
@@ -67,7 +47,7 @@ string GetLaunchPWD()
   return filesystem::current_path().string();
 }
 
-char GetPathSeperator()
+char GetPathSeparator()
 {
   return char(filesystem::path::preferred_separator);
 }
@@ -232,4 +212,25 @@ void HexToRGB(const std::string& hex, uint8_t& r, uint8_t& g, uint8_t& b)
     r = std::stoi(h.substr(0, 2), nullptr, 16);
     g = std::stoi(h.substr(2, 2), nullptr, 16);
     b = std::stoi(h.substr(4, 2), nullptr, 16);
+}
+
+
+void PrintGeometricPrimitivesSize()
+{
+
+}
+
+void PrintMiscellaneousPrimitivesSize()
+{
+
+}
+
+void PrintOLCObjectsSize()
+{
+
+}
+
+void PrintAllPrimitiveSizes()
+{
+
 }

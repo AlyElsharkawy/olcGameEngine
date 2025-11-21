@@ -68,7 +68,7 @@ class EngineReborn : public olc::PixelGameEngine
   public:
     //Object variables
     MeshList allObjects;
-    deque<Light> allLights;
+    deque<Light*> allLights;
     float totalElapsedTime = 0.0f;
     Matrix4x4 zRotMat = GetIdentityMatrix();
     Matrix4x4 yRotMat = GetIdentityMatrix();
@@ -124,95 +124,8 @@ class EngineReborn : public olc::PixelGameEngine
     checkDoViewSpaceClipping = new CheckBox(this, &manager, fontHackButtons, "Do View Space Clipping", {0,820}, DEFAULT_COLORS, 0.0f, {20,20}, SETTINGS_MAP[DO_VIEW_SPACE_CLIPPING]);
     checkDrawNormals = new CheckBox(this, &manager, fontHackButtons, "Draw Normals", {0,900}, DEFAULT_COLORS, 0.0f, {20,20}, SETTINGS_MAP[DRAW_NORMALS], true);
     checkShowOptionsMenu = new CheckBox(this, &manager, fontHackButtons, "Show Options", {0,980}, DEFAULT_COLORS, 0.0f,{20,20}, true);
-
-    /*
-      * UPDATE: As of 9/9/2024, mesh objects are now heap allocated!
-      * Note: Memory management issues are painful
-      * LIGHT SYNTAX
-      * Light mainLamp = new Light(LIGHT_TYPE, LOCATION, COLOR, INTENSITY)
-      * Location is a olc::vf2d
-      * Color is a olc::Pixel
-      * INTENSITY is a float from 0 to 1;
-      *
-      * Then push it back to the allLights object. The effect of lighting on a triangle/mesh will be
-      * the average of all the lamps combined
-      */
-      
-      /*
-       *  Note: The GetPath family of functions take any number of inputs in a pair of braces {}
-       *  GetPathFromResources() will return a path object pointing to the directories and files in
-       *  the functions parameters. For example:
-       *  GetPathFromResources({"folder1", "folder2", "file.txt"});
-       *  example->SetTextureImage(GetPathFromResources("textures", "tex1.png"));
-       *  example->SetDiffuseColor({255.0f, 128.0f, 0.0f}); this is an olc::Pixel()
-       *
-       *  In the above example, only the latest method will take effect. Thus, the mesh will have a
-       *  diffuse color. The texture image will be deleted.
-       *
-       *  example->SetScalingOffsets(2.0f,2.0f, 2.0f)'
-       *  example->SetTranslationOffsets(50.0f,50.f, 50.0f);
-       *  example->doAutomaticRotation = true;
-       *  
-       *  example->isStatic = true //true is default
-       *  if its not static, then you can set a lookAtVector parameter.
-       *  The mesh will then be facing parallel to that vector.
-       *  example->lookAtVector = {x,y,z,w}; Note: W is by default one
-      *   example->doXRotation and example.doYRotation and example.doZRotation
-      *   These are all bools that can be set to true and false.
-      *   The mesh will only rotate if example->doAutomaticRotation is also set to true
-      *   All of the above are defaulted to false
-       * */
-
-      /*
-      * MESH OBJECT SYNTAX
-      * First, you simply create the object 
-      * Mesh example;
-      * Then you can use its methods to modify it 
-      * Load a .obj file: example->LoadFromOBJFile(GetPathFromResources("objectFiles", "example.obj"));
-      * Then you can assign either a color or texture. If none are specified, then the mesh will be
-      * shaded in black and white
-      */
-
-    Light mainLamp(LIGHT_TYPES::LAMP_SUN, {0.0f,1.0f,-1.0f}, {255, 255, 255}, 0.8f);
-    allLights.push_back(mainLamp);
-    //Light testLamp(LIGHT_TYPES::LAMP_SUN, {0.0f,1.0f,-1.0f}, {253, 184, 19}, 0.5f);
-    //allLights.push_back(testLamp);
-
-    //Initialize hard coded meshes
-    Mesh* testMesh = new Mesh();
-    testMesh->LoadFromOBJFile(GetPathFromResources({"objectFiles", "Primitives", "GoodCube.obj"}), true);
-    testMesh->SetTranslationOffsets(0.0f,0.0f, 0.0f);
-    testMesh->SetRotationSpeeds(1.0f, 0.0f, 0.0f);
-    testMesh->SetTextureImage(GetPathFromResources({"textures", "stoneBrickWall.png"}));
-    
-
-    Mesh* testMesh2 = testMesh->Duplicate();
-    testMesh2->SetTranslationOffsets(0, 0, 3);
-    testMesh2->SetDiffuseColor(210, 4, 45, 255);
-    
-    Mesh* testMesh3 = testMesh2->Duplicate();
-    //testMesh3->SetTextureImage(GetPathFromResources({"textures", "brickWall.png"}));
-    testMesh3->SetDiffuseColor(0, 0, 139, 255);
-    testMesh3->SetTranslationOffsets(0, 3, 0);
-    testMesh3->doAutomaticRotation = true;
-    //testMesh3->doAutomaticRotations[1] = true;
-
-
-    Mesh* bunny = new Mesh();
-    bunny->LoadFromOBJFile(GetPathFromResources({"objectFiles", "Primitives", "bunny.obj"}));
-    bunny->doAutomaticRotation = true;
-    bunny->doAutomaticRotations[1] = true;
-    bunny->SetTranslationOffsets(0, 0, 9);
-    bunny->SetScalingOffsets(60, 60, 60);
-    uint8_t rVal, bVal, gVal;
-    HexToRGB("d5e1f0", rVal, gVal, bVal);
-    bunny->SetDiffuseColor(rVal, gVal, bVal, 255);
-    
-    allObjects.AppendMesh(testMesh);
-    allObjects.AppendMesh(testMesh2);
-    allObjects.AppendMesh(testMesh3);
-    allObjects.AppendMesh(bunny);
-    allObjects.UpdateTotalCounts();
+  
+    SetInitialObjects(this, allObjects, allLights, NUM_1);
     return true;
   }
 
@@ -241,6 +154,7 @@ class EngineReborn : public olc::PixelGameEngine
 
     //Get the View Matrix after input
     Matrix4x4 viewMatrix = DoInputLoop(this, player);
+    
     //Calculation loop
     for(const auto& mesh : allObjects.GetMeshList())
     {
@@ -248,7 +162,7 @@ class EngineReborn : public olc::PixelGameEngine
       {
         for(int i = 0; i < 3; i++)
           if(mesh->doAutomaticRotations[i] == true)
-            mesh->rotationDegrees[i] += fElapsedTime * 0.4f;
+            mesh->rotationDegrees[i] += fElapsedTime * 0.5f * mesh->rotationSpeeds[i];
       }
       //TODO: implement the WORLD MATRIX calculations 
       Matrix4x4 scalingMatrix, rotationMatrix, translationMatrix;
@@ -288,7 +202,7 @@ class EngineReborn : public olc::PixelGameEngine
           
           else if(mesh->GetMaterialType() == MATERIAL_TYPES::DIFFUSE)
           {
-            olc::Pixel tempColor = *(mesh->GetDiffuseColor());
+            const olc::Pixel& tempColor = *(mesh->GetDiffuseColor());
             olc::Pixel finalColor = GetDiffuseMaterialColor(normal, tempColor, allLights);
             cameraTransformedTriangle.color = finalColor;
           }
@@ -371,7 +285,7 @@ class EngineReborn : public olc::PixelGameEngine
     manager.Draw();
 
     //This is where screenshots are taken
-    DoAuxiliaryInputLoop(this);
+    DoAuxiliaryInputLoop(this, allObjects, allLights);
     return true;
   }
 };
