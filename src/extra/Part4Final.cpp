@@ -148,7 +148,7 @@ struct mesh
 					vec2d v;
 					s >> junk >> junk >> v.u >> v.v;
 					// A little hack for the spyro texture
-					v.u = 1.0f - v.u;
+					//v.u = 1.0f - v.u;
 					v.v = 1.0f - v.v;
 					texs.push_back(v);
 				}
@@ -638,7 +638,7 @@ public:
 
 
 		// Load object file
-    meshCube.LoadFromObjectFile(GetPathFromResources({"objectFiles", "Primitives", "GoodCube.obj"}), true);
+    meshCube.LoadFromObjectFile(GetPathFromResources({"objectFiles", "Objects", "cottage_tri.obj"}), true);
 
 		/*meshCube.tris = {
 
@@ -669,7 +669,7 @@ public:
 		};*/
 
 		
-    sprTex1 = new olc::Sprite(GetPathFromResources({"textures","stoneBrickWall.png"}));
+    sprTex1 = new olc::Sprite(GetPathFromResources({"textures","cottage_diffuse.png"}));
 
 		// Projection Matrix
 		matProj = Matrix_MakeProjection(90.0f, (float)ScreenHeight() / (float)ScreenWidth(), 0.1f, 1000.0f);

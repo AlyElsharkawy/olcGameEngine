@@ -108,7 +108,6 @@ class EngineReborn : public olc::PixelGameEngine
     MISSING_TEXTURE_SPRITE = new olc::Sprite(GetPathFromResources({"textures","missingTexture.png"}));
     //Initialize RenderingInstance
     RI.InitializeRenderingInstance(this);
-    RI.SetProjectionMatrix(player->camera.GetCameraProjectionMatrix());
 
     //Initializing Custom fonts 
     fontFreeSans = new olc::Font(GetPathFromResources({"fonts", "TTF", "Hack-Regular.ttf"}), 50);

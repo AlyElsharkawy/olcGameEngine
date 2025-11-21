@@ -441,7 +441,6 @@ void SetInitialObjects(olc::PixelGameEngine* engine, MeshList& allObjects, deque
 
     Mesh* cottageTest = new Mesh();
     cottageTest->LoadFromOBJFile(GetPathFromResources({"objectFiles", "Objects", "cottage_tri.obj"}), true);
-    //BUG: The texture must be inserted while it is flipped horizontally. This MUST be fixed
     cottageTest->SetTextureImage(GetPathFromResources({"textures", "cottage_diffuse.png"}));
     cottageTest->SetScalingOffsets(0.5f, 0.5f, 0.5f);
     cottageTest->SetTranslationOffsets(0.0f, 0.0f, 10.0f);

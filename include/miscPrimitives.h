@@ -24,9 +24,9 @@ class RenderingInstance
 public:
   float* depthBuffer = nullptr;
   olc::PixelGameEngine* engine = nullptr; 
-  Matrix4x4* PROJECTION_MATRIX = nullptr; //Optional. Better to get it from a camera instance instead
+  Mesh* selectedMesh;
   void InitializeRenderingInstance(olc::PixelGameEngine* engine);
-  void SetProjectionMatrix(const Matrix4x4& matrixInput);
+  //void SetProjectionMatrix(const Matrix4x4& matrixInput);
 };
 
 class Camera

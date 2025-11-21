@@ -68,11 +68,14 @@ void InputManager::InitializeInputMaps()
       index++;
     }
   }
-  cout << "ALL ELEMENTS IN MAP:\n";
-  for(auto it = this->STRING_TO_KEY_LEGEND.begin(); it != this->STRING_TO_KEY_LEGEND.end(); it++)
-  {
-    cout << it->first << " , " << it->second << '\n';
-  }
+  #ifdef BUILD_DEBUG
+    cout << "ALL ELEMENTS IN MAP:\n";
+    for(auto it = this->STRING_TO_KEY_LEGEND.begin(); it != this->STRING_TO_KEY_LEGEND.end(); it++)
+    {
+      cout << it->first << " , " << it->second << '\n';
+    }
+    cout << '\n';
+  #endif
 }
 
 bool InputManager::InitializeInputs(const string& yamlFile)

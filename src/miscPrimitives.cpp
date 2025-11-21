@@ -69,18 +69,6 @@ void RenderingInstance::InitializeRenderingInstance(olc::PixelGameEngine* engine
   this->depthBuffer = new float[engine->ScreenWidth() * engine->ScreenHeight()];
 }
 
-void RenderingInstance::SetProjectionMatrix(const Matrix4x4& matrixInput)
-{
-  this->PROJECTION_MATRIX = new Matrix4x4();
-  for(int i = 0; i < 4; i++)
-  {
-    for(int j = 0; j < 4; j++)
-    {
-      this->PROJECTION_MATRIX->mat[i][j] = matrixInput.mat[i][j];
-    }
-  }
-}
-
 Camera::Camera()
 {
   this->speedVertical = MINIMUM_VERTICAL_SPEED; this->speedHorizontal = MINIMUM_HORIZONTAL_SPEED;
