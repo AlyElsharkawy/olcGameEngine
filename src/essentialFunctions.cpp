@@ -101,7 +101,7 @@ Matrix4x4 DoInputLoop(olc::PixelGameEngine* engine, Player* player)
 
   Vector3D TARGET = {0.0f,0.0f, 1.0f};
   Vector3D newLookDirection;
-  Matrix4x4 cameraYRotationMatrix = GetRotationMatrix(ROT_TYPES::ROT_Y, fYaw * (mathPI / 180));
+  Matrix4x4 cameraYRotationMatrix = GetRotationMatrix(ROT_TYPES::ROT_Y, fYaw * (numbers::pi / 180));
 
   //LookDirection is now updated in the Y direction
   MultiplyMatrixVector(TARGET, cameraYRotationMatrix, newLookDirection);
@@ -149,16 +149,21 @@ olc::Pixel GetDiffuseMaterialColor(const Vector3D& normal, const olc::Pixel& dif
   float rVal = 0.0f;
   float gVal = 0.0f;
   float bVal = 0.0f;
+  float colorLightIntensity = 0.0f;
+  float normalizedRDiffuse, normalizedGDiffuse, normalizedBDiffuse;
+  float normalizedRLight, normalizedGLight, normalizedBLight;
   for(const auto& light : lightsDeque)
   {
-    float colorLightIntensity = max(GetDotProduct(normal, light->GetDirection()), MINIMUM_DIFFUSE_LUMINANCE);
     switch(light->GetLightType())
     {
       case LIGHT_TYPES::LAMP_SUN:
         {
-          rVal += diffuseColor.r * light->color.r * light->intensity * colorLightIntensity * SUN_DIVISION_CONSTANT;
-          gVal += diffuseColor.g * light->color.g * light->intensity * colorLightIntensity * SUN_DIVISION_CONSTANT;
-          bVal += diffuseColor.b * light->color.b * light->intensity * colorLightIntensity * SUN_DIVISION_CONSTANT;
+          Vector3D lightDirection = light->GetDirection();
+          MultiplyVectorScalar(lightDirection, -1.0f);
+          colorLightIntensity = max(GetDotProduct(normal, lightDirection), 0.0f);
+          if(colorLightIntensity == 0.0f)
+            continue;
+
           break;
         }
       case LIGHT_TYPES::LAMP_POINT:
@@ -172,10 +177,22 @@ olc::Pixel GetDiffuseMaterialColor(const Vector3D& normal, const olc::Pixel& dif
           break;
         }
     }
-    toReturn.r = clamp(rVal, MINIMUM_DIFFUSE_COLOR, 255.0f);
-    toReturn.g = clamp(gVal, MINIMUM_DIFFUSE_COLOR, 255.0f);
-    toReturn.b = clamp(bVal, MINIMUM_DIFFUSE_COLOR, 255.0f);
+
+    normalizedRDiffuse = diffuseColor.r / 255.0f;
+    normalizedGDiffuse = diffuseColor.g / 255.0f;
+    normalizedBDiffuse = diffuseColor.b / 255.0f;
+
+    normalizedRLight = light->color.r / 255.0f;
+    normalizedGLight = light->color.g / 255.0f;
+    normalizedBLight = light->color.b / 255.0f;
+
+    rVal += normalizedRDiffuse * normalizedRLight * colorLightIntensity * light->intensity;
+    gVal += normalizedGDiffuse * normalizedGLight * colorLightIntensity * light->intensity;
+    bVal += normalizedBDiffuse * normalizedBLight * colorLightIntensity * light->intensity;
   }
+  toReturn.r = clamp(rVal * 255.0f, MINIMUM_DIFFUSE_COLOR, 255.0f);
+  toReturn.g = clamp(gVal * 255.0f, MINIMUM_DIFFUSE_COLOR, 255.0f);
+  toReturn.b = clamp(bVal * 255.0f, MINIMUM_DIFFUSE_COLOR, 255.0f);
   return toReturn;
 }
 
@@ -290,7 +307,7 @@ void ClearAllObjectsandLights(MeshList& allObjects, deque<Light*>& allLights)
 
 void CreateStandardSunLamp(deque<Light*>& allLights)
 {
-  Light* mainLamp = new Light(LIGHT_TYPES::LAMP_SUN, {0.0f,1.0f,-1.0f}, {255, 255, 255}, 0.8f); \
+  Light* mainLamp = new Light(LIGHT_TYPES::LAMP_SUN, {0.0f, -1.0f, 1.0f}, {255, 255, 255}, 1.0f);
   allLights.push_back(mainLamp);
 }
 

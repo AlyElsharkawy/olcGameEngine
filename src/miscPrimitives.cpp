@@ -10,7 +10,7 @@ Light::Light(const short& lightType, const Vector3D& direction, const olc::Pixel
   bool isLightTypeValid = this->SetLightType(lightType);
   if(isLightTypeValid == false)
     return;
-  this->SetLightDirection(direction);
+  this->SetLightDirection(NormalizeVectorOP(direction));
   this->color = color;
   this->intensity = intensity;
 }
@@ -143,7 +143,7 @@ void Camera::SetFacingPlanes(const float& nearPlane, const float& farPlane)
 
 void Camera::CalculateProjectionMatrix()
 {
-  float fovRadians = 1.0f / tanf(this->FOV * 0.5 / 180.0f * mathPI);
+  float fovRadians = 1.0f / tanf(this->FOV * 0.5 / 180.0f * numbers::pi);
   this->projectionMatrix = GetProjectionMatrix(ASPECT_RATIO, fovRadians, this->nearPlane, this->farPlane);
 }
 

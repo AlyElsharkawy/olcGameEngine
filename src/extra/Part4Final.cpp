@@ -288,7 +288,7 @@ private:
 	mat4x4 matProj;	// Matrix that converts from view space to screen space
 	vec3d vCamera = {-0.391247f, 2.033193f, 2.371213};	// Location of camera in world space
 	vec3d vLookDir;	// Direction vector along the direction camera points
-	float fYaw = 5.24655f * (mathPI / 180);		// FPS Camera rotation in XZ plane
+	float fYaw = 5.24655f * (numbers::pi / 180);		// FPS Camera rotation in XZ plane
 	float fTheta = 0.0f;	// Spins World transform
 
   olc::Sprite *sprTex1;

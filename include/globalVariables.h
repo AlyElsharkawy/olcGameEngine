@@ -60,15 +60,10 @@ enum LIGHT_TYPES : short
   LAMP_POINT,
 };
 
-const inline float mathPI = 3.14159f;
 inline float ASPECT_RATIO;
 
-const inline float SUN_DIVISION_CONSTANT = 1/100.0f;
 const inline float MINIMUM_NONE_LUMINANCE = 0.6f;
-
-const inline float MINIMUM_DIFFUSE_LUMINANCE = 0.3f;
 const inline float MINIMUM_DIFFUSE_COLOR = 10.0f;
-
 const inline float EPSILON = 1e-6f;
 
 //These are default values for the miscPrimitives.cpp file

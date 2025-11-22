@@ -123,7 +123,7 @@ Matrix4x4 GetArbitraryRotationMatrix(const Vector3D& axis, float fRadians)
   //Vector Point = (A,B,C)
   //const float axisLength = GetVectorLength(axis);
   const float vVal = sqrtf(axis.y * axis.y + axis.z * axis.z);
-  const float toRadians = mathPI / 180.0f;
+  const float toRadians = numbers::pi / 180.0f;
   const float xTheta = asinf((axis.z / vVal)) * toRadians;
   const float yTheta = asinf((axis.x / GetVectorLength(axis))) * toRadians;
   
