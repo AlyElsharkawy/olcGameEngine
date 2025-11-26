@@ -1,8 +1,10 @@
 #include "drawingRoutines.h"
+#include "essentialFunctions.h"
+#include "miscFunctions.h"
 #include "miscPrimitives.h"
 
 void DrawTexturedTriangle(const RenderingInstance &RI, const Triangle &input,
-                          const olc::Sprite *texture) {
+                          const tuple<float, float, float>& pixelIllumination, const olc::Sprite *texture) {
   const int screenSize = RI.engine->ScreenHeight() * RI.engine->ScreenWidth();
   int x1 = input.points[0].x;
   int x2 = input.points[1].x;
@@ -121,7 +123,11 @@ void DrawTexturedTriangle(const RenderingInstance &RI, const Triangle &input,
         // J is X and I is Y
         int offset = i * RI.engine->ScreenWidth() + j;
         if (offset < screenSize && tex_w > RI.depthBuffer[offset]) {
-          RI.engine->Draw(j, i, texture->Sample(tex_u / tex_w, tex_v / tex_w));
+          /*tuple<float, float, float> tempPixel = SampleNormalizedPixel(texture, (tex_u / tex_w), (tex_v / tex_w));
+          MultiplyNormalizedTuplePixel(tempPixel, pixelIllumination);
+          olc::Pixel finalPixel = ClampPixel(tempPixel);*/
+          olc::Pixel finalPixel = texture->Sample(tex_u / tex_w, tex_v / tex_w);
+          RI.engine->Draw(j, i, finalPixel);
           RI.depthBuffer[i * RI.engine->ScreenWidth() + j] = tex_w;
         }
         t += tstep;
@@ -182,8 +188,12 @@ void DrawTexturedTriangle(const RenderingInstance &RI, const Triangle &input,
 
         int offset = i * RI.engine->ScreenWidth() + j;
         if (offset < screenSize && tex_w > RI.depthBuffer[offset]) {
+          tuple<float, float, float> tempPixel = SampleNormalizedPixel(texture, (tex_u / tex_w), (tex_v / tex_w));
+          /*MultiplyNormalizedTuplePixel(tempPixel, pixelIllumination);
+          olc::Pixel finalPixel = ClampPixel(tempPixel);*/
+          olc::Pixel finalPixel = texture->Sample(tex_u / tex_w, tex_v / tex_w);
           // J is X and I is Y
-          RI.engine->Draw(j, i, texture->Sample(tex_u / tex_w, tex_v / tex_w));
+          RI.engine->Draw(j, i, finalPixel);
           RI.depthBuffer[offset] = tex_w;
         }
         t += tstep;

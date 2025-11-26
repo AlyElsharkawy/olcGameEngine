@@ -29,6 +29,34 @@ void MultiplyPixel(olc::Pixel& inputPixel, const float& valueToMultiply)
   inputPixel.a *= valueToMultiply;
 }
 
+void MultiplyNormalizedTuplePixel(tuple<float, float, float>& pixel1, const tuple<float, float, float>& pixel2)
+{
+  std::get<0>(pixel1) *= std::get<0>(pixel2);
+  std::get<1>(pixel1) *= std::get<1>(pixel2);
+  std::get<2>(pixel1) *= std::get<2>(pixel2);
+}
+
+olc::Pixel ClampPixel(const tuple<float, float, float>& input)
+{
+  olc::Pixel toReturn;
+  toReturn.r = clamp(std::get<0>(input) * 255.0f, MINIMUM_DIFFUSE_COLOR, 255.0f);
+  toReturn.g = clamp(std::get<1>(input) * 255.0f, MINIMUM_DIFFUSE_COLOR, 255.0f);
+  toReturn.b = clamp(std::get<2>(input) * 255.0f, MINIMUM_DIFFUSE_COLOR, 255.0f);
+  return toReturn;
+}
+
+tuple<float, float, float> SampleNormalizedPixel(const olc::Sprite* const texture, const float& x, const float& y)
+{
+  olc::Pixel toReturn = texture->Sample(x, y);
+  float rVal, gVal, bVal;
+  rVal = toReturn.r;
+  gVal = toReturn.g;
+  bVal = toReturn.b;
+  rVal /= 255.0f;
+  gVal /= 255.0f;
+  bVal /= 255.0f;
+  return std::make_tuple(rVal, gVal, bVal);
+}
 //Actually, its now cross platform. Thank you C++17 filesystem header!
 string GetExecutableDirectory(char* argvInput) 
 {

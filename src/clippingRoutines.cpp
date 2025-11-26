@@ -184,39 +184,11 @@ int TriangleClipWithPlane(const Vector3D& planePoint, const Vector3D& planeNorma
   return -1;
 }
 
-void DoScreenSpaceClipping(const RenderingInstance& RI, const vector<Triangle> &trianglesToRaster, const vector<Vector3D>& normalsToRaster, const Mesh* const meshInput)
+void DoScreenSpaceClipping(const RenderingInstance& RI, const Triangle& triangleToRaster, deque<Triangle>& triangleOutputs)
 {
-for(int i = 0; i < trianglesToRaster.size(); i++)
-  {
-    //When I also clip normals, then I will move this if statement up one scope
-    if(SETTINGS_MAP[DRAW_NORMALS] == true)
-    {
-      /*olc::vi2d point1;
-      olc::vi2d point2;
-      point1.x = trianglesToRaster[i].points[1].x;
-      point1.y = trianglesToRaster[i].points[1].y;
-      point2.x = normalsToRaster[i].x;
-      point2.y = normalsToRaster[i].y;
-      RI.engine->DrawLine(point1, point2, NORMAL_COLOR);*/
-      const float& x1 = trianglesToRaster[i].points[1].x;
-      const float& y1 = trianglesToRaster[i].points[1].y;
-      const float& x2 = normalsToRaster[i].x;
-      const int& y2 = normalsToRaster[i].y;
-      float w1 = trianglesToRaster[i].points[1].w;
-      float w2 = normalsToRaster[i].w;
-      DrawLineWithDepthBufferInline(x1, y1, 1.0f / w1, x2, y2, 1.0f / w2, RI, NORMAL_COLOR);
-    }
-
-    if(SETTINGS_MAP[DO_SCREEN_SPACE_CLIPPING] == false)
-    {
-      DrawTriangleToScreen(RI, trianglesToRaster[i], meshInput->GetMaterialType(), meshInput->GetTextureImage());
-    }
-
-    if(SETTINGS_MAP[DO_SCREEN_SPACE_CLIPPING] == true)
-    {
       Triangle clippedTriangles[2];
       deque<Triangle> trianglesQueue;
-      trianglesQueue.push_back(trianglesToRaster[i]);
+      trianglesQueue.push_back(triangleToRaster);
       int newTrianglesNumber = 1;
       for(int planeNumber = 0; planeNumber < 4; planeNumber++)
       {
@@ -257,10 +229,8 @@ for(int i = 0; i < trianglesToRaster.size(); i++)
 
       for(int j = 0; j < trianglesQueue.size(); j++)
       {
-        DrawTriangleToScreen(RI, trianglesQueue[j], meshInput->GetMaterialType(), meshInput->GetTextureImage());
+        triangleOutputs.push_back(trianglesQueue[j]);
       }
-    }
-  }
   //PrintTrianglesToDisk(rasterizedTriangles, ConcatenatePaths({GetPathFromResources(),"3D_ENGINE_REBORN_TRIANGLES.txt"}));
 }
 
@@ -291,12 +261,11 @@ void DoViewSpaceClipping(olc::PixelGameEngine* engine, Player* player, vector<Tr
       InvertTriangleXY(projectedTriangle);
       ScreenNormalizeTriangle(projectedTriangle, (float)engine->ScreenWidth(), (float)engine->ScreenHeight());
       trianglesToRaster.push_back(projectedTriangle);
-      if(SETTINGS_MAP[DRAW_NORMALS] == true)
-      {
-        Vector3D tempNormal = GetNormal(clippedTriangles[i]);
-        Vector3D normalPoint = GetProjectedNormal(engine, PROJECTION_MATRIX, clippedTriangles[i], tempNormal);
-        normalsToRaster.push_back(normalPoint);
-      }
+     
+      //Normals section 
+      Vector3D tempNormal = GetNormal(clippedTriangles[i]);
+      Vector3D normalPoint = GetProjectedNormal(engine, PROJECTION_MATRIX, clippedTriangles[i], tempNormal);
+      normalsToRaster.push_back(normalPoint);
     }
   } 
   

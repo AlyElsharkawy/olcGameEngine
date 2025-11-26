@@ -1,5 +1,6 @@
 #include <numbers>
 #include <optional>
+#include <tuple>
 #include <vector>
 #include <algorithm>
 #include "inputManager.h"
@@ -182,9 +183,9 @@ olc::Pixel GetDiffuseMaterialColor(const Vector3D& normal, const olc::Pixel& dif
     normalizedGDiffuse = diffuseColor.g / 255.0f;
     normalizedBDiffuse = diffuseColor.b / 255.0f;
 
-    normalizedRLight = light->color.r / 255.0f;
-    normalizedGLight = light->color.g / 255.0f;
-    normalizedBLight = light->color.b / 255.0f;
+    normalizedRLight = light->GetNormalizedColorCodes()[0];
+    normalizedGLight = light->GetNormalizedColorCodes()[1];
+    normalizedBLight = light->GetNormalizedColorCodes()[2];
 
     rVal += normalizedRDiffuse * normalizedRLight * colorLightIntensity * light->intensity;
     gVal += normalizedGDiffuse * normalizedGLight * colorLightIntensity * light->intensity;
@@ -196,10 +197,53 @@ olc::Pixel GetDiffuseMaterialColor(const Vector3D& normal, const olc::Pixel& dif
   return toReturn;
 }
 
-void DrawTriangleToScreen(const RenderingInstance& RI, const Triangle& triangleInput, const short& materialType, const olc::Decal* texture)
+tuple<float, float, float> GetPartiallyIlluminatedColorCode(const Vector3D& normal, const deque<Light*>& lightsDeque)
 {
-  olc::vf2d point1, point2, point3;
+  float rVal = 0.0f;
+  float gVal = 0.0f;
+  float bVal = 0.0f;
+  float colorLightIntensity = 0.0f;
+  float normalizedRLight, normalizedGLight, normalizedBLight;
+  for(const auto& light : lightsDeque)
+  {
+    switch(light->GetLightType())
+    {
+      case LIGHT_TYPES::LAMP_SUN:
+        {
+          Vector3D lightDirection = light->GetDirection();
+          MultiplyVectorScalar(lightDirection, -1.0f);
+          colorLightIntensity = max(GetDotProduct(normal, lightDirection), 0.0f);
+          if(colorLightIntensity == 0.0f)
+            continue;
 
+          break;
+        }
+      case LIGHT_TYPES::LAMP_POINT:
+        {
+          cerr << "ERROR: Point light not implemented yet\n";
+          break;
+        }
+      default:
+        {
+          cerr << "ERROR: Invalid lamp type specified during runtime. Please report to developer\n";
+          break;
+        }
+    }
+    normalizedRLight = light->GetNormalizedColorCodes()[0];
+    normalizedGLight = light->GetNormalizedColorCodes()[1];
+    normalizedBLight = light->GetNormalizedColorCodes()[2];
+
+    rVal += normalizedRLight * colorLightIntensity * light->intensity;
+    gVal += normalizedGLight * colorLightIntensity * light->intensity;
+    bVal += normalizedBLight * colorLightIntensity * light->intensity;
+  }
+  return make_tuple(rVal, gVal, bVal);
+}
+
+void DrawTriangleToScreen(const RenderingInstance& RI, const Triangle& triangleInput,
+                          const Vector3D& illuminationNormal, const deque<Light*>& lightsDeque, 
+                          const short& materialType, const olc::Decal* texture)
+{
   //Rasterizing triangle
   if(SETTINGS_MAP[DRAW_FACES] == true)
   {
@@ -212,12 +256,14 @@ void DrawTriangleToScreen(const RenderingInstance& RI, const Triangle& triangleI
           //Just incase
           if(texture != nullptr)
           {
-            DrawTexturedTriangle(RI, triangleInput, texture->sprite);
+            tuple<float, float, float> pixelIllumination = GetPartiallyIlluminatedColorCode(illuminationNormal, lightsDeque);
+            DrawTexturedTriangle(RI, triangleInput, pixelIllumination, texture->sprite);
           }
 
           else
           {
-            DrawTexturedTriangle(RI, triangleInput, MISSING_TEXTURE_SPRITE);
+            tuple<float, float, float> pixelIllumination = GetPartiallyIlluminatedColorCode(illuminationNormal, lightsDeque);
+            DrawTexturedTriangle(RI, triangleInput, pixelIllumination, MISSING_TEXTURE_SPRITE);
           }
           break;
         }
@@ -232,6 +278,7 @@ void DrawTriangleToScreen(const RenderingInstance& RI, const Triangle& triangleI
         }
       case MATERIAL_TYPES::DIFFUSE:
         {
+          olc::vf2d point1, point2, point3;
           PopulateOLCPoints(triangleInput, point1, point2, point3);
           //RI.engine->FillTriangle(point1, point2 , point3, triangleInput.color);
           FillTriangleWithDepthBuffer(triangleInput, RI, triangleInput.color);
@@ -258,6 +305,17 @@ void PopulateOLCPoints(const Triangle& inputTriangle, olc::vf2d& point1, olc::vf
   point1.x = inputTriangle.points[0].x; point1.y = inputTriangle.points[0].y;
   point2.x = inputTriangle.points[1].x; point2.y = inputTriangle.points[1].y;
   point3.x = inputTriangle.points[2].x; point3.y = inputTriangle.points[2].y;
+}
+
+void DrawNormal(const RenderingInstance& RI, const Vector3D& normal, const Triangle& triangleSource)
+{
+  const float& x1 = triangleSource.points[1].x;
+  const float& y1 = triangleSource.points[1].y;
+  const float& x2 = normal.x;
+  const int& y2 = normal.y;
+  float w1 = triangleSource.points[1].w;
+  float w2 = normal.w;
+  DrawLineWithDepthBufferInline(x1, y1, 1.0f / w1, x2, y2, 1.0f / w2, RI, NORMAL_COLOR);
 }
 
 void DoAuxiliaryInputLoop(olc::PixelGameEngine* engine, MeshList& allObjects, deque<Light*>& allLights)

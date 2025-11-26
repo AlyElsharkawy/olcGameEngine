@@ -23,5 +23,6 @@ void DrawLineWithDepthBufferInline(int32_t x1, int32_t y1, float w1,
                              const RenderingInstance& RI,
                              olc::Pixel p = olc::WHITE, uint32_t pattern = 0xFFFFFFFF);
 
-void DrawTexturedTriangle(const RenderingInstance& RI, const Triangle& input, const olc::Sprite* texture);
+void DrawTexturedTriangle(const RenderingInstance& RI, const Triangle& input,
+                          const tuple<float, float, float>& pixelIllumunation, const olc::Sprite* texture);
 

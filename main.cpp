@@ -78,6 +78,7 @@ class EngineReborn : public olc::PixelGameEngine
     //Consideration: Should this be another data structure?
     vector<Triangle> trianglesToRaster;
     vector<Vector3D> normalsToRaster;
+    deque<Triangle> screenSpaceClippedTriangles;
     int trianglesRasteredCount = 0;
     //Artifact from bug number 2 hunting
     //vector<Triangle> preClipTris;
@@ -124,7 +125,7 @@ class EngineReborn : public olc::PixelGameEngine
     checkDrawNormals = new CheckBox(this, &manager, fontHackButtons, "Draw Normals", {0,900}, DEFAULT_COLORS, 0.0f, {20,20}, SETTINGS_MAP[DRAW_NORMALS], true);
     checkShowOptionsMenu = new CheckBox(this, &manager, fontHackButtons, "Show Options", {0,980}, DEFAULT_COLORS, 0.0f,{20,20}, true);
   
-    SetInitialObjects(this, allObjects, allLights, NUM_1);
+    SetInitialObjects(this, allObjects, allLights, NUM_2);
     #ifdef BUILD_DEBUG
       PrintAllPrimitiveSizes();
     #endif
@@ -190,7 +191,7 @@ class EngineReborn : public olc::PixelGameEngine
         //Only draw triangles if the normal says its fits on screen
         Vector3D cameraRay = SubtractVector(transformedTriangle.points[0], cameraPosition);
         if(GetDotProduct(normal, cameraRay) < 0.0f &&
-          GetDistanceBetweenPoints(player->camera.cameraPosition, normal) <= farPlane)
+          GetDistanceBetweenPoints(player->camera.cameraPosition, transformedTriangle.points[0]) <= farPlane)
         {
           //materials phase
           cameraTransformedTriangle = MultiplyTriangle(transformedTriangle, viewMatrix);
@@ -212,28 +213,37 @@ class EngineReborn : public olc::PixelGameEngine
           //View space clipping phase          
           ScopedTimer viewSpaceClippingTimer("VIEW SPACE CLIPPING");
           DoViewSpaceClipping(this, player, trianglesToRaster, normalsToRaster, cameraTransformedTriangle);
+          if(SETTINGS_MAP[SETTINGS_ENUM::DO_SCREEN_SPACE_CLIPPING] == true)
+          {
+            for(const auto& triangleForScreenSpaceClipping : trianglesToRaster)
+            {
+              ScopedTimer screenSpaceClippingTimer("SCREEN SPACE CLIPPING");
+              DoScreenSpaceClipping(RI, triangleForScreenSpaceClipping, screenSpaceClippedTriangles);
+            }
+            for(int tri = 0; tri < screenSpaceClippedTriangles.size(); tri++)
+            {
+              DrawTriangleToScreen(RI, screenSpaceClippedTriangles[tri], normal, allLights, 
+                                   mesh->GetMaterialType(), mesh->GetTextureImage());
+            }
+          }
+          else if(SETTINGS_MAP[SETTINGS_ENUM::DO_SCREEN_SPACE_CLIPPING] == false)
+          {
+            ScopedTimer screenSpaceClippingTimer("DRAWING TRIANGLES");
+            /*for(int triNoScreenSpaceClip = 0; triNoScreenSpaceClip < trianglesToRaster.size(); triNoScreenSpaceClip++)
+            {
+              DrawTriangleToScreen(RI, trianglesToRaster[triNoScreenSpaceClip], normalsToRaster[triNoScreenSpaceClip], 
+              normal, allLights, mesh->GetMaterialType(), mesh->GetTextureImage());
+            }*/
+          }
+          trianglesRasteredCount += trianglesToRaster.size();
+          trianglesToRaster.clear();
+          normalsToRaster.clear();
+          screenSpaceClippedTriangles.clear();
         }
       }
       //Arifacts from solving bug number 2
       //PrintTrianglesToDisk(preClipTris, ConcatenatePaths({GetPathFromResources(), "TRIANGLES_PRE_SCREEN_SPACE_CLIPPING.txt"}));
       //PrintTrianglesToDisk(trianglesToRaster, ConcatenatePaths({GetPathFromResources(), "SCREEN_SPACE_CLIP_TRIS.txt"}));
-      
-      //Sorting section
-      //They are sorted according to distance from camera, furthest objects are drawn first
-      //SortTriangles(trianglesToRaster);
-      //Not needed anymore with texturing since a depth buffer is used. However, regular drawing
-      //routines don't use it. They will have to be reimplemented or edited
-
-      //Screen edges clipping and rasterization section
-      //Rasterizing normals(if settings allow it)
-      
-        {
-            ScopedTimer screenSpaceClippingTimer("SCREEN SPACE CLIPPING");
-            DoScreenSpaceClipping(RI, trianglesToRaster, normalsToRaster, mesh);
-        }
-      trianglesRasteredCount += trianglesToRaster.size();
-      trianglesToRaster.clear();
-      normalsToRaster.clear();
     }
 
     if(SETTINGS_MAP[DO_DEBUG_MENU] == true)

@@ -11,12 +11,15 @@ private:
 public:
   float intensity = 1.0f;
   olc::Pixel color;
+  float normalizedColors[3];
   Light(const short& lightType, const Vector3D& direction, const olc::Pixel& color = {255,255,255}, const float& intensity = 1.0f);
   void SetLightColor(const float& rVal, const float& gVal, const float& bVal);
   void SetLightDirection(const Vector3D& inputVec);
   bool SetLightType(const short& lampType);
   const Vector3D& GetDirection() const;
   const short& GetLightType() const;
+  //R,G,B
+  const float* const GetNormalizedColorCodes() const;
 };
 
 class RenderingInstance

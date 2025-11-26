@@ -13,10 +13,16 @@ Light::Light(const short& lightType, const Vector3D& direction, const olc::Pixel
   this->SetLightDirection(NormalizeVectorOP(direction));
   this->color = color;
   this->intensity = intensity;
+  this->normalizedColors[0] = color.r / 255.0f;
+  this->normalizedColors[1] = color.g / 255.0f;
+  this->normalizedColors[2] = color.b / 255.0f;
 }
 void Light::SetLightColor(const float& rVal, const float& gVal, const float& bVal)
 {
   this->color = olc::Pixel(rVal, gVal, bVal, 255);
+  this->normalizedColors[0] = rVal / 255.0f;
+  this->normalizedColors[1] = gVal / 255.0f;
+  this->normalizedColors[2] = bVal / 255.0f;
 }
 
 void Light::SetLightDirection(const Vector3D& inputVec)
@@ -61,6 +67,11 @@ const Vector3D& Light::GetDirection() const
 const short& Light::GetLightType() const
 {
   return this->lightType;
+}
+
+const float* const Light::GetNormalizedColorCodes() const
+{
+  return this->normalizedColors;
 }
 
 void RenderingInstance::InitializeRenderingInstance(olc::PixelGameEngine* engine)
