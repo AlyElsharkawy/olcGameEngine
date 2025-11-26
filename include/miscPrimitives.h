@@ -2,6 +2,13 @@
 #include "geometricPrimitives.h"
 #include "olcPixelGameEngine.h"
 
+class NormalizedPixel
+{
+public:
+  float values[3];
+  NormalizedPixel(const float& r, const float& g, const float& b);
+};
+
 class Light
 {
 private:

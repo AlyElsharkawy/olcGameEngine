@@ -5,6 +5,13 @@
 #include "globalVariables.h"
 #include <iostream>
 
+NormalizedPixel::NormalizedPixel(const float& r, const float& g, const float& b)
+{
+  this->values[0] = r;
+  this->values[1] = g;
+  this->values[2] = b;
+}
+
 Light::Light(const short& lightType, const Vector3D& direction, const olc::Pixel& color, const float& intensity)
 {
   bool isLightTypeValid = this->SetLightType(lightType);

@@ -1,15 +1,16 @@
 #pragma once
 #include <initializer_list>
 #include <string>
+#include "miscPrimitives.h"
 #include "olcPixelGameEngine.h"
 
 using namespace std;
 
 olc::Pixel GetNoneMaterialColorCode(float luminance);
 void MultiplyPixel(olc::Pixel& inputPixel, const float& valueToMultiply);
-void MultiplyNormalizedTuplePixel(tuple<float, float, float>& pixel1, const tuple<float, float, float>& pixel2);
-olc::Pixel ClampPixel(const tuple<float, float, float>& input);
-tuple<float, float, float> SampleNormalizedPixel(const olc::Sprite* const texture, const float& x, const float& y);
+void MultiplyNormalizedPixelPixel(NormalizedPixel& pixel1, const NormalizedPixel& pixel2);
+olc::Pixel ClampPixel(const NormalizedPixel& input);
+NormalizedPixel SampleNormalizedPixel(const olc::Sprite* const texture, const float& x, const float& y);
 string GetExecutableDirectory(char* argvInput);
 string GetLaunchPWD();
 char GetPathSeparator();

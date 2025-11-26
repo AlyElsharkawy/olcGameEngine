@@ -1,6 +1,5 @@
 #include <numbers>
 #include <optional>
-#include <tuple>
 #include <vector>
 #include <algorithm>
 #include "inputManager.h"
@@ -197,7 +196,7 @@ olc::Pixel GetDiffuseMaterialColor(const Vector3D& normal, const olc::Pixel& dif
   return toReturn;
 }
 
-tuple<float, float, float> GetPartiallyIlluminatedColorCode(const Vector3D& normal, const deque<Light*>& lightsDeque)
+NormalizedPixel GetPartiallyIlluminatedColorCode(const Vector3D& normal, const deque<Light*>& lightsDeque)
 {
   float rVal = 0.0f;
   float gVal = 0.0f;
@@ -237,7 +236,7 @@ tuple<float, float, float> GetPartiallyIlluminatedColorCode(const Vector3D& norm
     gVal += normalizedGLight * colorLightIntensity * light->intensity;
     bVal += normalizedBLight * colorLightIntensity * light->intensity;
   }
-  return make_tuple(rVal, gVal, bVal);
+  return NormalizedPixel(rVal, gVal, bVal);
 }
 
 void DrawTriangleToScreen(const RenderingInstance& RI, const Triangle& triangleInput,
@@ -256,13 +255,13 @@ void DrawTriangleToScreen(const RenderingInstance& RI, const Triangle& triangleI
           //Just incase
           if(texture != nullptr)
           {
-            tuple<float, float, float> pixelIllumination = GetPartiallyIlluminatedColorCode(illuminationNormal, lightsDeque);
+            NormalizedPixel pixelIllumination = GetPartiallyIlluminatedColorCode(illuminationNormal, lightsDeque);
             DrawTexturedTriangle(RI, triangleInput, pixelIllumination, texture->sprite);
           }
 
           else
           {
-            tuple<float, float, float> pixelIllumination = GetPartiallyIlluminatedColorCode(illuminationNormal, lightsDeque);
+            NormalizedPixel pixelIllumination = GetPartiallyIlluminatedColorCode(illuminationNormal, lightsDeque);
             DrawTexturedTriangle(RI, triangleInput, pixelIllumination, MISSING_TEXTURE_SPRITE);
           }
           break;
