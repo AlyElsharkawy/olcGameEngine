@@ -7,7 +7,8 @@
 using namespace std;
 
 olc::Pixel GetNoneMaterialColorCode(float luminance);
-void MultiplyPixel(olc::Pixel& inputPixel, const float& valueToMultiply);
+void MultiplyPixelScalar(olc::Pixel& inputPixel, const float& valueToMultiply);
+olc::Pixel MultiplyPixelPixel(const olc::Pixel& pixel1, const olc::Pixel& pixel2);
 void MultiplyNormalizedPixelPixel(NormalizedPixel& pixel1, const NormalizedPixel& pixel2);
 olc::Pixel ClampPixel(const NormalizedPixel& input);
 NormalizedPixel SampleNormalizedPixel(const olc::Sprite* const texture, const float& x, const float& y);

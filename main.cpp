@@ -125,7 +125,7 @@ class EngineReborn : public olc::PixelGameEngine
     checkDrawNormals = new CheckBox(this, &manager, fontHackButtons, "Draw Normals", {0,900}, DEFAULT_COLORS, 0.0f, {20,20}, SETTINGS_MAP[DRAW_NORMALS], true);
     checkShowOptionsMenu = new CheckBox(this, &manager, fontHackButtons, "Show Options", {0,980}, DEFAULT_COLORS, 0.0f,{20,20}, true);
   
-    SetInitialObjects(this, allObjects, allLights, NUM_2);
+    SetInitialObjects(this, allObjects, allLights, NUM_1);
     #ifdef BUILD_DEBUG
       PrintAllPrimitiveSizes();
     #endif

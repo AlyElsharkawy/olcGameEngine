@@ -6,6 +6,7 @@
 #include <thread>
 #include <ctime>
 #include "miscFunctions.h"
+#include "essentialFunctions.h"
 #include "miscPrimitives.h"
 #include "globalVariables.h"
 #include "stb_image_write.h"
@@ -20,11 +21,20 @@ olc::Pixel GetNoneMaterialColorCode(float luminance)
   return olc::Pixel(clamp(temp, 0, 255), clamp(temp, 0 ,255), clamp(temp, 0, 255));
 }
 
-void MultiplyPixel(olc::Pixel& inputPixel, const float& valueToMultiply)
+void MultiplyPixelScalar(olc::Pixel& inputPixel, const float& valueToMultiply)
 {
   inputPixel.r *= valueToMultiply;
   inputPixel.g *= valueToMultiply;
   inputPixel.b *= valueToMultiply;
+}
+
+olc::Pixel MultiplyPixelPixel(const olc::Pixel& pixel1, const olc::Pixel& pixel2)
+{
+  olc::Pixel toReturn;
+  toReturn.r = COLOR_PARTIAL_MULTIPLY(pixel1.r, pixel2.r);
+  toReturn.g = COLOR_PARTIAL_MULTIPLY(pixel1.g, pixel2.g);
+  toReturn.b = COLOR_PARTIAL_MULTIPLY(pixel1.b, pixel2.b);
+  return toReturn;
 }
 
 void MultiplyNormalizedPixelPixel(NormalizedPixel& pixel1, const NormalizedPixel& pixel2)

@@ -1,4 +1,3 @@
-#include <numbers>
 #include <optional>
 #include <vector>
 #include <algorithm>
@@ -146,12 +145,9 @@ float GetNoneMaterialLuminances(const Vector3D& normal, const deque<Light*>& lig
 olc::Pixel GetDiffuseMaterialColor(const Vector3D& normal, const olc::Pixel& diffuseColor, const deque<Light*>& lightsDeque)
 {
   olc::Pixel toReturn;
-  float rVal = 0.0f;
-  float gVal = 0.0f;
-  float bVal = 0.0f;
-  float colorLightIntensity = 0.0f;
-  float normalizedRDiffuse, normalizedGDiffuse, normalizedBDiffuse;
-  float normalizedRLight, normalizedGLight, normalizedBLight;
+  int rVal = 0, gVal = 0, bVal = 0;
+  float tempColorLightIntensity = 0.0f;
+  uint8_t colorLightIntensity;
   for(const auto& light : lightsDeque)
   {
     switch(light->GetLightType())
@@ -160,8 +156,11 @@ olc::Pixel GetDiffuseMaterialColor(const Vector3D& normal, const olc::Pixel& dif
         {
           Vector3D lightDirection = light->GetDirection();
           MultiplyVectorScalar(lightDirection, -1.0f);
-          colorLightIntensity = max(GetDotProduct(normal, lightDirection), 0.0f);
-          if(colorLightIntensity == 0.0f)
+          //Get dot product and convert it to normalized value between 0 and 255 for quick bitshift
+          //operations compared to slow floating point divides and multiplies
+          tempColorLightIntensity = max(GetDotProduct(normal, lightDirection) * light->intensity, 0.0f);
+          colorLightIntensity = uint8_t(tempColorLightIntensity * 255.0f);
+          if(tempColorLightIntensity == 0.0f)
             continue;
 
           break;
@@ -178,31 +177,21 @@ olc::Pixel GetDiffuseMaterialColor(const Vector3D& normal, const olc::Pixel& dif
         }
     }
 
-    normalizedRDiffuse = diffuseColor.r / 255.0f;
-    normalizedGDiffuse = diffuseColor.g / 255.0f;
-    normalizedBDiffuse = diffuseColor.b / 255.0f;
-
-    normalizedRLight = light->GetNormalizedColorCodes()[0];
-    normalizedGLight = light->GetNormalizedColorCodes()[1];
-    normalizedBLight = light->GetNormalizedColorCodes()[2];
-
-    rVal += normalizedRDiffuse * normalizedRLight * colorLightIntensity * light->intensity;
-    gVal += normalizedGDiffuse * normalizedGLight * colorLightIntensity * light->intensity;
-    bVal += normalizedBDiffuse * normalizedBLight * colorLightIntensity * light->intensity;
+    rVal += COLOR_FULL_MULTIPLY(diffuseColor.r, light->color.r, colorLightIntensity);
+    gVal += COLOR_FULL_MULTIPLY(diffuseColor.g, light->color.g, colorLightIntensity);
+    bVal += COLOR_FULL_MULTIPLY(diffuseColor.b, light->color.b, colorLightIntensity);
   }
-  toReturn.r = clamp(rVal * 255.0f, MINIMUM_DIFFUSE_COLOR, 255.0f);
-  toReturn.g = clamp(gVal * 255.0f, MINIMUM_DIFFUSE_COLOR, 255.0f);
-  toReturn.b = clamp(bVal * 255.0f, MINIMUM_DIFFUSE_COLOR, 255.0f);
+  toReturn.r = rVal;
+  toReturn.g = gVal;
+  toReturn.b = bVal;
   return toReturn;
 }
 
-NormalizedPixel GetPartiallyIlluminatedColorCode(const Vector3D& normal, const deque<Light*>& lightsDeque)
+olc::Pixel GetPartiallyIlluminatedColorCode(const Vector3D& normal, const deque<Light*>& lightsDeque)
 {
-  float rVal = 0.0f;
-  float gVal = 0.0f;
-  float bVal = 0.0f;
-  float colorLightIntensity = 0.0f;
-  float normalizedRLight, normalizedGLight, normalizedBLight;
+  int rVal = 0, gVal = 0, bVal = 0;
+  float tempColorLightIntensity = 0.0f;
+  uint8_t colorLightIntensity;
   for(const auto& light : lightsDeque)
   {
     switch(light->GetLightType())
@@ -211,8 +200,9 @@ NormalizedPixel GetPartiallyIlluminatedColorCode(const Vector3D& normal, const d
         {
           Vector3D lightDirection = light->GetDirection();
           MultiplyVectorScalar(lightDirection, -1.0f);
-          colorLightIntensity = max(GetDotProduct(normal, lightDirection), 0.0f);
-          if(colorLightIntensity == 0.0f)
+          tempColorLightIntensity = max(GetDotProduct(normal, lightDirection) * light->intensity, 0.0f);
+          colorLightIntensity = uint8_t(tempColorLightIntensity * 255.0f);
+          if(tempColorLightIntensity == 0.0f)
             continue;
 
           break;
@@ -228,15 +218,12 @@ NormalizedPixel GetPartiallyIlluminatedColorCode(const Vector3D& normal, const d
           break;
         }
     }
-    normalizedRLight = light->GetNormalizedColorCodes()[0];
-    normalizedGLight = light->GetNormalizedColorCodes()[1];
-    normalizedBLight = light->GetNormalizedColorCodes()[2];
-
-    rVal += normalizedRLight * colorLightIntensity * light->intensity;
-    gVal += normalizedGLight * colorLightIntensity * light->intensity;
-    bVal += normalizedBLight * colorLightIntensity * light->intensity;
+      
+    rVal += COLOR_PARTIAL_MULTIPLY(light->color.r, colorLightIntensity);
+    gVal += COLOR_PARTIAL_MULTIPLY(light->color.g, colorLightIntensity);
+    bVal += COLOR_PARTIAL_MULTIPLY(light->color.b, colorLightIntensity);
   }
-  return NormalizedPixel(rVal, gVal, bVal);
+  return olc::Pixel(rVal, gVal, bVal);
 }
 
 void DrawTriangleToScreen(const RenderingInstance& RI, const Triangle& triangleInput,
@@ -255,13 +242,13 @@ void DrawTriangleToScreen(const RenderingInstance& RI, const Triangle& triangleI
           //Just incase
           if(texture != nullptr)
           {
-            NormalizedPixel pixelIllumination = GetPartiallyIlluminatedColorCode(illuminationNormal, lightsDeque);
+            olc::Pixel pixelIllumination = GetPartiallyIlluminatedColorCode(illuminationNormal, lightsDeque);
             DrawTexturedTriangle(RI, triangleInput, pixelIllumination, texture->sprite);
           }
 
           else
           {
-            NormalizedPixel pixelIllumination = GetPartiallyIlluminatedColorCode(illuminationNormal, lightsDeque);
+            olc::Pixel pixelIllumination = GetPartiallyIlluminatedColorCode(illuminationNormal, lightsDeque);
             DrawTexturedTriangle(RI, triangleInput, pixelIllumination, MISSING_TEXTURE_SPRITE);
           }
           break;
@@ -523,6 +510,29 @@ void SetInitialObjects(olc::PixelGameEngine* engine, MeshList& allObjects, deque
     allObjects.AppendMesh(cottageTest);
     allObjects.UpdateTotalCounts();
     currentObjectSet = 4;
+  }
+
+  else if(InputManager::KeyHeld(engine, {NUM_5}) || chosenScene == BASIC_CONTROLS_ENUM::NUM_5)
+  {
+    if(currentObjectSet == 5)
+      return;
+
+    ClearAllObjectsandLights(allObjects, allLights);
+    CreateStandardSunLamp(allLights);
+
+    Mesh* highResolutionBunny = new Mesh();
+    highResolutionBunny->LoadFromOBJFile(GetPathFromResources({"objectFiles", "Primitives", "very-high-res-bunny.obj"}));
+    highResolutionBunny->doAutomaticRotation = true;
+    highResolutionBunny->doAutomaticRotations[1] = true;
+    highResolutionBunny->SetTranslationOffsets(0, 0, 9);
+    uint8_t rVal, bVal, gVal;
+    HexToRGB("E6A9EC", rVal, gVal, bVal);
+    highResolutionBunny->SetDiffuseColor(rVal, gVal, bVal, 255);
+    highResolutionBunny->SetScalingOffsets(10, 10, 10);
+    
+    allObjects.AppendMesh(highResolutionBunny);
+    allObjects.UpdateTotalCounts();
+    currentObjectSet = 5;
   }
 
   else if(InputManager::KeyHeld(engine, {NUM_0}) || chosenScene == BASIC_CONTROLS_ENUM::NUM_0)
