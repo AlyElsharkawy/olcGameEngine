@@ -201,143 +201,140 @@ void DrawTriangleWithDepthBuffer(const Triangle &triangleInput,
                                  const RenderingInstance &RI, olc::Pixel p) {
   DrawTriangleWithDepthBufferInline(
       triangleInput.points[0].x, triangleInput.points[0].y,
-      triangleInput.points[0].w, triangleInput.points[1].x,
-      triangleInput.points[1].y, triangleInput.points[1].w,
+      triangleInput.points[0].z, triangleInput.points[1].x,
+      triangleInput.points[1].y, triangleInput.points[1].z,
       triangleInput.points[2].x, triangleInput.points[2].y,
-      triangleInput.points[2].w, RI, p);
+      triangleInput.points[2].z, RI, p);
 }
 
 // WARNING: This does not perfectly interpolate the W value. This bug will NOT
 // be fixed in the foreseeable future
-void DrawLineWithDepthBufferInline(int32_t x1, int32_t y1, float w1, int32_t x2,
-                                   int32_t y2, float w2,
+void DrawLineWithDepthBufferInline(int32_t x1, int32_t y1, float iw1, int32_t x2,
+                                   int32_t y2, float iw2,
                                    const RenderingInstance &RI, olc::Pixel p,
                                    uint32_t pattern) 
 {
-int x, y, dx, dy, dx1, dy1, px, py, xe, ye, i;
-		dx = x2 - x1; dy = y2 - y1;
+      int dx = x2 - x1;
+    int dy = y2 - y1;
 
-		auto rol = [&](void) { pattern = (pattern << 1) | (pattern >> 31); return pattern & 1; };
-		olc::vi2d p1(x1, y1), p2(x2, y2);
-    float wVal = std::max(w1, w2);
-		if (!RI.engine->ClipLineToScreen(p1, p2))
-			return;
-		x1 = p1.x; y1 = p1.y;
-		x2 = p2.x; y2 = p2.y;
+    auto rol = [&]() {
+        pattern = (pattern << 1) | (pattern >> 31);
+        return pattern & 1;
+    };
 
-		// straight lines idea by gurkanctn
-		if (dx == 0) // Line is vertical
-		{
-			if (y2 < y1) std::swap(y1, y2);
-      int index;
-			for (y = y1; y <= y2; y++) 
-      {
-        // J is X and I is Y
-        index = y * RI.engine->ScreenWidth() + x1;
-        if( wVal > RI.depthBuffer[index] && rol())
+    // Clip the line to screen
+    olc::vi2d p1(x1, y1), p2(x2, y2);
+    if (!RI.engine->ClipLineToScreen(p1, p2))
+        return;
+    x1 = p1.x; y1 = p1.y;
+    x2 = p2.x; y2 = p2.y;
+
+    dx = x2 - x1;
+    dy = y2 - y1;
+
+    int dx1 = std::abs(dx);
+    int dy1 = std::abs(dy);
+
+    // Perspective-correct parameters
+    float diw = iw2 - iw1;
+    float iw  = iw1;      // current interpolated 1/w
+    int totalSteps;
+
+    // --- CASE 1: Vertical line ----------------------------------------------
+    if (dx == 0)
+    {
+        if (y2 < y1) { std::swap(y1, y2); std::swap(iw1, iw2); diw = iw2 - iw1; }
+
+        totalSteps = (y2 - y1);
+
+        for (int step = 0; step <= totalSteps; step++)
         {
-          RI.engine->Draw(x1, y, p);
-          RI.depthBuffer[index] = w1;
-        } 
-      }
-			return;
-		}
+            float t = (totalSteps == 0) ? 0.0f : float(step) / float(totalSteps);
+            iw = iw1 + t * diw;
 
-		if (dy == 0) // Line is horizontal
-		{
-			if (x2 < x1) std::swap(x1, x2);
-      int index;
-			for (x = x1; x <= x2; x++)
-      { 
-        // J is X and I is Y
-        index = y1 * RI.engine->ScreenWidth() + x;
-        if (wVal > RI.depthBuffer[index] && rol()) 
-        {
-          RI.engine->Draw(x, y1, p);
-          RI.depthBuffer[index] = w2;
+            int x = x1;
+            int y = y1 + step;
+            int idx = y * RI.engine->ScreenWidth() + x;
+
+            if (iw > RI.depthBuffer[idx] && rol())
+            {
+                RI.engine->Draw(x, y, p);
+                RI.depthBuffer[idx] = iw;
+            }
         }
-      }
-			return;
-		}
+        return;
+    }
 
-		// Line is Funk-aye
-		dx1 = abs(dx); dy1 = abs(dy);
-		px = 2 * dy1 - dx1;	py = 2 * dx1 - dy1;
-		if (dy1 <= dx1)
-		{
-			if (dx >= 0)
-			{
-				x = x1; y = y1; xe = x2;
-			}
-			else
-			{
-				x = x2; y = y2; xe = x1;
-			}
-      // J is X and I is Y
-      int tempIndex = y * RI.engine->ScreenWidth() + x;
-			if (wVal > RI.depthBuffer[tempIndex] && rol()) 
-      {
-        RI.engine->Draw(x, y, p);
-        RI.depthBuffer[tempIndex] = wVal;
-      }
+    // --- CASE 2: Horizontal line --------------------------------------------
+    if (dy == 0)
+    {
+        if (x2 < x1) { std::swap(x1, x2); std::swap(iw1, iw2); diw = iw2 - iw1; }
 
-			for (i = 0; x < xe; i++)
-			{
-				x = x + 1;
-				if (px < 0)
-					px = px + 2 * dy1;
-				else
-				{
-					if ((dx < 0 && dy < 0) || (dx > 0 && dy > 0)) y = y + 1; else y = y - 1;
-					px = px + 2 * (dy1 - dx1);
-				}
-        // J is X and I is Y
-        int tempIndex = y * RI.engine->ScreenWidth() + x;
-				if(wVal > RI.depthBuffer[tempIndex] && rol())
+        totalSteps = (x2 - x1);
+
+        for (int step = 0; step <= totalSteps; step++)
         {
-          RI.engine->Draw(x, y, p);
-          RI.depthBuffer[tempIndex] = wVal;
+            float t = (totalSteps == 0) ? 0.0f : float(step) / float(totalSteps);
+            iw = iw1 + t * diw;
+
+            int x = x1 + step;
+            int y = y1;
+            int idx = y * RI.engine->ScreenWidth() + x;
+
+            if (iw > RI.depthBuffer[idx] && rol())
+            {
+                RI.engine->Draw(x, y, p);
+                RI.depthBuffer[idx] = iw;
+            }
         }
-			}
-		}
-		else
-		{
-			if (dy >= 0)
-			{
-				x = x1; y = y1; ye = y2;
-			}
-			else
-			{
-				x = x2; y = y2; ye = y1;
-			}
+        return;
+    }
 
-      // J is X and I is Y
-      int tempIndex = y * RI.engine->ScreenWidth() + x;
-			if(wVal > RI.depthBuffer[tempIndex] && rol())
-      {
-        RI.engine->Draw(x, y, p);
-        RI.depthBuffer[tempIndex] = wVal;
-      }
+    // --- CASE 3: General Bresenham ------------------------------------------
+    int x = x1, y = y1;
+    int sx = (dx >= 0) ? 1 : -1;
+    int sy = (dy >= 0) ? 1 : -1;
 
-			for (i = 0; y < ye; i++)
-			{
-				y = y + 1;
-				if (py <= 0)
-					py = py + 2 * dx1;
-				else
-				{
-					if ((dx < 0 && dy < 0) || (dx > 0 && dy > 0)) x = x + 1; else x = x - 1;
-					py = py + 2 * (dx1 - dy1);
-				}
-        // J is X and I is Y
-        int tempIndex = y * RI.engine->ScreenWidth() + x;
-				if(wVal > RI.depthBuffer[tempIndex] &&  rol()) 
+    bool xMajor = (dx1 >= dy1);
+
+    totalSteps = xMajor ? dx1 : dy1;
+
+    int err = xMajor ? dx1/2 : dy1/2;
+
+    for (int step = 0; step <= totalSteps; step++)
+    {
+        float t = (totalSteps == 0) ? 0.0f : float(step) / float(totalSteps);
+        iw = iw1 + t * diw;
+
+        int idx = y * RI.engine->ScreenWidth() + x;
+
+        if (iw > RI.depthBuffer[idx] && rol())
         {
-          RI.engine->Draw(x, y, p);
-          RI.depthBuffer[tempIndex] = wVal;
+            RI.engine->Draw(x, y, p);
+            RI.depthBuffer[idx] = iw;
         }
-			}
-		}
+
+        if (xMajor)
+        {
+            err -= dy1;
+            if (err < 0)
+            {
+                y += sy;
+                err += dx1;
+            }
+            x += sx;
+        }
+        else
+        {
+            err -= dx1;
+            if (err < 0)
+            {
+                x += sx;
+                err += dy1;
+            }
+            y += sy;
+        }
+    }
 }
 
 void DrawTriangleWithDepthBufferInline(int32_t x1, int32_t y1, float w1,
@@ -346,6 +343,7 @@ void DrawTriangleWithDepthBufferInline(int32_t x1, int32_t y1, float w1,
                                        const RenderingInstance &RI,
                                        olc::Pixel p) {
   DrawLineWithDepthBufferInline(x1, y1, 1.0f / w1, x2, y2, 1.0f / w2, RI);
+  cout << "W vals: " << w1 << " " << w2 << " " << w3 << endl;
   DrawLineWithDepthBufferInline(x2, y2, 1.0f / w2, x3, y3, 1.0f / w3, RI);
   DrawLineWithDepthBufferInline(x1, y1, 1.0f / w1, x3, y3, 1.0f / w3, RI);
 }

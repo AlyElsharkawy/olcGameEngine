@@ -21,6 +21,8 @@ olc::Pixel GetPartiallyIlluminatedColorCode(const Vector3D& normal, const deque<
 void DrawTriangleToScreen(const RenderingInstance& RI, const Triangle& triangleInput,
                           const Vector3D& illuminationNormal, const deque<Light*>& lightsDeque, 
                           const short& materialType, const olc::Decal* texture);
+void DrawNormalsToScreen(const RenderingInstance& RI, const Matrix4x4& projectionMatrix,
+                         const vector<pair<Vector3D, Vector3D>>& allNormals);
 void DrawNormal(const RenderingInstance& RI, const Vector3D& normal, const Triangle& triangleSource);
 void PopulateOLCPoints(const Triangle& inputTriangle, olc::vf2d& point1, olc::vf2d& point2, olc::vf2d& point3);
 void DoAuxiliaryInputLoop(olc::PixelGameEngine* engine, MeshList& allObjects, deque<Light*>& allLights);

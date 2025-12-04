@@ -234,7 +234,8 @@ void DoScreenSpaceClipping(const RenderingInstance& RI, const Triangle& triangle
   //PrintTrianglesToDisk(rasterizedTriangles, ConcatenatePaths({GetPathFromResources(),"3D_ENGINE_REBORN_TRIANGLES.txt"}));
 }
 
-void DoViewSpaceClipping(olc::PixelGameEngine* engine, Player* player, vector<Triangle>& trianglesToRaster, vector<Vector3D>& normalsToRaster, Triangle& cameraTransformedTriangle)
+void DoViewSpaceClipping(olc::PixelGameEngine* engine, Player* player, vector<Triangle>& trianglesToRaster,
+                         vector<pair<Vector3D, Vector3D>>& normalsToRaster, Triangle& cameraTransformedTriangle)
 {
   //Alias for readability and to make refactoring easier
   const float& VISION_NEAR = player->camera.GetFacingPlanes().first;
@@ -265,7 +266,7 @@ void DoViewSpaceClipping(olc::PixelGameEngine* engine, Player* player, vector<Tr
       //Normals section 
       Vector3D tempNormal = GetNormal(clippedTriangles[i]);
       Vector3D normalPoint = GetProjectedNormal(engine, PROJECTION_MATRIX, clippedTriangles[i], tempNormal);
-      normalsToRaster.push_back(normalPoint);
+      normalsToRaster.push_back(make_pair(normalPoint, clippedTriangles[i].points[1]));
     }
   } 
   
@@ -283,7 +284,7 @@ void DoViewSpaceClipping(olc::PixelGameEngine* engine, Player* player, vector<Tr
     {
         Vector3D tempNormal = GetNormal(projectedTriangle);
         Vector3D normalPoint = GetProjectedNormal(engine, PROJECTION_MATRIX, projectedTriangle, tempNormal);
-        normalsToRaster.push_back(normalPoint);
+        normalsToRaster.push_back(make_pair(normalPoint, projectedTriangle.points[1]));
     }
   }
 }

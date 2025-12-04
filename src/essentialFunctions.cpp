@@ -3,6 +3,7 @@
 #include <algorithm>
 #include "inputManager.h"
 #include "matrixMathEssentials.h"
+#include "triangleMathEssentials.h"
 #include "essentialFunctions.h"
 #include "geometricPrimitives.h"
 #include "miscFunctions.h"
@@ -286,6 +287,26 @@ void DrawTriangleToScreen(const RenderingInstance& RI, const Triangle& triangleI
   }
 }
 
+void DrawNormalsToScreen(const RenderingInstance& RI, const Matrix4x4& projectionMatrix, 
+                         const vector<pair<Vector3D, Vector3D>>& allNormals)
+{
+  for(const auto& normalPair : allNormals)
+  {
+    Vector3D projectedVector;
+    MultiplyMatrixVector(normalPair.second, projectionMatrix, projectedVector);
+    DivideVectorScalar(projectedVector, projectedVector.w);
+    projectedVector.y *= -1.0f;
+    projectedVector.x += 1.0f;
+    projectedVector.y += 1.0f;
+    projectedVector.x *= 0.5 * RI.engine->ScreenWidth();
+    projectedVector.y *= 0.5 * RI.engine->ScreenHeight();
+    Vector3D& tempLine = projectedVector;
+    DrawLineWithDepthBufferInline(normalPair.first.x, normalPair.first.y, normalPair.first.w, 
+                                  tempLine.x, tempLine.y, tempLine.w,
+                                  RI, NORMAL_COLOR);
+  }
+}
+
 void PopulateOLCPoints(const Triangle& inputTriangle, olc::vf2d& point1, olc::vf2d& point2, olc::vf2d& point3)
 {
   point1.x = inputTriangle.points[0].x; point1.y = inputTriangle.points[0].y;
@@ -517,7 +538,7 @@ void SetInitialObjects(olc::PixelGameEngine* engine, MeshList& allObjects, deque
     if(currentObjectSet == 5)
       return;
 
-    ClearAllObjectsandLights(allObjects, allLights);
+    /*ClearAllObjectsandLights(allObjects, allLights);
     CreateStandardSunLamp(allLights);
 
     Mesh* highResolutionBunny = new Mesh();
@@ -532,7 +553,7 @@ void SetInitialObjects(olc::PixelGameEngine* engine, MeshList& allObjects, deque
     
     allObjects.AppendMesh(highResolutionBunny);
     allObjects.UpdateTotalCounts();
-    currentObjectSet = 5;
+    currentObjectSet = 5;*/
   }
 
   else if(InputManager::KeyHeld(engine, {NUM_0}) || chosenScene == BASIC_CONTROLS_ENUM::NUM_0)

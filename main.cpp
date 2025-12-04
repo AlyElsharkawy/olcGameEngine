@@ -77,7 +77,7 @@ class EngineReborn : public olc::PixelGameEngine
 
     //Consideration: Should this be another data structure?
     vector<Triangle> trianglesToRaster;
-    vector<Vector3D> normalsToRaster;
+    vector<pair<Vector3D, Vector3D>> normalsToRaster;
     deque<Triangle> screenSpaceClippedTriangles;
     int trianglesRasteredCount = 0;
     //Artifact from bug number 2 hunting
@@ -234,6 +234,10 @@ class EngineReborn : public olc::PixelGameEngine
               DrawTriangleToScreen(RI, trianglesToRaster[triNoScreenSpaceClip], normalsToRaster[triNoScreenSpaceClip], 
               normal, allLights, mesh->GetMaterialType(), mesh->GetTextureImage());
             }*/
+          }
+          if(SETTINGS_MAP[SETTINGS_ENUM::DRAW_NORMALS] == true)
+          {
+            DrawNormalsToScreen(RI, player->camera.GetCameraProjectionMatrix(), normalsToRaster); 
           }
           trianglesRasteredCount += trianglesToRaster.size();
           trianglesToRaster.clear();
