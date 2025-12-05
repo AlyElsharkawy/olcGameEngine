@@ -99,7 +99,7 @@ Manager::~Manager()
 {
   for(auto& guiPointer : this->guiElements)
   {
-    delete guiPointer;
+    delete static_cast<CheckBox*>(guiPointer);
   }
   guiElements.clear();
 }
@@ -123,6 +123,14 @@ void Manager::Draw()
 void Manager::AddControl(void* guiPointer)
 {
   this->guiElements.push_back(guiPointer);
+}
+
+void Manager::DeleteAllControls()
+{
+  for(const auto& elm : this->guiElements)
+    if(elm != nullptr)
+      delete static_cast<CheckBox*>(elm);
+  this->guiElements.clear();
 }
 
 void Manager::ChangeEnabledState(void* guiPointer, const bool& newState)

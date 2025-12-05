@@ -1,5 +1,6 @@
 #include "miscPrimitives.h"
 #include "geometricPrimitives.h"
+#include "imgui.h"
 #include "matrixMathEssentials.h"
 #include "vectorMathEssentials.h"
 #include "globalVariables.h"
@@ -85,6 +86,12 @@ void RenderingInstance::InitializeRenderingInstance(olc::PixelGameEngine* engine
 {
   this->engine = engine;
   this->depthBuffer = new float[engine->ScreenWidth() * engine->ScreenHeight()];
+}
+
+RenderingInstance::~RenderingInstance()
+{
+  if(this->depthBuffer != nullptr) delete[] this->depthBuffer;
+  if(this->selectedMesh != nullptr) delete this->selectedMesh;
 }
 
 Camera::Camera()

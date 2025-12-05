@@ -87,7 +87,7 @@ namespace olc
 		float fParticleTime = 0.0f;
 		float fAspect = 0.0f;
 		bool bComplete = false;
-    std::string splashScreenMsg = "Copyright Aly Elsharkawy 2024";
+    std::string splashScreenMsg = "Copyright Aly Elsharkawy 2025";
 	};
 
 

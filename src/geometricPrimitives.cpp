@@ -221,11 +221,8 @@ Mesh* Mesh::Duplicate()
 
     if(this->diffuseColor != nullptr)
     {
-        olc::Pixel* newColor = new olc::Pixel();
-        newColor->a = this->diffuseColor->a;
-        newColor->r = this->diffuseColor->r;
-        newColor->g = this->diffuseColor->g;
-        result->diffuseColor = newColor;
+      result->SetDiffuseColor(this->diffuseColor->r, this->diffuseColor->g, 
+                              this->diffuseColor->g, this->diffuseColor->a);
     }
     
     return result;
@@ -297,6 +294,7 @@ void Mesh::SetScalingOffsets(const float& newX, const float& newY, const float& 
 
 void Mesh::SetDiffuseColor(const uint8_t& rVal, const uint8_t& gVal, const uint8_t& bVal, const uint8_t& aVal)
 {
+  if(this->diffuseColor != nullptr) delete this->diffuseColor;
   this->diffuseColor = new olc::Pixel(rVal, gVal, bVal, aVal);
   this->materialType = MATERIAL_TYPES::DIFFUSE;
 }
@@ -306,6 +304,16 @@ bool Mesh::SetTextureImage(const string& pathToImage)
   this->materialType = MATERIAL_TYPES::TEXTURE;
   if(this->diffuseColor != nullptr)
     delete this->diffuseColor;
+  
+  if(this->textureImageSprite != nullptr)
+    delete this->textureImageSprite;
+  if(this->textureImageDecal != nullptr)
+    delete this->textureImageDecal;
+
+  if(this->normalImageSprite != nullptr)
+    delete this->normalImageSprite;
+  if(this->normalImageDecal != nullptr)
+    delete this->normalImageDecal;
 
   if(filesystem::exists(pathToImage))
   {

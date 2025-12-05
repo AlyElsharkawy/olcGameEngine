@@ -36,6 +36,7 @@ public:
   olc::PixelGameEngine* engine = nullptr; 
   Mesh* selectedMesh;
   void InitializeRenderingInstance(olc::PixelGameEngine* engine);
+  ~RenderingInstance();
   //void SetProjectionMatrix(const Matrix4x4& matrixInput);
 };
 

@@ -1,6 +1,8 @@
 bin/
 lib/
 build/
+build-release/
+build-san/
 misc/
 .cache/
 screenshots/

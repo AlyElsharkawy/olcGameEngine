@@ -35,6 +35,7 @@ unsigned long long totalTimes = 0;
 class EngineReborn : public olc::PixelGameEngine
 {
   //Splash screen. Initializing it causes it to occur
+  bool isRunning = false;
   olc::SplashScreen* sps = nullptr;
   float* depthBuffer = nullptr;
 
@@ -129,6 +130,7 @@ class EngineReborn : public olc::PixelGameEngine
     #ifdef BUILD_DEBUG
       PrintAllPrimitiveSizes();
     #endif
+    this->isRunning = true;
     return true;
   }
 
@@ -148,9 +150,7 @@ class EngineReborn : public olc::PixelGameEngine
       std::memset(RI.depthBuffer, 0, ScreenHeight() * ScreenWidth() * sizeof(float));
     }
 
-      trianglesToRaster.clear();
-      normalsToRaster.clear();
-      trianglesRasteredCount = 0;
+    trianglesRasteredCount = 0;
     //Variable aliases
     Vector3D& cameraPosition = player->camera.cameraPosition;
     const float& farPlane = player->camera.GetFacingPlanes().second;
@@ -302,6 +302,24 @@ class EngineReborn : public olc::PixelGameEngine
 
     //This is where screenshots are taken
     DoAuxiliaryInputLoop(this, allObjects, allLights);
+    return this->isRunning;
+  }
+
+  bool OnUserDestroy() override
+  {
+    this->isRunning = false;
+    if(this->player != nullptr) delete this->player;
+    if(this->fontFreeSans != nullptr) delete this->fontFreeSans;
+    if(this->fontHackButtons != nullptr) delete this->fontHackButtons;
+    if(this->fontFreeSansBold != nullptr) delete this->fontFreeSansBold;
+    manager.DeleteAllControls();
+    for(const auto& lightObject : allLights)
+      if(lightObject != nullptr)
+        delete lightObject;
+    for(const auto& object : allObjects.GetMeshList())
+      if(object != nullptr)
+        delete object;
+
     return true;
   }
 };

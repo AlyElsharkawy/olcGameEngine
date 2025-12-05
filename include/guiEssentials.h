@@ -50,6 +50,7 @@ public:
   void ChangeEnabledState(void* guiPointer, const bool& newState);
   void ChangeEnabledStatesExcept(void* guiPointer, const bool& newState);
   void AddControl(void* guiPointer);
+  void DeleteAllControls();
 
 private:
   vector<void*> guiElements;

@@ -301,8 +301,8 @@ void DrawNormalsToScreen(const RenderingInstance& RI, const Matrix4x4& projectio
     projectedVector.x *= 0.5 * RI.engine->ScreenWidth();
     projectedVector.y *= 0.5 * RI.engine->ScreenHeight();
     Vector3D& tempLine = projectedVector;
-    DrawLineWithDepthBufferInline(normalPair.first.x, normalPair.first.y, normalPair.first.w, 
-                                  tempLine.x, tempLine.y, tempLine.w,
+    DrawLineWithDepthBufferInline(normalPair.first.x, normalPair.first.y, 1.0f / normalPair.first.w, 
+                                  tempLine.x, tempLine.y, 1.0f / tempLine.w,
                                   RI, NORMAL_COLOR);
   }
 }
@@ -460,8 +460,7 @@ void SetInitialObjects(olc::PixelGameEngine* engine, MeshList& allObjects, deque
     brickCube->doAutomaticRotations[1] = true;
     brickCube->rotationSpeeds[1] = 3.0f;
 
-    Mesh* badCube = new Mesh();
-    badCube = brickCube->Duplicate();
+    Mesh* badCube = brickCube->Duplicate();
     badCube->SetTranslationOffsets(0.0, 2.5f, 3.0f);
     badCube->SetTextureImage(GetPathFromResources({"textures", "missingTexture.png"}));
     badCube->rotationSpeeds[1] = 3.0f;
@@ -492,8 +491,7 @@ void SetInitialObjects(olc::PixelGameEngine* engine, MeshList& allObjects, deque
     suzanne1->doAutomaticRotation = true;
     suzanne1->rotationSpeeds[1] = 2.0f;
 
-    Mesh* suzanne2 = new Mesh();
-    suzanne2 = suzanne1->Duplicate();
+    Mesh* suzanne2 = suzanne1->Duplicate();
     suzanne2->SetTranslationOffsets(3.0f, 0.0f, 3.0f);
 
     Mesh* sphere1 = new Mesh();
@@ -501,14 +499,14 @@ void SetInitialObjects(olc::PixelGameEngine* engine, MeshList& allObjects, deque
     sphere1->SetTranslationOffsets(-2.0f, 0.0f, 0.0f);
     sphere1->SetDiffuseColor(210, 4, 45, 255);
 
-    Mesh* sphere2 = new Mesh();
-    sphere2 = sphere1->Duplicate();
+    Mesh* sphere2 = sphere1->Duplicate();
     sphere2->SetTranslationOffsets(2.0f, 0.0f, 0.0f);
 
     allObjects.AppendMesh(suzanne1);
     allObjects.AppendMesh(suzanne2);
     allObjects.AppendMesh(sphere1);
     allObjects.AppendMesh(sphere2);
+    allObjects.UpdateTotalCounts();
     currentObjectSet = 3;
   }
 
@@ -538,10 +536,10 @@ void SetInitialObjects(olc::PixelGameEngine* engine, MeshList& allObjects, deque
     if(currentObjectSet == 5)
       return;
 
-    /*ClearAllObjectsandLights(allObjects, allLights);
+    ClearAllObjectsandLights(allObjects, allLights);
     CreateStandardSunLamp(allLights);
 
-    Mesh* highResolutionBunny = new Mesh();
+    /*Mesh* highResolutionBunny = new Mesh();
     highResolutionBunny->LoadFromOBJFile(GetPathFromResources({"objectFiles", "Primitives", "very-high-res-bunny.obj"}));
     highResolutionBunny->doAutomaticRotation = true;
     highResolutionBunny->doAutomaticRotations[1] = true;

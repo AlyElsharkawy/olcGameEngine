@@ -209,6 +209,11 @@ void DrawTriangleWithDepthBuffer(const Triangle &triangleInput,
 
 // WARNING: This does not perfectly interpolate the W value. This bug will NOT
 // be fixed in the foreseeable future
+// WARNING: Normal lines are not clipped. Thus, I have checks that prevent me from indexing using negative
+// numbers or numbers greater than ScreenWidth * ScreenHeight.
+// Yes, This is a very bad solution. However, the alternative is adding clipping to Normals, which I
+// do not have the time, health, energy, or mental clarity to implement now.
+// Thank you for understanding
 void DrawLineWithDepthBufferInline(int32_t x1, int32_t y1, float w1, int32_t x2,
                                    int32_t y2, float w2,
                                    const RenderingInstance &RI, olc::Pixel p,
@@ -218,12 +223,13 @@ int x, y, dx, dy, dx1, dy1, px, py, xe, ye, i;
 		dx = x2 - x1; dy = y2 - y1;
 
 		auto rol = [&](void) { pattern = (pattern << 1) | (pattern >> 31); return pattern & 1; };
-		olc::vi2d p1(x1, y1), p2(x2, y2);
+		olc::vlong2d p1(x1, y1), p2(x2, y2);
     float wVal = std::max(w1, w2);
 		if (!RI.engine->ClipLineToScreen(p1, p2))
 			return;
 		x1 = p1.x; y1 = p1.y;
 		x2 = p2.x; y2 = p2.y;
+    const int screenSize = RI.engine->ScreenWidth() * RI.engine->ScreenHeight();
 
 		// straight lines idea by gurkanctn
 		if (dx == 0) // Line is vertical
@@ -275,7 +281,7 @@ int x, y, dx, dy, dx1, dy1, px, py, xe, ye, i;
 			}
       // J is X and I is Y
       int tempIndex = y * RI.engine->ScreenWidth() + x;
-			if (wVal > RI.depthBuffer[tempIndex] && rol()) 
+			if (wVal > RI.depthBuffer[tempIndex] && rol() && tempIndex < screenSize && tempIndex > 0) 
       {
         RI.engine->Draw(x, y, p);
         RI.depthBuffer[tempIndex] = wVal;
@@ -293,7 +299,7 @@ int x, y, dx, dy, dx1, dy1, px, py, xe, ye, i;
 				}
         // J is X and I is Y
         int tempIndex = y * RI.engine->ScreenWidth() + x;
-				if(wVal > RI.depthBuffer[tempIndex] && rol())
+				if(wVal > RI.depthBuffer[tempIndex] && rol() && tempIndex < screenSize && tempIndex > 0)
         {
           RI.engine->Draw(x, y, p);
           RI.depthBuffer[tempIndex] = wVal;
@@ -313,7 +319,7 @@ int x, y, dx, dy, dx1, dy1, px, py, xe, ye, i;
 
       // J is X and I is Y
       int tempIndex = y * RI.engine->ScreenWidth() + x;
-			if(wVal > RI.depthBuffer[tempIndex] && rol())
+			if(wVal > RI.depthBuffer[tempIndex] && rol() && tempIndex < screenSize && tempIndex > 0)
       {
         RI.engine->Draw(x, y, p);
         RI.depthBuffer[tempIndex] = wVal;
@@ -331,7 +337,7 @@ int x, y, dx, dy, dx1, dy1, px, py, xe, ye, i;
 				}
         // J is X and I is Y
         int tempIndex = y * RI.engine->ScreenWidth() + x;
-				if(wVal > RI.depthBuffer[tempIndex] &&  rol()) 
+				if(wVal > RI.depthBuffer[tempIndex] &&  rol() && tempIndex < screenSize && tempIndex > 0) 
         {
           RI.engine->Draw(x, y, p);
           RI.depthBuffer[tempIndex] = wVal;

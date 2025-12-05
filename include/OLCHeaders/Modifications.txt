@@ -1,9 +1,12 @@
 olcPixelGameEngine.h:
     Made it so that I could see valueToIndex on line 1622
     Created a ClearOptimized function that clears the screen using std::fill instead of a for loop
+    Edited line 4237 to use stbi_image_free instead of delete
+    Edited the loop on line 2415 to make it easier to identify the overflow bug and fix it
+    Added 64bit vlong2d and 64bit vlong2d ClipLineToScreen
 
 olcSplashScreen:
-    Made it so that it says an optional Aly Elsharkawy 2024 message instead of the normal one.
+    Made it so that it says an optional Aly Elsharkawy 2025 message instead of the normal one.
     Title bar will remain as is for liscence compatiblity
 
 olcQuickGUI:

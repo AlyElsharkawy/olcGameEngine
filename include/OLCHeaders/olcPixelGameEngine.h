@@ -737,6 +737,7 @@ namespace olc
 	{ return lhs.y > rhs.y || (lhs.y == rhs.y && lhs.x > rhs.x); }
 
 	typedef v2d_generic<int32_t> vi2d;
+	typedef v2d_generic<int64_t> vlong2d;
 	typedef v2d_generic<uint32_t> vu2d;
 	typedef v2d_generic<float> vf2d;
 	typedef v2d_generic<double> vd2d;
@@ -1158,6 +1159,7 @@ namespace olc
 
 		// Clip a line segment to visible area
 		bool ClipLineToScreen(olc::vi2d& in_p1, olc::vi2d& in_p2);
+		bool ClipLineToScreen(olc::vlong2d& in_p1, olc::vlong2d& in_p2);
 
 		// Dont allow PGE to mark layers as dirty, so pixel graphics don't update
 		void EnablePixelTransfer(const bool bEnable = true);
@@ -2412,12 +2414,89 @@ namespace olc
 			{
 				int s3 = s2 > s1 ? s2 : s1;
 				olc::vi2d n;
-				if (s3 & SEG_T) { n.x = in_p1.x + (in_p2.x - in_p1.x) * (vScreenSize.y - in_p1.y) / (in_p2.y - in_p1.y); n.y = vScreenSize.y; }
-				else if (s3 & SEG_B) { n.x = in_p1.x + (in_p2.x - in_p1.x) * (0 - in_p1.y) / (in_p2.y - in_p1.y); n.y = 0; }
-				else if (s3 & SEG_R) { n.x = vScreenSize.x; n.y = in_p1.y + (in_p2.y - in_p1.y) * (vScreenSize.x - in_p1.x) / (in_p2.x - in_p1.x); }
-				else if (s3 & SEG_L) { n.x = 0; n.y = in_p1.y + (in_p2.y - in_p1.y) * (0 - in_p1.x) / (in_p2.x - in_p1.x); }
-				if (s3 == s1) { in_p1 = n; s1 = Segment(in_p1); }
-				else { in_p2 = n; s2 = Segment(in_p2); }
+				if (s3 & SEG_T) 
+				{ 
+					n.x = in_p1.x + (in_p2.x - in_p1.x) * (vScreenSize.y - in_p1.y) / (in_p2.y - in_p1.y); 
+					n.y = vScreenSize.y; 
+				}
+				else if (s3 & SEG_B) 
+				{ 
+					n.x = in_p1.x + (in_p2.x - in_p1.x) * (0 - in_p1.y) / (in_p2.y - in_p1.y); 
+					n.y = 0; 
+				}
+				else if (s3 & SEG_R)
+				{
+					n.x = vScreenSize.x; n.y = in_p1.y + (in_p2.y - in_p1.y) * (vScreenSize.x - in_p1.x) / (in_p2.x - in_p1.x);
+				}
+				else if (s3 & SEG_L)
+				{ 
+					n.x = 0; n.y = in_p1.y + (in_p2.y - in_p1.y) * (0 - in_p1.x) / (in_p2.x - in_p1.x);
+				}
+				if (s3 == s1)
+				{ 
+					in_p1 = n; 
+					s1 = Segment(in_p1);
+				}
+				else 
+				{ 
+					in_p2 = n; 
+					s2 = Segment(in_p2);
+				}
+			}
+		}
+		return true;
+	}
+
+	bool PixelGameEngine::ClipLineToScreen(olc::vlong2d& in_p1, olc::vlong2d& in_p2)
+	{
+		// https://en.wikipedia.org/wiki/Cohen%E2%80%93Sutherland_algorithm
+		static constexpr int SEG_I = 0b0000, SEG_L = 0b0001, SEG_R = 0b0010, SEG_B = 0b0100, SEG_T = 0b1000;
+		auto Segment = [&vScreenSize = vScreenSize](const olc::vlong2d& v)
+		{
+			int i = SEG_I;
+			if (v.x < 0) i |= SEG_L; else if (v.x > vScreenSize.x) i |= SEG_R;
+			if (v.y < 0) i |= SEG_B; else if (v.y > vScreenSize.y) i |= SEG_T;
+			return i;
+		};
+
+		int s1 = Segment(in_p1), s2 = Segment(in_p2);
+
+		while (true)
+		{
+			if (!(s1 | s2))	  return true;
+			else if (s1 & s2) return false;
+			else
+			{
+				int s3 = s2 > s1 ? s2 : s1;
+				olc::vlong2d n;
+				if (s3 & SEG_T) 
+				{ 
+					n.x = in_p1.x + (in_p2.x - in_p1.x) * (vScreenSize.y - in_p1.y) / (in_p2.y - in_p1.y); 
+					n.y = vScreenSize.y; 
+				}
+				else if (s3 & SEG_B) 
+				{ 
+					n.x = in_p1.x + (in_p2.x - in_p1.x) * (0 - in_p1.y) / (in_p2.y - in_p1.y); 
+					n.y = 0; 
+				}
+				else if (s3 & SEG_R)
+				{
+					n.x = vScreenSize.x; n.y = in_p1.y + (in_p2.y - in_p1.y) * (vScreenSize.x - in_p1.x) / (in_p2.x - in_p1.x);
+				}
+				else if (s3 & SEG_L)
+				{ 
+					n.x = 0; n.y = in_p1.y + (in_p2.y - in_p1.y) * (0 - in_p1.x) / (in_p2.x - in_p1.x);
+				}
+				if (s3 == s1)
+				{ 
+					in_p1 = n; 
+					s1 = Segment(in_p1);
+				}
+				else 
+				{ 
+					in_p2 = n; 
+					s2 = Segment(in_p2);
+				}
 			}
 		}
 		return true;
@@ -4234,7 +4313,7 @@ namespace olc
 			spr->width = w; spr->height = h;
 			spr->pColData.resize(spr->width * spr->height);
 			std::memcpy(spr->pColData.data(), bytes, spr->width * spr->height * 4);
-			delete[] bytes;
+			stbi_image_free(bytes);
 			return olc::rcode::OK;
 		}
 

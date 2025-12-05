@@ -24,6 +24,7 @@ include_directories("./user/include/")
 #For Dear ImGUI
 include_directories("./include/External/ImGUI/")
 
+option(ENABLE_SANITIZERS "Enable sanitizers (ASAN + UBSAN)" OFF)
 
 find_package(Freetype REQUIRED)
 include_directories(${FREETYPE_INCLUDE_DIRS})
@@ -57,7 +58,7 @@ add_library(drawing STATIC ./src/drawingRoutines.cpp)
 target_link_libraries(geometry PRIVATE misc_functions)
 target_link_libraries(misc_functions PRIVATE misc_primitives)
 target_link_libraries(misc_primitives PRIVATE vector)
-target_link_libraries(misc_primitives PRIVATE matrix)
+target_link_libraries(misc_primitives PRIVATE matrix geometry)
 target_link_libraries(clipping PRIVATE geometry)
 target_link_libraries(normal PRIVATE vector)
 target_link_libraries(essential PRIVATE drawing)
@@ -123,6 +124,22 @@ if (CMAKE_BUILD_TYPE STREQUAL "debug")
     target_compile_definitions(${PROJECT_NAME} PRIVATE BUILD_DEBUG)
 endif()
 
+if (ENABLE_SANITIZERS)
+    message(STATUS "Sanitizers ENABLED")
+
+    target_compile_options(${PROJECT_NAME} PRIVATE
+        -fsanitize=address,undefined
+        -fno-omit-frame-pointer
+    )
+
+    target_link_options(${PROJECT_NAME} PRIVATE
+        -fsanitize=address,undefined
+    )
+else()
+    message(STATUS "Sanitizers DISABLED")
+endif()
+
+
 # For Linux and windows support
 if(UNIX)
     set(PLATFORM_LIBRARIES X11 GL pthread stdc++fs png ${X11_LIBRARIES})
@@ -154,6 +171,11 @@ add_compile_options(
 add_custom_target(debug
   COMMAND ${CMAKE_COMMAND} --build ${CMAKE_BINARY_DIR} --config Debug
   COMMENT "Building debug configuration"
+)
+
+add_custom_target(debug-san
+  COMMAND ${CMAKE_COMMAND} --build ${CMAKE_BINARY_DIR} --config Debug
+  COMMENT "Building debug configuration with sanitizers"
 )
 
 add_custom_target(release
