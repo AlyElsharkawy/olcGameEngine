@@ -167,7 +167,6 @@ class EngineReborn : public olc::PixelGameEngine
           if(mesh->doAutomaticRotations[i] == true)
             mesh->rotationDegrees[i] += fElapsedTime * 0.5f * mesh->rotationSpeeds[i];
       }
-      //TODO: implement the WORLD MATRIX calculations 
       Matrix4x4 scalingMatrix, rotationMatrix, translationMatrix;
       scalingMatrix = GetScalingMatrix(mesh->scalingOffsets[0], mesh->scalingOffsets[1], mesh->scalingOffsets[2]);
       if(mesh->isStatic == true)
@@ -180,7 +179,7 @@ class EngineReborn : public olc::PixelGameEngine
                                                mesh->translationOffsets[2]);
       Matrix4x4 tempMatrix = MultiplyMatrixMatrix(scalingMatrix, rotationMatrix);
       Matrix4x4 worldMatrix = MultiplyMatrixMatrix(tempMatrix, translationMatrix);
-      for(const auto& triangle : mesh->triangles)
+      for(const auto& triangle : mesh->GetTriangles())
       {
         Vector3D normal;
         Triangle transformedTriangle;
@@ -229,11 +228,11 @@ class EngineReborn : public olc::PixelGameEngine
           else if(SETTINGS_MAP[SETTINGS_ENUM::DO_SCREEN_SPACE_CLIPPING] == false)
           {
             ScopedTimer screenSpaceClippingTimer("DRAWING TRIANGLES");
-            /*for(int triNoScreenSpaceClip = 0; triNoScreenSpaceClip < trianglesToRaster.size(); triNoScreenSpaceClip++)
+            for(int triNoScreenSpaceClip = 0; triNoScreenSpaceClip < trianglesToRaster.size(); triNoScreenSpaceClip++)
             {
-              DrawTriangleToScreen(RI, trianglesToRaster[triNoScreenSpaceClip], normalsToRaster[triNoScreenSpaceClip], 
-              normal, allLights, mesh->GetMaterialType(), mesh->GetTextureImage());
-            }*/
+              DrawTriangleToScreen(RI, trianglesToRaster[triNoScreenSpaceClip], normal, allLights, 
+                                   mesh->GetMaterialType(), mesh->GetTextureImage());
+            }
           }
           if(SETTINGS_MAP[SETTINGS_ENUM::DRAW_NORMALS] == true)
           {
@@ -302,6 +301,8 @@ class EngineReborn : public olc::PixelGameEngine
 
     //This is where screenshots are taken
     DoAuxiliaryInputLoop(this, allObjects, allLights);
+    if(InputManager::KeyHeld(this, {NUM_9}))
+      this->isRunning = false;
     return this->isRunning;
   }
 
@@ -322,6 +323,11 @@ class EngineReborn : public olc::PixelGameEngine
 
     return true;
   }
+
+
+  ~EngineReborn()
+  {
+  }
 };
 
 int main(int argc, char** argv)
@@ -335,4 +341,5 @@ int main(int argc, char** argv)
   }
   else
     cerr << "FATAL ERROR: Failed to create 3D engine window.\n";
+  return 0;
 }

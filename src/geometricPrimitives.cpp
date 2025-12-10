@@ -111,6 +111,11 @@ const olc::Pixel* Mesh::GetDiffuseColor() const
 {
   return this->diffuseColor;
 }
+
+const vector<Triangle>& Mesh::GetTriangles() const
+{
+  return this->triangles;
+}
   
 const olc::Decal* Mesh::GetTextureImage() const
 {
@@ -192,7 +197,6 @@ Mesh* Mesh::Duplicate()
 
     result->doAutomaticRotation = this->doAutomaticRotation;
     result->triangles = this->triangles;
-    result->fTheta = this->fTheta;
     result->isStatic = this->isStatic;
 
     result->forwardVector = this->forwardVector;
@@ -276,6 +280,11 @@ void Mesh::SetTranslationOffsets(const float& newX, const float& newY, const flo
   this->translationOffsets[0] = newX;
   this->translationOffsets[1] = newY;
   this->translationOffsets[2] = newZ;
+}
+
+void Mesh::SetTranslationOffsets(const Vector3D& newTranslations)
+{
+  SetTranslationOffsets(newTranslations.x, newTranslations.y, newTranslations.z);
 }
 
 void Mesh::SetRotationSpeeds(const float& newX, const float& newY, const float& newZ)

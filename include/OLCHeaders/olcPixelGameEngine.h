@@ -2382,7 +2382,8 @@ namespace olc
 	{
 		int pixels = GetDrawTargetWidth() * GetDrawTargetHeight();
 		Pixel* m = GetDrawTarget()->GetData();
-		std::fill(m, m + pixels, Pixel(0,0,0,255));
+	std::fill(m, m + pixels, Pixel(0,0,0,255));
+  //std::memset(m, 255, pixels * 4);
 	}
 
 

@@ -30,14 +30,14 @@ int main(int argc, char** argv)
       continue;
     }
 
-    for(int i = 0; i < loadedObject.triangles.size(); i++)
+    for(int i = 0; i < loadedObject.GetTriangles().size(); i++)
     {
-      cout << loadedObject.triangles[i].ExtractInfo() << ",\n";
-      outputFile << loadedObject.triangles[i].ExtractInfo() << ",\n";
-      if(i == loadedObject.triangles.size() - 1)
+      cout << loadedObject.GetTriangles()[i].ExtractInfo() << ",\n";
+      outputFile << loadedObject.GetTriangles()[i].ExtractInfo() << ",\n";
+      if(i == loadedObject.GetTriangles().size() - 1)
       {
-        cout << loadedObject.triangles[i].ExtractInfo() << "\n";
-        outputFile << loadedObject.triangles[i].ExtractInfo() << "\n";
+        cout << loadedObject.GetTriangles()[i].ExtractInfo() << "\n";
+        outputFile << loadedObject.GetTriangles()[i].ExtractInfo() << "\n";
       }
     }
     outputFile.close();

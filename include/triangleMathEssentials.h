@@ -5,7 +5,7 @@ Triangle ScaleTriangle(const Triangle& input, float xScale = 1.0f, float yScale 
 Triangle RotateTriangle(const Triangle& input, const Matrix4x4& transformMatrix);
 Triangle TranslateTriangle(const Triangle& input, float moveX, float moveY, float moveZ);
 void TranslateTriangleIP(Triangle& input, float moveX, float moveY, float moveZ);
-void ScreenNormalizeTriangle(Triangle& input, const float ScreenWidth, const float ScreenHeight);
+void ScreenNormalizeTriangle(Triangle& input, const float HalfScreenWidth, const float HalfScreenHeight);
 void InvertTriangleXY(Triangle& input);
 void InvertTriangleX(Triangle& input);
 void InvertTriangleY(Triangle& input);

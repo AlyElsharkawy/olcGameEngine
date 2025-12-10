@@ -2,6 +2,7 @@
 #include <string>
 #include <deque>
 #include "olcPixelGameEngine.h"
+#include "components.h"
 
 #define BULK_COPY_ARRAY(src, dst, size) for(int i = 0; i < size; i++) dst[i] = src[i];
 
@@ -44,21 +45,22 @@ public:
 class Mesh
 {
 public:
-  vector<Triangle> triangles;
   bool doAutomaticRotation = false;
   bool isStatic = true;
   Vector3D forwardVector = {0.0f, 0.0f, 1.0f};
   Vector3D lookAtVector;
-  float fTheta;
   
   //All in X,Y,Z order
   float translationOffsets[3] = {0.0f, 0.0f, 0.0f};
   float rotationSpeeds[3] = {1.0f, 1.0f, 1.0f};
   bool doAutomaticRotations[3] = {false, false, false};
+  bool doLighting = true;
   float scalingOffsets[3] = {1.0f, 1.0f, 1.0f};
   float rotationDegrees[3] = {0.0f, 0.0f, 0.0f};
 
 private:
+  vector<Triangle> triangles;
+  MeshComponents components;
   float totalTriangles;
   float visibleTriangles;
   float totalVertices;
@@ -79,6 +81,7 @@ public:
   const int GetTotalVisibleTriangles() const;
   const short GetMaterialType() const;
   const olc::Pixel* GetDiffuseColor() const;
+  const vector<Triangle>& GetTriangles() const;
   string textureImagePath;
   string normalImagePath;
   const olc::Decal* GetTextureImage() const;
@@ -88,6 +91,7 @@ public:
 
   void SetVisibleTriangles(const int& visibleTrianglesCount);
   void SetTranslationOffsets(const float& newX, const float& newY, const float& newZ);
+  void SetTranslationOffsets(const Vector3D& newTranslations);
   void SetRotationSpeeds(const float& newX, const float& newY, const float& newZ);
   void SetScalingOffsets(const float& newX, const float& newY, const float& newZ);
   void SetDiffuseColor(const uint8_t& rVal, const uint8_t& gVal, const uint8_t& bVal, const uint8_t& aVal);

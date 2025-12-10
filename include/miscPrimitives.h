@@ -1,4 +1,5 @@
 #pragma once
+#include "components.h"
 #include "geometricPrimitives.h"
 #include "olcPixelGameEngine.h"
 
@@ -12,17 +13,24 @@ public:
 class Light
 {
 private:
-  short lightType;
+  LightComponents components;
   Vector3D direction;
+  Vector3D position;
+  short lightType;
 
 public:
   float intensity = 1.0f;
   olc::Pixel color;
   float normalizedColors[3];
-  Light(const short& lightType, const Vector3D& direction, const olc::Pixel& color = {255,255,255}, const float& intensity = 1.0f);
+  Light(const short& lightType, const Vector3D& direction, const Vector3D& position,
+        const olc::Pixel& color = {255,255,255}, const float& intensity = 1.0f);
+  ~Light();
   void SetLightColor(const float& rVal, const float& gVal, const float& bVal);
   void SetLightDirection(const Vector3D& inputVec);
   bool SetLightType(const short& lampType);
+  void AddMeshComponent(Mesh* inputMesh);
+  void MoveLight(const Vector3D& newPosition);
+  void ChangeDirection(const Vector3D& newDirection);
   const Vector3D& GetDirection() const;
   const short& GetLightType() const;
   //R,G,B

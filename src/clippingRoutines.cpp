@@ -144,14 +144,16 @@ int TriangleClipWithPlane(const Vector3D& planePoint, const Vector3D& planeNorma
     //Copy the color information
     //cout << "CASE 4\n";
     if(SETTINGS_MAP[VISUALIZE_CLIPPING] == true)
+    {
       outputTriangle1.color = olc::GREEN;
-    else
-      outputTriangle1.color = inputTriangle.color;
-
-    if(SETTINGS_MAP[VISUALIZE_CLIPPING] == true)
       outputTriangle2.color = olc::RED;
+    }
     else
+    {
+      outputTriangle1.color = inputTriangle.color;
       outputTriangle2.color = inputTriangle.color;
+    }
+
     
     float tVal;
 
@@ -260,7 +262,8 @@ void DoViewSpaceClipping(olc::PixelGameEngine* engine, Player* player, vector<Tr
       
       //Fixing inverted axes
       InvertTriangleXY(projectedTriangle);
-      ScreenNormalizeTriangle(projectedTriangle, (float)engine->ScreenWidth(), (float)engine->ScreenHeight());
+      ScreenNormalizeTriangle(projectedTriangle, (float)engine->ScreenWidth() * 0.5f,
+                              (float)engine->ScreenHeight() * 0.5f);
       trianglesToRaster.push_back(projectedTriangle);
      
       //Normals section 
@@ -278,7 +281,8 @@ void DoViewSpaceClipping(olc::PixelGameEngine* engine, Player* player, vector<Tr
     //Fixing inverted axes
     InvertTriangleXY(projectedTriangle);
 
-    ScreenNormalizeTriangle(projectedTriangle, (float)engine->ScreenWidth(), (float)engine->ScreenHeight());
+    ScreenNormalizeTriangle(projectedTriangle, (float)engine->ScreenWidth() * 0.5f,
+                            (float)engine->ScreenHeight() * 0.5f);
     trianglesToRaster.push_back(projectedTriangle);
     if(SETTINGS_MAP[DRAW_NORMALS] == true)
     {

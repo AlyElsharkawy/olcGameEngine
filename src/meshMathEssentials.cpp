@@ -5,7 +5,7 @@ Vector3D GetCentroid(const Mesh& input)
 {
   Vector3D output;
   int vertexCount = 0;
-  for(const auto& triangle : input.triangles)
+  for(const auto& triangle : input.GetTriangles())
   {
     for(const auto& vertex : triangle.points)
     {

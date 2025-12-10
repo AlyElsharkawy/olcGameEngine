@@ -13,7 +13,8 @@ NormalizedPixel::NormalizedPixel(const float& r, const float& g, const float& b)
   this->values[2] = b;
 }
 
-Light::Light(const short& lightType, const Vector3D& direction, const olc::Pixel& color, const float& intensity)
+Light::Light(const short& lightType, const Vector3D& direction, const Vector3D& position, const olc::Pixel& color,
+             const float& intensity)
 {
   bool isLightTypeValid = this->SetLightType(lightType);
   if(isLightTypeValid == false)
@@ -24,7 +25,15 @@ Light::Light(const short& lightType, const Vector3D& direction, const olc::Pixel
   this->normalizedColors[0] = color.r / 255.0f;
   this->normalizedColors[1] = color.g / 255.0f;
   this->normalizedColors[2] = color.b / 255.0f;
+  this->position = position;
 }
+
+Light::~Light()
+{
+  //if(this->components.mesh != nullptr) delete this->components.mesh;
+  if(this->components.boxCollider != nullptr) delete this->components.boxCollider;
+}
+
 void Light::SetLightColor(const float& rVal, const float& gVal, const float& bVal)
 {
   this->color = olc::Pixel(rVal, gVal, bVal, 255);
@@ -65,6 +74,28 @@ bool Light::SetLightType(const short& lampType)
       }
   }
   return true;
+}
+
+void Light::AddMeshComponent(Mesh* inputMesh)
+{
+  //Delete previous mesh if it exists
+  if(this->components.mesh != nullptr) delete this->components.mesh;
+  this->components.mesh = inputMesh;
+  inputMesh->forwardVector = this->direction;
+  inputMesh->doLighting = false;
+  inputMesh->SetTranslationOffsets(this->position);
+}
+
+void Light::MoveLight(const Vector3D& newPosition)
+{
+  this->position = newPosition;
+  if(this->components.mesh != nullptr) this->components.mesh->SetTranslationOffsets(newPosition);
+}
+
+void Light::ChangeDirection(const Vector3D& newDirection)
+{
+  this->direction = newDirection;
+  if(this->components.mesh != nullptr) this->components.mesh->forwardVector = newDirection;
 }
 
 const Vector3D& Light::GetDirection() const

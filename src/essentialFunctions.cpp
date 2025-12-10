@@ -1,3 +1,4 @@
+#include <cstdint>
 #include <optional>
 #include <vector>
 #include <algorithm>
@@ -370,10 +371,19 @@ void ClearAllObjectsandLights(MeshList& allObjects, deque<Light*>& allLights)
   allLights.clear();
 }
 
-void CreateStandardSunLamp(deque<Light*>& allLights)
+void CreateStandardSunLamp(MeshList& allObjects, deque<Light*>& allLights)
 {
-  Light* mainLamp = new Light(LIGHT_TYPES::LAMP_SUN, {0.0f, -1.0f, 1.0f}, {255, 255, 255}, 1.0f);
+  Light* mainLamp = new Light(LIGHT_TYPES::LAMP_SUN, {0.0f, -1.0f, 1.0f}, {0.0f, 8.0f, -8.0f}, {255, 255, 255}, 1.0f);
+  Mesh* lightMesh = new Mesh();
+  uint8_t r,g,b;
+  HexToRGB("FFB957", r, g, b);
+  lightMesh->LoadFromOBJFile(GetPathFromResources({"objectFiles", "Primitives", "ico_sphere.obj"}), false);
+  lightMesh->SetDiffuseColor(r, g, b, 255);
+  lightMesh->SetScalingOffsets(1.5f, 1.5f, 1.5f);
+
+  mainLamp->AddMeshComponent(lightMesh);
   allLights.push_back(mainLamp);
+  allObjects.AppendMesh(lightMesh);
 }
 
 void SetInitialObjects(olc::PixelGameEngine* engine, MeshList& allObjects, deque<Light*>& allLights, std::optional<BASIC_CONTROLS_ENUM> sceneNumber)
@@ -391,7 +401,7 @@ void SetInitialObjects(olc::PixelGameEngine* engine, MeshList& allObjects, deque
       return;
 
     ClearAllObjectsandLights(allObjects, allLights);
-    CreateStandardSunLamp(allLights);
+    CreateStandardSunLamp(allObjects, allLights);
 
     //Initialize hard coded meshes
     Mesh* testMesh = new Mesh();
@@ -434,7 +444,7 @@ void SetInitialObjects(olc::PixelGameEngine* engine, MeshList& allObjects, deque
       return;
 
     ClearAllObjectsandLights(allObjects, allLights);
-    CreateStandardSunLamp(allLights);
+    CreateStandardSunLamp(allObjects, allLights);
 
     Mesh* dirtCube = new Mesh();
     dirtCube->LoadFromOBJFile(GetPathFromResources({"objectFiles", "Primitives", "GoodCube.obj"}), true);
@@ -480,7 +490,7 @@ void SetInitialObjects(olc::PixelGameEngine* engine, MeshList& allObjects, deque
       return;
 
     ClearAllObjectsandLights(allObjects, allLights);
-    CreateStandardSunLamp(allLights);
+    CreateStandardSunLamp(allObjects, allLights);
     
     Mesh* suzanne1 = new Mesh();
     suzanne1->LoadFromOBJFile(GetPathFromResources({"objectFiles", "Primitives", "Monkey-High-Resolution.obj"}), false);
@@ -517,7 +527,7 @@ void SetInitialObjects(olc::PixelGameEngine* engine, MeshList& allObjects, deque
       return;
 
     ClearAllObjectsandLights(allObjects, allLights);
-    CreateStandardSunLamp(allLights);
+    CreateStandardSunLamp(allObjects, allLights);
 
     Mesh* cottageTest = new Mesh();
     cottageTest->LoadFromOBJFile(GetPathFromResources({"objectFiles", "Objects", "cottage_tri.obj"}), true);
@@ -537,7 +547,7 @@ void SetInitialObjects(olc::PixelGameEngine* engine, MeshList& allObjects, deque
       return;
 
     ClearAllObjectsandLights(allObjects, allLights);
-    CreateStandardSunLamp(allLights);
+    CreateStandardSunLamp(allObjects, allLights);
 
     /*Mesh* highResolutionBunny = new Mesh();
     highResolutionBunny->LoadFromOBJFile(GetPathFromResources({"objectFiles", "Primitives", "very-high-res-bunny.obj"}));

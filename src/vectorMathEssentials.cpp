@@ -123,7 +123,7 @@ float GetDistanceBetweenPoints(const Vector3D& input1, const Vector3D& input2)
 Vector3D GetCentroid(const Mesh& input)
 {
   Vector3D output;
-  for(const auto& triangle : input.triangles)
+  for(const auto& triangle : input.GetTriangles())
   {
     for(const auto& vertex : triangle.points)
     {
@@ -132,7 +132,7 @@ Vector3D GetCentroid(const Mesh& input)
       output.z += vertex.z;
     }
   }
-  DivideVectorScalar(output, input.triangles.size());
+  DivideVectorScalar(output, input.GetTriangles().size());
 }
 
 bool IsZeroVector(const Vector3D& input)

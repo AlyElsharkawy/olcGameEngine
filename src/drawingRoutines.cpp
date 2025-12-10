@@ -122,7 +122,8 @@ void DrawTexturedTriangle(const RenderingInstance &RI, const Triangle &input,
         tex_w = (1.0f - t) * tex_sw + t * tex_ew;
         // J is X and I is Y
         int offset = i * RI.engine->ScreenWidth() + j;
-        if (offset < screenSize && tex_w > RI.depthBuffer[offset]) {
+        if (offset < screenSize && tex_w > RI.depthBuffer[offset]) 
+        {
           olc::Pixel tempPixel = texture->Sample(tex_u / tex_w, tex_v / tex_w);
           olc::Pixel finalPixel = MultiplyPixelPixel(tempPixel, pixelIllumination);
           RI.engine->Draw(j, i, finalPixel);
@@ -185,7 +186,8 @@ void DrawTexturedTriangle(const RenderingInstance &RI, const Triangle &input,
         tex_w = (1.0f - t) * tex_sw + t * tex_ew;
 
         int offset = i * RI.engine->ScreenWidth() + j;
-        if (offset < screenSize && tex_w > RI.depthBuffer[offset]) {
+        if (offset < screenSize && tex_w > RI.depthBuffer[offset])
+        {
           olc::Pixel tempPixel = texture->Sample(tex_u / tex_w, tex_v / tex_w);
           olc::Pixel finalPixel = MultiplyPixelPixel(tempPixel, pixelIllumination);
           RI.engine->Draw(j, i, finalPixel);

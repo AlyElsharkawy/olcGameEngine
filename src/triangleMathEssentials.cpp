@@ -1,6 +1,7 @@
 #include "triangleMathEssentials.h"
 #include "matrixMathEssentials.h"
 #include "vectorMathEssentials.h"
+#include "timerUtility.h"
 
 Triangle MultiplyTriangle(const Triangle &input, const Matrix4x4& transformMatrix, bool normalize)
 {
@@ -47,16 +48,16 @@ void TranslateTriangleIP(Triangle& input, float moveX, float moveY, float moveZ)
   }
 }
 
-void ScreenNormalizeTriangle(Triangle& input, const float ScreenWidth, const float ScreenHeight)
+void ScreenNormalizeTriangle(Triangle& input, const float HalfScreenWidth, const float HalfScreenHeight)
 {
   input.points[0].x += 1.0f; input.points[1].x += 1.0f; input.points[2].x += 1.0f;
   input.points[0].y += 1.0f; input.points[1].y += 1.0f; input.points[2].y += 1.0f;
-  input.points[0].x *= 0.5f * ScreenWidth;
-  input.points[0].y *= 0.5f * ScreenHeight;
-  input.points[1].x *= 0.5f * ScreenWidth;
-  input.points[1].y *= 0.5f * ScreenHeight;
-  input.points[2].x *= 0.5f * ScreenWidth;
-  input.points[2].y *= 0.5f * ScreenHeight;
+  input.points[0].x *= HalfScreenWidth;
+  input.points[0].y *= HalfScreenHeight;
+  input.points[1].x *= HalfScreenWidth;
+  input.points[1].y *= HalfScreenHeight;
+  input.points[2].x *= HalfScreenWidth;
+  input.points[2].y *= HalfScreenHeight;
 }
 
 //Currently, it only inverts the Y 
@@ -66,9 +67,23 @@ void InvertTriangleXY(Triangle& input)
     /*input.points[0].x *= -1.0f;
 	input.points[1].x *= -1.0f;
 	input.points[2].x *= -1.0f;*/
-	input.points[0].y *= -1.0f;
+  //ScopedTimer inversionTime("Y INVERSION TIME");
+	/*input.points[0].y *= -1.0f;
 	input.points[1].y *= -1.0f;
-	input.points[2].y *= -1.0f;
+	input.points[2].y *= -1.0f;*/
+  //input.points[0].y ^=  2147483648;
+  //This micro optimization most likely has absolutely no effect
+  input.points[0].y = std::bit_cast<float>(
+    std::bit_cast<uint32_t>(input.points[0].y) ^ 0x80000000u
+  );
+
+  input.points[1].y = std::bit_cast<float>(
+    std::bit_cast<uint32_t>(input.points[1].y) ^ 0x80000000u
+);
+
+  input.points[2].y = std::bit_cast<float>(
+    std::bit_cast<uint32_t>(input.points[2].y) ^ 0x80000000u
+);
 }
 
 void InvertTriangleX(Triangle& input)
