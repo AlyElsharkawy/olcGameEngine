@@ -1,11 +1,11 @@
 #!/bin/bash
-if [ "$1" == "clean" ]; then 
-  rm -r ./lib/* > /dev/null 2>&1
-  rm -r ./bin/* > /dev/null 2>&1
+if [ "$1" == "clean" ]; then
+  rm -r ./lib/* >/dev/null 2>&1
+  rm -r ./bin/* >/dev/null 2>&1
   rm -r ./build/* >/dev/null 2>&1
-  cd ./build/ 
+  cd ./build/
   make clean
-  echo "Succesfully cleaned project"
+  echo "Successfully cleaned project"
   exit 0
 fi
 
@@ -29,4 +29,4 @@ if [ "$?" != 0 ]; then
   exit 2
 fi
 cd ..
-echo "Succesfully built project!"
+echo "Successfully built project!"
