@@ -1,3 +1,4 @@
+#include "drawingRoutines.h"
 #define OLC_PGE_APPLICATION
 #define OLC_IMAGE_STB
 #define OLC_PGEX_CUSTOMFONT
@@ -195,18 +196,29 @@ class EngineReborn : public olc::PixelGameEngine
           //materials phase
           cameraTransformedTriangle = MultiplyTriangle(transformedTriangle, viewMatrix);
 
-          //TO-DO: Switch this to a switch case
-          if(mesh->GetMaterialType() == MATERIAL_TYPES::NONE)
+          switch(mesh->GetMaterialType())
           {
-            float luminance = GetNoneMaterialLuminances(normal, allLights);
-            cameraTransformedTriangle.color = GetNoneMaterialColorCode(luminance);
-          }
+            case MATERIAL_TYPES::NONE:
+            [[unlikely]];
+            {
+              float luminance = GetNoneMaterialLuminances(normal, allLights);
+              cameraTransformedTriangle.color = GetNoneMaterialColorCode(luminance);
+              break;
+            }
           
-          else if(mesh->GetMaterialType() == MATERIAL_TYPES::DIFFUSE)
-          {
-            const olc::Pixel& tempColor = *(mesh->GetDiffuseColor());
-            olc::Pixel finalColor = GetDiffuseMaterialColor(normal, tempColor, allLights);
-            cameraTransformedTriangle.color = finalColor;
+            case MATERIAL_TYPES::DIFFUSE:
+            {
+              //const olc::Pixel& tempColor = *(mesh->GetDiffuseColor());
+              //olc::Pixel finalColor = mesh->doLighting ? GetDiffuseMaterialColor(normal, tempColor, allLights) : tempColor;
+              cameraTransformedTriangle.color = 
+                  (mesh->doLighting) ? GetDiffuseMaterialColor(normal, *(mesh->GetDiffuseColor()), allLights) :
+                *(mesh->GetDiffuseColor());
+              break;
+            }
+            case MATERIAL_TYPES::TEXTURE:
+            case MATERIAL_TYPES::TEXTURE_WITH_NORMAL:
+            case MATERIAL_TYPES::COMPOSITE:
+              break;
           }
 
           //View space clipping phase          
@@ -223,6 +235,8 @@ class EngineReborn : public olc::PixelGameEngine
             {
               DrawTriangleToScreen(RI, screenSpaceClippedTriangles[tri], normal, allLights, 
                                    mesh->GetMaterialType(), mesh->GetTextureImage());
+              if(mesh->doLighting == false)
+                FillTriangleWithDepthBuffer(screenSpaceClippedTriangles[tri], RI);
             }
           }
           else if(SETTINGS_MAP[SETTINGS_ENUM::DO_SCREEN_SPACE_CLIPPING] == false)

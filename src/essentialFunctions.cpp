@@ -125,7 +125,7 @@ float GetNoneMaterialLuminances(const Vector3D& normal, const deque<Light*>& lig
     {
       case LIGHT_TYPES::LAMP_SUN:
         {
-          currentLuminance += GetDotProduct(normal, light->GetDirection()) * light->intensity;
+          currentLuminance += -1.0f * GetDotProduct(normal, light->GetDirection()) * light->intensity;
           break;
         }
       case LIGHT_TYPES::LAMP_POINT:
@@ -140,7 +140,7 @@ float GetNoneMaterialLuminances(const Vector3D& normal, const deque<Light*>& lig
         }
    }
   }
-  //cout << "currentLuminance: " << currentLuminance << '\n';
+  cout << "currentLuminance: " << currentLuminance << '\n';
   return max(MINIMUM_NONE_LUMINANCE, currentLuminance);
 }
 
@@ -239,6 +239,20 @@ void DrawTriangleToScreen(const RenderingInstance& RI, const Triangle& triangleI
     //material
     switch(materialType)
     {
+      case MATERIAL_TYPES::NONE:
+        {
+
+        }
+
+      case MATERIAL_TYPES::DIFFUSE:
+        {
+          olc::vf2d point1, point2, point3;
+          PopulateOLCPoints(triangleInput, point1, point2, point3);
+          //RI.engine->FillTriangle(point1, point2 , point3, triangleInput.color);
+          FillTriangleWithDepthBuffer(triangleInput, RI, triangleInput.color);
+          break;
+        }
+
       case MATERIAL_TYPES::TEXTURE:
         {
           //Just incase
@@ -258,18 +272,6 @@ void DrawTriangleToScreen(const RenderingInstance& RI, const Triangle& triangleI
       case MATERIAL_TYPES::COMPOSITE:
         {
           cerr << "ERROR: Composite material type note yet supported!\n";
-          break;
-        }
-      case MATERIAL_TYPES::NONE:
-        {
-
-        }
-      case MATERIAL_TYPES::DIFFUSE:
-        {
-          olc::vf2d point1, point2, point3;
-          PopulateOLCPoints(triangleInput, point1, point2, point3);
-          //RI.engine->FillTriangle(point1, point2 , point3, triangleInput.color);
-          FillTriangleWithDepthBuffer(triangleInput, RI, triangleInput.color);
           break;
         }
       default:
@@ -560,8 +562,17 @@ void SetInitialObjects(olc::PixelGameEngine* engine, MeshList& allObjects, deque
     highResolutionBunny->SetScalingOffsets(10, 10, 10);
     
     allObjects.AppendMesh(highResolutionBunny);
+    allObjects.UpdateTotalCounts();*/
+
+    Mesh* plainCube = new Mesh();
+    plainCube->LoadFromOBJFile(GetPathFromResources({"objectFiles", "Primitives", "GoodCube.obj"}), true);
+    plainCube->doAutomaticRotation = true;
+    plainCube->doAutomaticRotations[1] = true;
+    plainCube->rotationSpeeds[1] = numbers::pi * 1.5f;
+
+    allObjects.AppendMesh(plainCube);
     allObjects.UpdateTotalCounts();
-    currentObjectSet = 5;*/
+    currentObjectSet = 5;
   }
 
   else if(InputManager::KeyHeld(engine, {NUM_0}) || chosenScene == BASIC_CONTROLS_ENUM::NUM_0)

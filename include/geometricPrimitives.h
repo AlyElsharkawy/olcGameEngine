@@ -47,14 +47,19 @@ class Mesh
 public:
   bool doAutomaticRotation = false;
   bool isStatic = true;
+  bool doLighting = true;
+  bool doLines = false;
+  //A dedicated struct encompassing material types might be added in the future
+  //However, there are not enough material types to deserve this 
+  short materialType;
+  bool doAutomaticRotations[3] = {false, false, false};
+
   Vector3D forwardVector = {0.0f, 0.0f, 1.0f};
   Vector3D lookAtVector;
   
   //All in X,Y,Z order
   float translationOffsets[3] = {0.0f, 0.0f, 0.0f};
   float rotationSpeeds[3] = {1.0f, 1.0f, 1.0f};
-  bool doAutomaticRotations[3] = {false, false, false};
-  bool doLighting = true;
   float scalingOffsets[3] = {1.0f, 1.0f, 1.0f};
   float rotationDegrees[3] = {0.0f, 0.0f, 0.0f};
 
@@ -65,9 +70,6 @@ private:
   float visibleTriangles;
   float totalVertices;
   float visibleVertices;
-  //A dedicated struct encompassing material types might be added in the future
-  //However, there are not enough material types to deserve this 
-  short materialType;
   olc::Pixel* diffuseColor = nullptr;
   olc::Sprite* textureImageSprite = nullptr;
   olc::Sprite* normalImageSprite = nullptr;

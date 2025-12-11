@@ -62,7 +62,7 @@ enum LIGHT_TYPES : short
 
 inline float ASPECT_RATIO;
 
-const inline float MINIMUM_NONE_LUMINANCE = 0.6f;
+const inline float MINIMUM_NONE_LUMINANCE = 0.4f;
 const inline float MINIMUM_DIFFUSE_COLOR = 10.0f;
 const inline float EPSILON = 1e-6f;
 
