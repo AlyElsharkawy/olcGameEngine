@@ -1,4 +1,3 @@
-#include "drawingRoutines.h"
 #define OLC_PGE_APPLICATION
 #define OLC_IMAGE_STB
 #define OLC_PGEX_CUSTOMFONT
@@ -25,6 +24,7 @@
 #include "inputManager.h"
 #include "audioManager.h"
 #include "timerUtility.h"
+#include "drawingRoutines.h"
 
 #define DEFAULT_COLORS olc::BLUE, olc::GREEN, olc::RED
 

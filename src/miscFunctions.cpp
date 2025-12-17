@@ -137,7 +137,7 @@ string GetPathFromResources(std::initializer_list<string> input, bool interrupti
     tempPath /= elm;
   }
   
-  return __CheckPathValidity(tempPath, interrupting, "resources");
+  return std::filesystem::weakly_canonical(tempPath);
 }
 
 string GetPathFromConfig(std::initializer_list<string> input)

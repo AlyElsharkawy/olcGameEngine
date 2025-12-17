@@ -140,7 +140,6 @@ float GetNoneMaterialLuminances(const Vector3D& normal, const deque<Light*>& lig
         }
    }
   }
-  cout << "currentLuminance: " << currentLuminance << '\n';
   return max(MINIMUM_NONE_LUMINANCE, currentLuminance);
 }
 
@@ -375,7 +374,8 @@ void ClearAllObjectsandLights(MeshList& allObjects, deque<Light*>& allLights)
 
 void CreateStandardSunLamp(MeshList& allObjects, deque<Light*>& allLights)
 {
-  Light* mainLamp = new Light(LIGHT_TYPES::LAMP_SUN, {0.0f, -1.0f, 1.0f}, {0.0f, 8.0f, -8.0f}, {255, 255, 255}, 1.0f);
+  Light* mainLamp = new Light(LIGHT_TYPES::LAMP_SUN, {0.0f, -1.0f, 1.0f}, {0.0f, 8.0f, -8.0f},
+                              "Standard Sun Lamp",{255, 255, 255}, 1.0f);
   Mesh* lightMesh = new Mesh();
   uint8_t r,g,b;
   HexToRGB("FFB957", r, g, b);

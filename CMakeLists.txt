@@ -55,6 +55,8 @@ add_library(im_gui STATIC
 ./src/External/ImGUI/imgui_tables.cpp
 )
 add_library(drawing STATIC ./src/drawingRoutines.cpp)
+add_library(serialization STATIC ./src/serialization/lightSerialization.cpp ./src/serialization/meshSerialization.cpp)
+target_link_libraries(serialization PRIVATE yaml-cpp)
 target_link_libraries(geometry PRIVATE misc_functions)
 target_link_libraries(misc_functions PRIVATE misc_primitives)
 target_link_libraries(misc_primitives PRIVATE vector)
@@ -74,6 +76,7 @@ add_executable(PART_FOUR_FINAL ./src/extra/Part4Final.cpp)
 add_executable(OLC_GUI_EXAMPLE ./src/extra/Examples/TEST_QuickGUI.cpp)
 add_executable(OLC_CUSTOM_FONT ./src/extra/Examples/Example.cpp)
 add_executable(IM_GUI_TEST ./src/extra/ImGUITest.cpp)
+add_executable(SERIALIZATION_TEST ./src/extra/serializationTest.cpp)
 
 #Additional libraries for each project 
 set(PROJECT_NAME_LIBS
@@ -89,6 +92,7 @@ set(PROJECT_NAME_LIBS
   misc_primitives
   input
   audio
+  serialization
 )
 
 set(GUI_TEST_LIBS
@@ -150,8 +154,7 @@ endif()
 
 # Link the necessary libraries
 #linking with stdc++fs is not required if your compiler is above version 9.1
-target_link_libraries(${PROJECT_NAME} PRIVATE ${PLATFORM_LIBRARIES} ${PROJECT_NAME_LIBS} freetype
-yaml-cpp)
+target_link_libraries(${PROJECT_NAME} PRIVATE ${PLATFORM_LIBRARIES} ${PROJECT_NAME_LIBS} freetype)
 target_link_libraries(OBJFileSerializer PRIVATE ${PLATFORM_LIBRARIES} ${OBJ_FILE_SERIALIZER_LIBS})
 target_link_libraries(TestApp PRIVATE ${PLATFORM_LIBRARIES} ${TEST_APP_LIBS})
 target_link_libraries(GUITest PRIVATE ${PLATFORM_LIBRARIES} ${GUI_TEST_LIBS} freetype)
@@ -162,6 +165,7 @@ target_link_libraries(PART_FOUR_FINAL PRIVATE ${PLATFORM_LIBRARIES} ${PART_FOUR_
 target_link_libraries(OLC_GUI_EXAMPLE PRIVATE ${PLATFORM_LIBRARIES} ${OLC_GUI_EXAMPLE} freetype)
 target_link_libraries(OLC_CUSTOM_FONT PRIVATE ${PLATFORM_LIBRARIES} ${OLC_CUSTOM_FONT_LIBS})
 target_link_libraries(IM_GUI_TEST PRIVATE ${PLATFORM_LIBRARIES} im_gui)
+target_link_libraries(SERIALIZATION_TEST PRIVATE essential ${PLATFORM_LIBRARIES} misc_functions serialization)
 
 add_compile_options(
     $<$<CONFIG:Debug>:-g>

@@ -13,6 +13,7 @@ public:
 class Light
 {
 private:
+  string lightName;
   LightComponents components;
   Vector3D direction;
   Vector3D position;
@@ -23,7 +24,7 @@ public:
   olc::Pixel color;
   float normalizedColors[3];
   Light(const short& lightType, const Vector3D& direction, const Vector3D& position,
-        const olc::Pixel& color = {255,255,255}, const float& intensity = 1.0f);
+        const string& lightName, const olc::Pixel& color = {255,255,255}, const float& intensity = 1.0f);
   ~Light();
   void SetLightColor(const float& rVal, const float& gVal, const float& bVal);
   void SetLightDirection(const Vector3D& inputVec);
@@ -31,10 +32,14 @@ public:
   void AddMeshComponent(Mesh* inputMesh);
   void MoveLight(const Vector3D& newPosition);
   void ChangeDirection(const Vector3D& newDirection);
+  const Vector3D& GetPosition() const;
   const Vector3D& GetDirection() const;
   const short& GetLightType() const;
+  const Mesh* const GetMeshComponent() const;
   //R,G,B
   const float* const GetNormalizedColorCodes() const;
+  const string& GetLightName() const;
+  void PrintLightInfo() const;
 };
 
 class RenderingInstance

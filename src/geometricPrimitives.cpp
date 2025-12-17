@@ -84,22 +84,13 @@ void Matrix4x4::PrintMatrix() const
 
 const int Mesh::GetTotalVertices() const
 {
-  return this->totalVertices;
+  return this->triangles.size() * 3;
 }
 
-const int Mesh::GetTotalVisibleVertices() const
-{
-  return this->visibleVertices;
-}
 
 const int Mesh::GetTotalTriangles() const
 {
-  return this->totalTriangles;
-}
-
-const int Mesh::GetTotalVisibleTriangles() const
-{
-  return this->visibleTriangles;
+  return this->triangles.size();
 }
 
 const short Mesh::GetMaterialType() const
@@ -122,31 +113,24 @@ const olc::Decal* Mesh::GetTextureImage() const
   return this->textureImageDecal;
 }
 
-const olc::Decal* Mesh::GetNormalImage() const
+const string* const Mesh::GetTextureImagePath() const
 {
-  return this->normalImageDecal;
+  return this->textureImagePath;
+}
+
+const string& Mesh::GetMeshName() const
+{
+  return this->meshName;
 }
 
 void Mesh::PrintTextureInformation() const
 {
-  if(this->normalImageSprite != nullptr)
-  {
-    cout << "Normal Texture Information:\n";
-    cout << "Image size: " << this->normalImageSprite->Size() << '\n';
-    cout << "Image Path: " << this->normalImagePath << '\n';
-  }
   if(this->textureImageSprite != nullptr)
   {
     cout << "Image Texture Information:\n";
     cout << "Image size: " << this->textureImageSprite->Size() << '\n';
     cout << "Image Path: " << this->textureImagePath << '\n';
   }
-}
-
-void Mesh::SetVisibleTriangles(const int& visibleTrianglesCount)
-{
-  this->visibleTriangles = visibleTrianglesCount;
-  this->visibleVertices = visibleTrianglesCount * 3;
 }
 
 const void Mesh::PrintMesh() const
@@ -157,6 +141,46 @@ const void Mesh::PrintMesh() const
     this->triangles[i].PrintTriangle();
   }
   cout << "End of mesh\n";
+}
+
+#define INT_TO_BOOL(var) (var == true ? "true" : "false")
+#define PRINT_ELEMENTS_INLINE(arr) \
+for(const auto& elm : arr) \
+  cout << elm << ' '; \
+cout << '\n';
+
+const void Mesh::PrintMeshInfo() const
+{
+  cout << "Mesh name: " << this->meshName << '\n';
+  cout << "Forward Vector -> " << this->forwardVector.ExtractInfo() << '\n';
+  cout << "LookAt Vector -> " << this->lookAtVector.ExtractInfo() << '\n';
+  cout << "Diffuse color -> " << INT_TO_BOOL(this->diffuseColor == nullptr) << '\n';
+  if(this->diffuseColor != nullptr)
+  {
+    olc::Pixel& temp = *this->diffuseColor;
+    cout <<
+    "R: " << to_string(temp.r) << 
+    " G: " << to_string(temp.g) <<
+    " B: " << to_string(temp.b) << '\n';
+  }
+  cout << "Has Texture -> " << INT_TO_BOOL(this->hasTexture) << '\n';
+  if(this->hasTexture == true)
+  {
+    PrintTextureInformation();
+  }
+  cout << "Is static -> " << INT_TO_BOOL(this->isStatic) << '\n';
+  cout << "Do Lines -> " << INT_TO_BOOL(this->doLines) << '\n';
+  cout << "Do Lighting -> " << INT_TO_BOOL(this->doLighting) << '\n';
+  cout << "Material Type: " << to_string(this->materialType) << '\n';
+  cout << "Translation Offsets (X, Y, Z) -> ";
+  PRINT_ELEMENTS_INLINE(this->translationOffsets);
+  cout << "Rotation Degrees (X, Y, Z) -> ";
+  PRINT_ELEMENTS_INLINE(this->rotationDegrees);
+  cout << "Scaling Offsets (X, Y, Z) -> ";
+  PRINT_ELEMENTS_INLINE(this->rotationDegrees);
+  cout << "Rotation Speeds (X, Y , Z) -> ";
+  PRINT_ELEMENTS_INLINE(this->rotationSpeeds);
+  cout << '\n';
 }
 
 const void Mesh::PrintMeshToDisk(const string& fileName) const
@@ -189,7 +213,7 @@ const void Mesh::PrintMeshToDisk(const string& fileName) const
 Mesh* Mesh::Duplicate()
 {
     Mesh* result = new Mesh();
-    BULK_COPY_ARRAY(this->translationOffsets, result->translationOffsets, 3)
+    BULK_COPY_ARRAY(this->translationOffsets, result->translationOffsets, 3);
     BULK_COPY_ARRAY(this->rotationDegrees, result->rotationDegrees, 3);
     BULK_COPY_ARRAY(this->rotationSpeeds, result->rotationSpeeds, 3);
     BULK_COPY_ARRAY(this->scalingOffsets, result->scalingOffsets, 3);
@@ -203,30 +227,23 @@ Mesh* Mesh::Duplicate()
     result->lookAtVector = this->lookAtVector;
 
     result->textureImagePath = this->textureImagePath;
-    result->normalImagePath = this->normalImagePath;
     result->materialType = this->materialType;
 
-    result->totalTriangles = this->totalTriangles;
-    result->visibleTriangles = this->visibleTriangles;
-    result->totalVertices = this->totalVertices;
-    result->visibleVertices = this->visibleVertices;
+    if(this->diffuseColor != nullptr)
+    {
+      result->SetDiffuseColor(this->diffuseColor->r, this->diffuseColor->g, 
+                              this->diffuseColor->g, this->diffuseColor->a);
+    }
 
     if(this->textureImageSprite != nullptr)
     {
         result->textureImageSprite = this->textureImageSprite->Duplicate();
         result->textureImageDecal = new olc::Decal(result->textureImageSprite);
     }
-
-    if(this->normalImageSprite != nullptr)
+    
+    if(this->textureImagePath != nullptr) 
     {
-        result->normalImageSprite = this->normalImageSprite->Duplicate();
-        result->normalImageDecal = new olc::Decal(result->normalImageSprite);
-    }
-
-    if(this->diffuseColor != nullptr)
-    {
-      result->SetDiffuseColor(this->diffuseColor->r, this->diffuseColor->g, 
-                              this->diffuseColor->g, this->diffuseColor->a);
+      result->textureImagePath = new string(*(this->textureImagePath));
     }
     
     return result;
@@ -269,10 +286,9 @@ Mesh::~Mesh()
     delete this->textureImageSprite;
   if(this->textureImageDecal != nullptr)
     delete this->textureImageDecal;
-  if(this->normalImageDecal != nullptr)
-    delete this->normalImageDecal;
-  if(this->normalImageSprite != nullptr)
-    delete this->normalImageSprite;
+
+  if(this->textureImagePath != nullptr)
+    delete this->textureImagePath;
 }
 
 void Mesh::SetTranslationOffsets(const float& newX, const float& newY, const float& newZ)
@@ -294,6 +310,13 @@ void Mesh::SetRotationSpeeds(const float& newX, const float& newY, const float& 
   this->rotationSpeeds[2] = newZ;
 }
 
+void Mesh::SetRotationSpeeds(const Vector3D& inputVector)
+{
+  this->rotationSpeeds[0] = inputVector.x;
+  this->rotationSpeeds[1] = inputVector.y;
+  this->rotationSpeeds[2] = inputVector.z;
+}
+
 void Mesh::SetScalingOffsets(const float& newX, const float& newY, const float& newZ)
 {
   this->scalingOffsets[0] = newX;
@@ -308,6 +331,14 @@ void Mesh::SetDiffuseColor(const uint8_t& rVal, const uint8_t& gVal, const uint8
   this->materialType = MATERIAL_TYPES::DIFFUSE;
 }
 
+void Mesh::SetDiffuseColor(const olc::Pixel& inputPixel)
+{
+  if(this->diffuseColor != nullptr) 
+    delete this->diffuseColor;
+  this->diffuseColor = new olc::Pixel(inputPixel);
+  this->materialType = MATERIAL_TYPES::DIFFUSE;
+}
+
 bool Mesh::SetTextureImage(const string& pathToImage)
 {
   this->materialType = MATERIAL_TYPES::TEXTURE;
@@ -319,16 +350,11 @@ bool Mesh::SetTextureImage(const string& pathToImage)
   if(this->textureImageDecal != nullptr)
     delete this->textureImageDecal;
 
-  if(this->normalImageSprite != nullptr)
-    delete this->normalImageSprite;
-  if(this->normalImageDecal != nullptr)
-    delete this->normalImageDecal;
-
   if(filesystem::exists(pathToImage))
   {
     this->textureImageSprite = new olc::Sprite(pathToImage);
     this->textureImageDecal = new olc::Decal(this->textureImageSprite);
-    this->textureImagePath = pathToImage;
+    this->textureImagePath = new string(pathToImage);
     return true;
   }
 
@@ -337,27 +363,26 @@ bool Mesh::SetTextureImage(const string& pathToImage)
     string missingTexturePath = GetPathFromResources({"textures", "missingTexture.png"});
     this->textureImageSprite = new olc::Sprite(missingTexturePath);
     this->textureImageDecal = new olc::Decal(this->textureImageSprite);
-    this->textureImagePath = missingTexturePath;
+    this->textureImagePath = &missingTexturePath;
     return false;
   }
 }
 
-bool Mesh::SetNormalImage(const string& pathToImage)
+bool Mesh::SetMeshName(const string& newName)
 {
-  if(filesystem::exists(pathToImage))
-  {
-    this->materialType = MATERIAL_TYPES::TEXTURE_WITH_NORMAL;
-    this->normalImageSprite = new olc::Sprite(pathToImage);
-    this->normalImageDecal = new olc::Decal(this->normalImageSprite);
-    this->normalImagePath = pathToImage;
-    return true;
-  }
-  else
+  if(newName.empty())
     return false;
+  this->meshName = newName;
+  return true;
 }
 
 bool Mesh::LoadFromOBJFile(const string& fileName, bool hasTexture)
 {
+  //Meshes are immutable once created
+  if(this->triangles.size() != 0)
+    return false;
+
+  this->hasTexture = hasTexture;
   ifstream inputFile(fileName, std::ios::in);
   vector<Triangle> triangles; 
   vector<Vector3D> vertices;
@@ -432,7 +457,7 @@ bool Mesh::LoadFromOBJFile(const string& fileName, bool hasTexture)
     lineCounter++;
   }
   this->triangles = triangles;
-  this->totalTriangles = triangles.size();
+  this->objFilePath = fileName;
   return true;
 }
 
@@ -441,14 +466,15 @@ Mesh::Mesh()
   this->materialType = MATERIAL_TYPES::NONE;
 }
 
+Mesh::Mesh(const std::string& name)
+{
+  this->materialType = MATERIAL_TYPES::NONE;
+  this->meshName = name;
+}
+
 const int MeshList::GetTotalTriangles() const
 {
   return this->totalTriangles;
-}
-
-const int MeshList::GetTotalVisibleTriangles() const
-{
-  return this->visibleTriangles;
 }
 
 const int MeshList::GetTotalVertices() const
@@ -456,23 +482,14 @@ const int MeshList::GetTotalVertices() const
   return this->totalVertices;
 }
 
-const int MeshList::GetTotalVisibleVertices() const
+const string& Mesh::GetObjectFilePath() const
 {
-  return this->visibleTriangles;
+  return this->objFilePath;
 }
 
 deque<Mesh*>& MeshList::GetMeshList()
 {
   return this->meshList;
-}
-
-void MeshList::UpdateVisibleCounts()
-{
-  int newVisibleTriangles = 0;
-  for(int i = 0; i < this->meshList.size(); i++)
-    newVisibleTriangles += this->meshList[i]->GetTotalVisibleTriangles();
-  this->visibleTriangles = newVisibleTriangles;
-  this->visibleVertices = newVisibleTriangles * 3;
 }
 
 void MeshList::UpdateTotalCounts()

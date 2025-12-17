@@ -1,6 +1,7 @@
 #pragma once
 #include <string>
 #include <deque>
+#include <array>
 #include "olcPixelGameEngine.h"
 #include "components.h"
 
@@ -32,9 +33,9 @@ public:
 class Triangle
 {
 public:
-  Vector3D points[3];
+  array<Vector3D, 3> points;
   //TO-DO: Make this optionally assignable
-  Vector2D texels[3];
+  array<Vector2D, 3> texels;
   //std::span<Vector3D> p = points;
   //std::span<Vector2D> t = texels;
   olc::Pixel color;
@@ -49,64 +50,62 @@ public:
   bool isStatic = true;
   bool doLighting = true;
   bool doLines = false;
+  bool hasTexture = false;
   //A dedicated struct encompassing material types might be added in the future
   //However, there are not enough material types to deserve this 
-  short materialType;
-  bool doAutomaticRotations[3] = {false, false, false};
-
+  uint8_t materialType;
+  array<bool, 3> doAutomaticRotations = {false, false, false};
   Vector3D forwardVector = {0.0f, 0.0f, 1.0f};
   Vector3D lookAtVector;
   
   //All in X,Y,Z order
-  float translationOffsets[3] = {0.0f, 0.0f, 0.0f};
-  float rotationSpeeds[3] = {1.0f, 1.0f, 1.0f};
-  float scalingOffsets[3] = {1.0f, 1.0f, 1.0f};
-  float rotationDegrees[3] = {0.0f, 0.0f, 0.0f};
+  array<float, 3> translationOffsets = {0.0f, 0.0f, 0.0f};
+  array<float, 3> rotationSpeeds = {1.0f, 1.0f, 1.0f};
+  array<float, 3> scalingOffsets = {1.0f, 1.0f, 1.0f};
+  array<float, 3> rotationDegrees = {0.0f, 0.0f, 0.0f};
 
 private:
+  string meshName;
+  string objFilePath;
   vector<Triangle> triangles;
+  string* textureImagePath = nullptr;
   MeshComponents components;
-  float totalTriangles;
-  float visibleTriangles;
-  float totalVertices;
-  float visibleVertices;
   olc::Pixel* diffuseColor = nullptr;
   olc::Sprite* textureImageSprite = nullptr;
-  olc::Sprite* normalImageSprite = nullptr;
   olc::Decal* textureImageDecal = nullptr;
-  olc::Decal* normalImageDecal = nullptr;
 
 public:
   const int GetTotalVertices() const;
-  const int GetTotalVisibleVertices() const;
   const int GetTotalTriangles() const;
-  const int GetTotalVisibleTriangles() const;
   const short GetMaterialType() const;
   const olc::Pixel* GetDiffuseColor() const;
   const vector<Triangle>& GetTriangles() const;
-  string textureImagePath;
-  string normalImagePath;
   const olc::Decal* GetTextureImage() const;
-  const olc::Decal* GetNormalImage() const;
+  const string* const GetTextureImagePath() const;
+  const string& GetMeshName() const;
+  const string& GetObjectFilePath() const;
 
   void PrintTextureInformation() const;
 
-  void SetVisibleTriangles(const int& visibleTrianglesCount);
   void SetTranslationOffsets(const float& newX, const float& newY, const float& newZ);
   void SetTranslationOffsets(const Vector3D& newTranslations);
   void SetRotationSpeeds(const float& newX, const float& newY, const float& newZ);
+  void SetRotationSpeeds(const Vector3D& inputVector);
   void SetScalingOffsets(const float& newX, const float& newY, const float& newZ);
   void SetDiffuseColor(const uint8_t& rVal, const uint8_t& gVal, const uint8_t& bVal, const uint8_t& aVal);
-  //The 2 bottom functions return whether the operation was successful or not
+  void SetDiffuseColor(const olc::Pixel& inputPixel);
+  //The function returns whether the operation was successful or not
   bool SetTextureImage(const string& localPathToImage);
-  bool SetNormalImage(const string& localPathToImage);
+  bool SetMeshName(const string& newName);
   
   bool LoadFromOBJFile(const string& fileName, bool hasTexture = false);
   const void PrintMesh() const;
+  const void PrintMeshInfo() const;
   const void PrintMeshToDisk(const string& fileName) const; //This is to verify if two meshes are equal
 
   Mesh* Duplicate();
   Mesh();
+  Mesh(const std::string& name);
   ~Mesh();
 };
 
@@ -117,9 +116,7 @@ class MeshList
 private:
   deque<Mesh*> meshList;
   float totalTriangles;
-  float visibleTriangles;
   float totalVertices;
-  float visibleVertices;
 
 public:
   const int GetTotalVertices() const;
@@ -138,7 +135,7 @@ class Matrix4x4
 {
 public:
   //All elements by default 0 unless specified
-  float mat[4][4] = {0};
+  array<array<float, 4>, 4> mat = {0};
   void PrintMatrix() const;
 };
 

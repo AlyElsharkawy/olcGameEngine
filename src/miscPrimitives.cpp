@@ -13,19 +13,20 @@ NormalizedPixel::NormalizedPixel(const float& r, const float& g, const float& b)
   this->values[2] = b;
 }
 
-Light::Light(const short& lightType, const Vector3D& direction, const Vector3D& position, const olc::Pixel& color,
-             const float& intensity)
+Light::Light(const short& lightType, const Vector3D& direction, const Vector3D& position, 
+             const string& lightName, const olc::Pixel& color, const float& intensity)
 {
   bool isLightTypeValid = this->SetLightType(lightType);
   if(isLightTypeValid == false)
     return;
-  this->SetLightDirection(NormalizeVectorOP(direction));
+  this->direction = NormalizeVectorOP(direction);
   this->color = color;
   this->intensity = intensity;
   this->normalizedColors[0] = color.r / 255.0f;
   this->normalizedColors[1] = color.g / 255.0f;
   this->normalizedColors[2] = color.b / 255.0f;
   this->position = position;
+  this->lightName = lightName;
 }
 
 Light::~Light()
@@ -47,6 +48,8 @@ void Light::SetLightDirection(const Vector3D& inputVec)
   Vector3D temp = inputVec;
   //Due to strange linker error
   float length = sqrtf(inputVec.x * inputVec.x + inputVec.y * inputVec.y  + inputVec.z * inputVec.z);
+  if(length == 0.0f)
+      return;
   temp.x /= length; temp.y /= length; temp.z /= length;
 
   this->direction = temp;
@@ -98,6 +101,11 @@ void Light::ChangeDirection(const Vector3D& newDirection)
   if(this->components.mesh != nullptr) this->components.mesh->forwardVector = newDirection;
 }
 
+const Vector3D& Light::GetPosition() const
+{
+  return this->position;
+}
+
 const Vector3D& Light::GetDirection() const
 {
   return this->direction;
@@ -108,9 +116,31 @@ const short& Light::GetLightType() const
   return this->lightType;
 }
 
+const Mesh* const Light::GetMeshComponent() const
+{
+  return this->components.mesh;
+}
+
 const float* const Light::GetNormalizedColorCodes() const
 {
   return this->normalizedColors;
+}
+
+const string& Light::GetLightName() const
+{
+  return this->lightName;
+}
+
+void Light::PrintLightInfo() const
+{
+  cout << "Light Information:\n";
+  cout << "Name: " << this->lightName << '\n';
+  cout << "Direction Vector -> " << this->direction.ExtractInfo() << '\n';
+  cout << "Position Vector -> " << this->position.ExtractInfo() << '\n';
+  cout << "Color -> R: " <<  to_string(this->color.r) << " G: " 
+    << to_string(this->color.g) << " B: "  << to_string(this->color.b) << '\n';
+  cout << "Intensity: " << this->intensity << '\n'; 
+  cout << '\n';
 }
 
 void RenderingInstance::InitializeRenderingInstance(olc::PixelGameEngine* engine)

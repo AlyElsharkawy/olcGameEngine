@@ -4,6 +4,7 @@ build/
 build-release/
 build-san/
 misc/
+resources/misc
 .cache/
 screenshots/
 widgets.qss
