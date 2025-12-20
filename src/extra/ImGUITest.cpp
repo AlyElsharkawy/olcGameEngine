@@ -55,19 +55,50 @@ public:
         ImGui::SliderFloat("float", &f, 0.0f, 1.0f);*/   
     // Main window
      bool show_context_window = false;
-    char file_path[256] = "";  // Buffer for file path
-        ImGui::Begin("Main Window");
+        char file_path[256] = "";  // Buffer for file path
+    // You'll typically store these in a struct or class for your object
+static float translation[3] = { 0.0f, 0.0f, 0.0f };
+static float rotation[3]    = { 0.0f, 0.0f, 0.0f };
+static float scale[3]       = { 1.0f, 1.0f, 1.0f };
 
+ImGui::Begin("Transformations");
+
+// Translation Section
+ImGui::Text("Translation");
+ImGui::DragFloat3("##Position", translation, 0.1f); 
+// "##Position" hides the label but keeps the ID unique
+
+ImGui::Separator();
+
+// Rotation Section
+ImGui::Text("Rotation");
+ImGui::DragFloat3("##Rotation", rotation, 1.0f, 0.0f, 360.0f, "%.1f deg");
+
+ImGui::Separator();
+
+// Scaling Section
+ImGui::Text("Scaling");
+ImGui::DragFloat3("##Scale", scale, 0.05f, 0.0f, 100.0f);
+
+// Optional: Reset button
+if (ImGui::Button("Reset Transform")) {
+    translation[0] = translation[1] = translation[2] = 0.0f;
+    rotation[0]    = rotation[1]    = rotation[2]    = 0.0f;
+    scale[0]       = scale[1]       = scale[2]       = 1.0f;
+}
+
+ImGui::End();
         // Button to open context window
-        if (ImGui::Button("Open File Dialog"))
+        /*if (ImGui::Button("Open File Dialog"))
         {
             show_context_window = true;
-        }
+        }*/
         
-        ImGui::End();
-
+// Add this once during initialization or at the start of your frame
+ImGuiIO& io = ImGui::GetIO();
+io.FontGlobalScale = 1.5f;
         // Context window to input location
-        if (show_context_window)
+        /*if (show_context_window)
         {
             ImGui::Begin("Specify Location", &show_context_window);
             ImGui::InputText("File Path", file_path, IM_ARRAYSIZE(file_path));
@@ -77,7 +108,7 @@ public:
                 show_context_window = false;  // Close context window after saving location
             }
             ImGui::End();
-        }
+        }*/
 
         return true;
     }

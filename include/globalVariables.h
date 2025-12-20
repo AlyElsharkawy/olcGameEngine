@@ -34,18 +34,18 @@ enum ROT_TYPES : short {
   ROT_ZYX,
 };
 
-// Composite will be implemented similairly to the mix shader from blender
-// None Material: The mesh will be colored black or white, depending on the
-// intensity of surrounding lights. Black means no light hit the mesh while
-// white means the maximum amount of light hit the mesh Diffuse Material: The
-// mesh will have a color and will be affected by the color and intensity of
-// surrounding lights
-enum MATERIAL_TYPES : short {
-  NONE,                // Black and white colors
-  DIFFUSE,             // Standard 1 color materials
-  TEXTURE,             // Texturing from PNGs
-  TEXTURE_WITH_NORMAL, // Texturing with normal maps
-  COMPOSITE,           // Mix of any previous material types
+//Composite will be implemented similairly to the mix shader from blender
+//None Material: The mesh will be colored black or white, depending on the intensity of surrounding
+//lights. Black means no light hit the mesh while white means the maximum amount of light hit the
+//mesh
+//Diffuse Material: The mesh will have a color and will be affected by the color and intensity of
+//surrounding lights
+enum MATERIAL_TYPES : short
+{
+  NONE, //Black and white colors
+  DIFFUSE, //Standard 1 color materials
+  TEXTURE, //Texturing from PNGs
+  COMPOSITE, //Mix of any previous material types
 };
 
 // LIGHT prefix is cause windows reserves the POINT data type. This is so that

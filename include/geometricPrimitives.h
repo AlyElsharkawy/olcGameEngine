@@ -84,6 +84,7 @@ public:
   const string* const GetTextureImagePath() const;
   const string& GetMeshName() const;
   const string& GetObjectFilePath() const;
+  const MeshComponents& GetMeshComponents() const;
 
   void PrintTextureInformation() const;
 

@@ -7,7 +7,8 @@
 void SerializeLight(const Light* const lightInput, const string& filePath);
 Light* DeserializeLight(const string& filePath); 
 
-void SerializeMesh(const Mesh* const meshInput, const string& filePath);
+void SerializeMesh(const Mesh* const meshInput, const string& filePath, const std::string& objectFilePath,
+                   const std::string& textureImagePath);
 Mesh* DeserializeMesh(const string& filePath);
 
 namespace YAML 

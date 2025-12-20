@@ -528,6 +528,11 @@ const string& Mesh::GetObjectFilePath() const
   return this->objFilePath;
 }
 
+const MeshComponents& Mesh::GetMeshComponents() const
+{
+  return this->components;
+}
+
 deque<Mesh*>& MeshList::GetMeshList()
 {
   return this->meshList;
