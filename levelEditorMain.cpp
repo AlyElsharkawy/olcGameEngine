@@ -40,7 +40,7 @@ public:
 int main()
 {
     LevelEditorApp demo;
-    if (demo.Construct(1280, 720, 2, 2))
+    if (demo.Construct(1920, 1080, 1, 1))
         demo.Start();
     return 0;
 }
