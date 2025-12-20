@@ -1,10 +1,12 @@
 #include "levelEditor.h"
 #include "globalVariables.h"
+#include "imgui.h"
 #include <fstream>
 #include <iostream>
 namespace fs = std::filesystem;
 
-void LevelEditor::DrawUI(float fElapsedTime, MeshList &allObjects) {
+void LevelEditor::DrawUI(float fElapsedTime, MeshList &allObjects,
+                         int32_t viewportTextureID) {
   static bool showFileBrowser = false;
   static std::string importedFilePath = "";
   static bool showAbout = false;
@@ -27,6 +29,7 @@ void LevelEditor::DrawUI(float fElapsedTime, MeshList &allObjects) {
     }
     ImGui::EndMainMenuBar();
   }
+
   if (ImGui::Begin("Meshes")) {
     int meshIndex = 0;
     for (const auto &mesh : allObjects.GetMeshList()) {
@@ -47,7 +50,7 @@ void LevelEditor::DrawUI(float fElapsedTime, MeshList &allObjects) {
   ImGui::End();
   DrawFileBrowser(&showFileBrowser, importedFilePath);
   if (!importedFilePath.empty()) {
-    std::cout << "Importing file: " << importedFilePath << std::endl;
+    // std::cout << "Importing file: " << importedFilePath << std::endl;
     bool hasTexture = false;
     std::ifstream f(importedFilePath);
     if (f.is_open()) {
@@ -62,16 +65,16 @@ void LevelEditor::DrawUI(float fElapsedTime, MeshList &allObjects) {
       }
       f.close();
     }
-    std::cout << "Has texture: " << hasTexture << std::endl;
+    // std::cout << "Has texture: " << hasTexture << std::endl;
 
     Mesh *newMesh = new Mesh();
     if (newMesh->LoadFromOBJFile(importedFilePath, hasTexture)) {
-      std::cout << "Mesh loaded successfully. Triangles: "
-                << newMesh->GetTotalTriangles() << std::endl;
+      // std::cout << "Mesh loaded successfully. Triangles: "
+      // << newMesh->GetTotalTriangles() << std::endl;
       allObjects.AppendMesh(newMesh);
       allObjects.UpdateTotalCounts();
     } else {
-      std::cout << "Failed to load mesh." << std::endl;
+      //   std::cout << "Failed to load mesh." << std::endl;
       delete newMesh;
     }
     importedFilePath = "";
@@ -103,6 +106,25 @@ void LevelEditor::DrawUI(float fElapsedTime, MeshList &allObjects) {
   ImGui::Text("FPS: %.2f", 1.0f / fElapsedTime);
   ImGui::End();
 
+  ImGuiViewport *viewport = ImGui::GetMainViewport(); //
+  ImGui::SetNextWindowPos(
+      viewport->WorkPos); // Start at (0,0) or below menu bar
+  ImGui::SetNextWindowSize(viewport->WorkSize);
+  ImGuiWindowFlags window_flags =
+      ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse |
+      ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove |
+      ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
+  if (viewportTextureID != -1) {
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
+    if (ImGui::Begin("Viewport", NULL, window_flags)) {
+
+      ImVec2 viewportSize = ImGui::GetContentRegionAvail();
+      ImGui::Image((void *)(intptr_t)viewportTextureID, viewportSize);
+    }
+    ImGui::End();
+    ImGui::PopStyleVar();
+  }
+
   ImGui::Checkbox("Do Debug Menu", &SETTINGS_MAP[DO_DEBUG_MENU]);
   ImGui::Checkbox("Draw Lines", &SETTINGS_MAP[DRAW_LINES]);
   ImGui::Checkbox("Draw Faces", &SETTINGS_MAP[DRAW_FACES]);
@@ -114,32 +136,22 @@ void LevelEditor::DrawUI(float fElapsedTime, MeshList &allObjects) {
   ImGui::Checkbox("Draw Normals", &SETTINGS_MAP[DRAW_NORMALS]);
 }
 void LevelEditor::DrawFileBrowser(bool *open, std::string &selected_path) {
-  if (!*open)
+  if (!(*open))
     return;
+  nfdchar_t *outPath = NULL;
+  nfdresult_t result = NFD_OpenDialog(NULL, NULL, &outPath);
 
-  ImGui::Begin("File Browser", open);
-  static fs::path current_dir = fs::current_path();
-
-  if (ImGui::Button("..")) { // Go up a directory
-    current_dir = current_dir.parent_path();
+  if (result == NFD_OKAY) {
+    // puts("Success!");
+    // puts(outPath);
+    selected_path = std::string(outPath);
+    free(outPath);
+    *open = false;
+  } else if (result == NFD_CANCEL) {
+    // puts("User pressed cancel.");
+    *open = false;
+  } else {
+    // printf("Error: %s\n", NFD_GetError());
+    *open = false;
   }
-
-  ImGui::Separator();
-
-  for (const auto &entry : fs::directory_iterator(current_dir)) {
-    auto path = entry.path();
-    std::string label = path.filename().string();
-
-    if (entry.is_directory()) {
-      if (ImGui::Selectable(("[Dir] " + label).c_str())) {
-        current_dir = path;
-      }
-    } else {
-      if (ImGui::Selectable(label.c_str())) {
-        selected_path = path.string();
-        *open = false; // Close browser after selection
-      }
-    }
-  }
-  ImGui::End();
 }
