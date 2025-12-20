@@ -122,7 +122,7 @@ void DrawTexturedTriangle(const RenderingInstance &RI, const Triangle &input,
         tex_w = (1.0f - t) * tex_sw + t * tex_ew;
         // J is X and I is Y
         int offset = i * RI.engine->ScreenWidth() + j;
-        if (offset < screenSize && tex_w > RI.depthBuffer[offset]) 
+        if (offset >= 0 && offset < screenSize && tex_w > RI.depthBuffer[offset]) 
         {
           olc::Pixel tempPixel = texture->Sample(tex_u / tex_w, tex_v / tex_w);
           olc::Pixel finalPixel = MultiplyPixelPixel(tempPixel, pixelIllumination);
@@ -186,7 +186,7 @@ void DrawTexturedTriangle(const RenderingInstance &RI, const Triangle &input,
         tex_w = (1.0f - t) * tex_sw + t * tex_ew;
 
         int offset = i * RI.engine->ScreenWidth() + j;
-        if (offset < screenSize && tex_w > RI.depthBuffer[offset])
+        if (offset >= 0 && offset < screenSize && tex_w > RI.depthBuffer[offset])
         {
           olc::Pixel tempPixel = texture->Sample(tex_u / tex_w, tex_v / tex_w);
           olc::Pixel finalPixel = MultiplyPixelPixel(tempPixel, pixelIllumination);
@@ -242,7 +242,7 @@ int x, y, dx, dy, dx1, dy1, px, py, xe, ye, i;
       {
         // J is X and I is Y
         index = y * RI.engine->ScreenWidth() + x1;
-        if( wVal > RI.depthBuffer[index] && rol())
+        if(index >= 0 && index < screenSize && wVal > RI.depthBuffer[index] && rol())
         {
           RI.engine->Draw(x1, y, p);
           RI.depthBuffer[index] = w1;
@@ -259,7 +259,7 @@ int x, y, dx, dy, dx1, dy1, px, py, xe, ye, i;
       { 
         // J is X and I is Y
         index = y1 * RI.engine->ScreenWidth() + x;
-        if (wVal > RI.depthBuffer[index] && rol()) 
+        if (index >= 0 && index < screenSize && wVal > RI.depthBuffer[index] && rol()) 
         {
           RI.engine->Draw(x, y1, p);
           RI.depthBuffer[index] = w2;
@@ -283,7 +283,7 @@ int x, y, dx, dy, dx1, dy1, px, py, xe, ye, i;
 			}
       // J is X and I is Y
       int tempIndex = y * RI.engine->ScreenWidth() + x;
-			if (wVal > RI.depthBuffer[tempIndex] && rol() && tempIndex < screenSize && tempIndex > 0) 
+			if (tempIndex >= 0 && tempIndex < screenSize && wVal > RI.depthBuffer[tempIndex] && rol()) 
       {
         RI.engine->Draw(x, y, p);
         RI.depthBuffer[tempIndex] = wVal;
@@ -301,7 +301,7 @@ int x, y, dx, dy, dx1, dy1, px, py, xe, ye, i;
 				}
         // J is X and I is Y
         int tempIndex = y * RI.engine->ScreenWidth() + x;
-				if(wVal > RI.depthBuffer[tempIndex] && rol() && tempIndex < screenSize && tempIndex > 0)
+				if(tempIndex >= 0 && tempIndex < screenSize && wVal > RI.depthBuffer[tempIndex] && rol())
         {
           RI.engine->Draw(x, y, p);
           RI.depthBuffer[tempIndex] = wVal;
@@ -321,7 +321,7 @@ int x, y, dx, dy, dx1, dy1, px, py, xe, ye, i;
 
       // J is X and I is Y
       int tempIndex = y * RI.engine->ScreenWidth() + x;
-			if(wVal > RI.depthBuffer[tempIndex] && rol() && tempIndex < screenSize && tempIndex > 0)
+			if(tempIndex >= 0 && tempIndex < screenSize && wVal > RI.depthBuffer[tempIndex] && rol())
       {
         RI.engine->Draw(x, y, p);
         RI.depthBuffer[tempIndex] = wVal;
@@ -339,7 +339,7 @@ int x, y, dx, dy, dx1, dy1, px, py, xe, ye, i;
 				}
         // J is X and I is Y
         int tempIndex = y * RI.engine->ScreenWidth() + x;
-				if(wVal > RI.depthBuffer[tempIndex] &&  rol() && tempIndex < screenSize && tempIndex > 0) 
+				if(tempIndex >= 0 && tempIndex < screenSize && wVal > RI.depthBuffer[tempIndex] &&  rol()) 
         {
           RI.engine->Draw(x, y, p);
           RI.depthBuffer[tempIndex] = wVal;
@@ -439,7 +439,7 @@ void FillTriangleWithDepthBufferInline(int32_t x1, int32_t y1, float w1,
         tex_w = (1.0f - t) * tex_sw + t * tex_ew;
         // J is X and I is Y
         offset = i * RI.engine->ScreenWidth() + j;
-        if (offset < screenSize && tex_w > RI.depthBuffer[offset]) {
+        if (offset >= 0 && offset < screenSize && tex_w > RI.depthBuffer[offset]) {
           RI.engine->Draw(j, i, p);
           RI.depthBuffer[offset] = tex_w;
         }
@@ -482,7 +482,7 @@ void FillTriangleWithDepthBufferInline(int32_t x1, int32_t y1, float w1,
       for (int j = ax; j < bx; j++) {
         tex_w = (1.0f - t) * tex_sw + t * tex_ew;
         offset = i * RI.engine->ScreenWidth() + j;
-        if (offset < screenSize && tex_w > RI.depthBuffer[offset]) {
+        if (offset >= 0 && offset < screenSize && tex_w > RI.depthBuffer[offset]) {
           // J is X and I is Y
           RI.engine->Draw(j, i, p);
           RI.depthBuffer[offset] = tex_w;

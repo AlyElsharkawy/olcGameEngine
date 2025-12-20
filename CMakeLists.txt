@@ -93,6 +93,7 @@ set(PROJECT_NAME_LIBS
   input
   audio
   serialization
+  im_gui
 )
 
 set(GUI_TEST_LIBS

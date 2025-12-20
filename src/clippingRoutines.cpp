@@ -267,9 +267,12 @@ void DoViewSpaceClipping(olc::PixelGameEngine* engine, Player* player, vector<Tr
       trianglesToRaster.push_back(projectedTriangle);
      
       //Normals section 
-      Vector3D tempNormal = GetNormal(clippedTriangles[i]);
-      Vector3D normalPoint = GetProjectedNormal(engine, PROJECTION_MATRIX, clippedTriangles[i], tempNormal);
-      normalsToRaster.push_back(make_pair(normalPoint, clippedTriangles[i].points[1]));
+      if(SETTINGS_MAP[DRAW_NORMALS] == true)
+      {
+        Vector3D tempNormal = GetNormal(clippedTriangles[i]);
+        Vector3D normalPoint = GetProjectedNormal(engine, PROJECTION_MATRIX, clippedTriangles[i], tempNormal);
+        normalsToRaster.push_back(make_pair(normalPoint, clippedTriangles[i].points[1]));
+      }
     }
   } 
   

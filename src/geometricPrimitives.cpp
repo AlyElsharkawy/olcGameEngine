@@ -395,10 +395,10 @@ bool Mesh::LoadFromOBJFile(const string& fileName, bool hasTexture)
   }
   while(!inputFile.eof())
   {   
-    char lineBuffer[128];
+    char lineBuffer[512];
     char junkChar;
     //cout << "Currently on line: " << lineCounter << '\n';
-    inputFile.getline(lineBuffer, 128);
+    inputFile.getline(lineBuffer, 512);
     strstream stringStream;
     stringStream << lineBuffer;
 
@@ -410,6 +410,10 @@ bool Mesh::LoadFromOBJFile(const string& fileName, bool hasTexture)
         stringStream >> junkChar >> junkChar >> tempTextel.u >> tempTextel.v;
         tempTextel.v = 1.0f - tempTextel.v;
         textels.push_back(tempTextel);
+      }
+      else if(lineBuffer[1] == 'n')
+      {
+        // Ignore normals for now
       }
       else
       {
@@ -435,7 +439,7 @@ bool Mesh::LoadFromOBJFile(const string& fileName, bool hasTexture)
 			{
 				stringStream >> junkChar;
 
-				string tokens[6];
+				string tokens[20];
 				int nTokenCount = -1;
 
 
@@ -444,14 +448,51 @@ bool Mesh::LoadFromOBJFile(const string& fileName, bool hasTexture)
 					char c = stringStream.get();
 					if (c == ' ' || c == '/')
 						nTokenCount++;
-					else
+					else if (nTokenCount >= 0 && nTokenCount < 20)
 						tokens[nTokenCount].append(1, c);
 				}
 
-				tokens[nTokenCount].pop_back();
+				// tokens[nTokenCount].pop_back(); // Removed potentially unsafe pop_back
 
-				triangles.push_back({ vertices[stoi(tokens[0]) - 1], vertices[stoi(tokens[2]) - 1], vertices[stoi(tokens[4]) - 1],
-		    textels[stoi(tokens[1]) - 1], textels[stoi(tokens[3]) - 1], textels[stoi(tokens[5]) - 1] });
+        if (nTokenCount >= 8) // v/vt/vn or v//vn
+        {
+          int v1 = stoi(tokens[0]) - 1;
+          int v2 = stoi(tokens[3]) - 1;
+          int v3 = stoi(tokens[6]) - 1;
+          
+          // Handle texture coordinates if present
+          Vector2D t1 = (!tokens[1].empty()) ? textels[stoi(tokens[1]) - 1] : Vector2D();
+          Vector2D t2 = (!tokens[4].empty()) ? textels[stoi(tokens[4]) - 1] : Vector2D();
+          Vector2D t3 = (!tokens[7].empty()) ? textels[stoi(tokens[7]) - 1] : Vector2D();
+
+				  triangles.push_back({ vertices[v1], vertices[v2], vertices[v3], t1, t2, t3 });
+
+          if (nTokenCount >= 11) // Quad: Add second triangle (v1, v3, v4)
+          {
+             int v4 = stoi(tokens[9]) - 1;
+             Vector2D t4 = (!tokens[10].empty()) ? textels[stoi(tokens[10]) - 1] : Vector2D();
+             triangles.push_back({ vertices[v1], vertices[v3], vertices[v4], t1, t3, t4 });
+          }
+        }
+        else if (nTokenCount >= 5) // v/vt
+        {
+          int v1 = stoi(tokens[0]) - 1;
+          int v2 = stoi(tokens[2]) - 1;
+          int v3 = stoi(tokens[4]) - 1;
+          
+          Vector2D t1 = textels[stoi(tokens[1]) - 1];
+          Vector2D t2 = textels[stoi(tokens[3]) - 1];
+          Vector2D t3 = textels[stoi(tokens[5]) - 1];
+
+				  triangles.push_back({ vertices[v1], vertices[v2], vertices[v3], t1, t2, t3 });
+
+          if (nTokenCount >= 7) // Quad: Add second triangle (v1, v3, v4)
+          {
+             int v4 = stoi(tokens[6]) - 1;
+             Vector2D t4 = textels[stoi(tokens[7]) - 1];
+             triangles.push_back({ vertices[v1], vertices[v3], vertices[v4], t1, t3, t4 });
+          }
+        }
       }
     }
     lineCounter++;

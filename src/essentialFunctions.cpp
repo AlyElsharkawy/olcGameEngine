@@ -343,7 +343,8 @@ Vector3D GetProjectedNormal(olc::PixelGameEngine* engine, const Matrix4x4& proje
   MultiplyMatrixVector(scaledNormal, projectionMatrix, projectedNormal);
     
   //Converting to DNC Coordinates
-  DivideVectorScalar(projectedNormal, projectedNormal.w);
+  if(projectedNormal.w != 0.0f)
+    DivideVectorScalar(projectedNormal, projectedNormal.w);
     
   //Fixing Inverted Y axis
   projectedNormal.y *= -1.0f;
