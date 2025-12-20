@@ -66,6 +66,7 @@ target_link_libraries(normal PRIVATE vector)
 target_link_libraries(essential PRIVATE drawing)
 
 add_executable(${PROJECT_NAME} main.cpp)
+add_executable(LevelEditor ./src/levelEditor.cpp ./src/levelEditorMain.cpp)
 add_executable(OBJFileSerializer ./src/extra/OBJFileSerializer.cpp)
 add_executable(GUITest ./src/extra/GUITest.cpp)
 add_executable(TestApp ./src/extra/test.cpp)
@@ -93,6 +94,7 @@ set(PROJECT_NAME_LIBS
   input
   audio
   serialization
+  im_gui
 )
 
 set(GUI_TEST_LIBS
@@ -155,6 +157,7 @@ endif()
 # Link the necessary libraries
 #linking with stdc++fs is not required if your compiler is above version 9.1
 target_link_libraries(${PROJECT_NAME} PRIVATE ${PLATFORM_LIBRARIES} ${PROJECT_NAME_LIBS} freetype)
+target_link_libraries(LevelEditor PRIVATE ${PLATFORM_LIBRARIES} ${PROJECT_NAME_LIBS} freetype)
 target_link_libraries(OBJFileSerializer PRIVATE ${PLATFORM_LIBRARIES} ${OBJ_FILE_SERIALIZER_LIBS})
 target_link_libraries(TestApp PRIVATE ${PLATFORM_LIBRARIES} ${TEST_APP_LIBS})
 target_link_libraries(GUITest PRIVATE ${PLATFORM_LIBRARIES} ${GUI_TEST_LIBS} freetype)

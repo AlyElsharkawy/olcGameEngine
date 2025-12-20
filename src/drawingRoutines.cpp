@@ -4,7 +4,8 @@
 #include "miscPrimitives.h"
 
 void DrawTexturedTriangle(const RenderingInstance &RI, const Triangle &input,
-                          const olc::Pixel& pixelIllumination, const olc::Sprite *texture) {
+                          const olc::Pixel &pixelIllumination,
+                          const olc::Sprite *texture) {
   const int screenSize = RI.engine->ScreenHeight() * RI.engine->ScreenWidth();
   int x1 = input.points[0].x;
   int x2 = input.points[1].x;
@@ -122,10 +123,10 @@ void DrawTexturedTriangle(const RenderingInstance &RI, const Triangle &input,
         tex_w = (1.0f - t) * tex_sw + t * tex_ew;
         // J is X and I is Y
         int offset = i * RI.engine->ScreenWidth() + j;
-        if (offset < screenSize && tex_w > RI.depthBuffer[offset]) 
-        {
+        if (offset < screenSize && tex_w > RI.depthBuffer[offset]) {
           olc::Pixel tempPixel = texture->Sample(tex_u / tex_w, tex_v / tex_w);
-          olc::Pixel finalPixel = MultiplyPixelPixel(tempPixel, pixelIllumination);
+          olc::Pixel finalPixel =
+              MultiplyPixelPixel(tempPixel, pixelIllumination);
           RI.engine->Draw(j, i, finalPixel);
           RI.depthBuffer[i * RI.engine->ScreenWidth() + j] = tex_w;
         }
@@ -186,10 +187,10 @@ void DrawTexturedTriangle(const RenderingInstance &RI, const Triangle &input,
         tex_w = (1.0f - t) * tex_sw + t * tex_ew;
 
         int offset = i * RI.engine->ScreenWidth() + j;
-        if (offset < screenSize && tex_w > RI.depthBuffer[offset])
-        {
+        if (offset < screenSize && tex_w > RI.depthBuffer[offset]) {
           olc::Pixel tempPixel = texture->Sample(tex_u / tex_w, tex_v / tex_w);
-          olc::Pixel finalPixel = MultiplyPixelPixel(tempPixel, pixelIllumination);
+          olc::Pixel finalPixel =
+              MultiplyPixelPixel(tempPixel, pixelIllumination);
           RI.engine->Draw(j, i, finalPixel);
           RI.depthBuffer[i * RI.engine->ScreenWidth() + j] = tex_w;
         }
@@ -211,141 +212,149 @@ void DrawTriangleWithDepthBuffer(const Triangle &triangleInput,
 
 // WARNING: This does not perfectly interpolate the W value. This bug will NOT
 // be fixed in the foreseeable future
-// WARNING: Normal lines are not clipped. Thus, I have checks that prevent me from indexing using negative
-// numbers or numbers greater than ScreenWidth * ScreenHeight.
-// Yes, This is a very bad solution. However, the alternative is adding clipping to Normals, which I
-// do not have the time, health, energy, or mental clarity to implement now.
-// Thank you for understanding
+// WARNING: Normal lines are not clipped. Thus, I have checks that prevent me
+// from indexing using negative numbers or numbers greater than ScreenWidth *
+// ScreenHeight. Yes, This is a very bad solution. However, the alternative is
+// adding clipping to Normals, which I do not have the time, health, energy, or
+// mental clarity to implement now. Thank you for understanding
 void DrawLineWithDepthBufferInline(int32_t x1, int32_t y1, float w1, int32_t x2,
                                    int32_t y2, float w2,
                                    const RenderingInstance &RI, olc::Pixel p,
-                                   uint32_t pattern) 
-{
-int x, y, dx, dy, dx1, dy1, px, py, xe, ye, i;
-		dx = x2 - x1; dy = y2 - y1;
+                                   uint32_t pattern) {
+  int x, y, dx, dy, dx1, dy1, px, py, xe, ye, i;
+  dx = x2 - x1;
+  dy = y2 - y1;
 
-		auto rol = [&](void) { pattern = (pattern << 1) | (pattern >> 31); return pattern & 1; };
-		olc::vlong2d p1(x1, y1), p2(x2, y2);
-    float wVal = std::max(w1, w2);
-		if (!RI.engine->ClipLineToScreen(p1, p2))
-			return;
-		x1 = p1.x; y1 = p1.y;
-		x2 = p2.x; y2 = p2.y;
-    const int screenSize = RI.engine->ScreenWidth() * RI.engine->ScreenHeight();
+  auto rol = [&](void) {
+    pattern = (pattern << 1) | (pattern >> 31);
+    return pattern & 1;
+  };
+  olc::vlong2d p1(x1, y1), p2(x2, y2);
+  float wVal = std::max(w1, w2);
+  if (!RI.engine->ClipLineToScreen(p1, p2))
+    return;
+  x1 = p1.x;
+  y1 = p1.y;
+  x2 = p2.x;
+  y2 = p2.y;
+  const int screenSize = RI.engine->ScreenWidth() * RI.engine->ScreenHeight();
 
-		// straight lines idea by gurkanctn
-		if (dx == 0) // Line is vertical
-		{
-			if (y2 < y1) std::swap(y1, y2);
-      int index;
-			for (y = y1; y <= y2; y++) 
-      {
-        // J is X and I is Y
-        index = y * RI.engine->ScreenWidth() + x1;
-        if( wVal > RI.depthBuffer[index] && rol())
-        {
-          RI.engine->Draw(x1, y, p);
-          RI.depthBuffer[index] = w1;
-        } 
+  // straight lines idea by gurkanctn
+  if (dx == 0) // Line is vertical
+  {
+    if (y2 < y1)
+      std::swap(y1, y2);
+    int index;
+    for (y = y1; y <= y2; y++) {
+      // J is X and I is Y
+      index = y * RI.engine->ScreenWidth() + x1;
+      if (index >= 0 && index < screenSize && wVal > RI.depthBuffer[index] &&
+          rol()) {
+        RI.engine->Draw(x1, y, p);
+        RI.depthBuffer[index] = w1;
       }
-			return;
-		}
+    }
+    return;
+  }
 
-		if (dy == 0) // Line is horizontal
-		{
-			if (x2 < x1) std::swap(x1, x2);
-      int index;
-			for (x = x1; x <= x2; x++)
-      { 
-        // J is X and I is Y
-        index = y1 * RI.engine->ScreenWidth() + x;
-        if (wVal > RI.depthBuffer[index] && rol()) 
-        {
-          RI.engine->Draw(x, y1, p);
-          RI.depthBuffer[index] = w2;
-        }
+  if (dy == 0) // Line is horizontal
+  {
+    if (x2 < x1)
+      std::swap(x1, x2);
+    int index;
+    for (x = x1; x <= x2; x++) {
+      // J is X and I is Y
+      index = y1 * RI.engine->ScreenWidth() + x;
+      if (index >= 0 && index < screenSize && wVal > RI.depthBuffer[index] &&
+          rol()) {
+        RI.engine->Draw(x, y1, p);
+        RI.depthBuffer[index] = w2;
       }
-			return;
-		}
+    }
+    return;
+  }
 
-		// Line is Funk-aye
-		dx1 = abs(dx); dy1 = abs(dy);
-		px = 2 * dy1 - dx1;	py = 2 * dx1 - dy1;
-		if (dy1 <= dx1)
-		{
-			if (dx >= 0)
-			{
-				x = x1; y = y1; xe = x2;
-			}
-			else
-			{
-				x = x2; y = y2; xe = x1;
-			}
+  // Line is Funk-aye
+  dx1 = abs(dx);
+  dy1 = abs(dy);
+  px = 2 * dy1 - dx1;
+  py = 2 * dx1 - dy1;
+  if (dy1 <= dx1) {
+    if (dx >= 0) {
+      x = x1;
+      y = y1;
+      xe = x2;
+    } else {
+      x = x2;
+      y = y2;
+      xe = x1;
+    }
+    // J is X and I is Y
+    int tempIndex = y * RI.engine->ScreenWidth() + x;
+    if (tempIndex >= 0 && tempIndex < screenSize &&
+        wVal > RI.depthBuffer[tempIndex] && rol()) {
+      RI.engine->Draw(x, y, p);
+      RI.depthBuffer[tempIndex] = wVal;
+    }
+
+    for (i = 0; x < xe; i++) {
+      x = x + 1;
+      if (px < 0)
+        px = px + 2 * dy1;
+      else {
+        if ((dx < 0 && dy < 0) || (dx > 0 && dy > 0))
+          y = y + 1;
+        else
+          y = y - 1;
+        px = px + 2 * (dy1 - dx1);
+      }
       // J is X and I is Y
       int tempIndex = y * RI.engine->ScreenWidth() + x;
-			if (wVal > RI.depthBuffer[tempIndex] && rol() && tempIndex < screenSize && tempIndex > 0) 
-      {
+      if (tempIndex >= 0 && tempIndex < screenSize &&
+          wVal > RI.depthBuffer[tempIndex] && rol()) {
         RI.engine->Draw(x, y, p);
         RI.depthBuffer[tempIndex] = wVal;
       }
+    }
+  } else {
+    if (dy >= 0) {
+      x = x1;
+      y = y1;
+      ye = y2;
+    } else {
+      x = x2;
+      y = y2;
+      ye = y1;
+    }
 
-			for (i = 0; x < xe; i++)
-			{
-				x = x + 1;
-				if (px < 0)
-					px = px + 2 * dy1;
-				else
-				{
-					if ((dx < 0 && dy < 0) || (dx > 0 && dy > 0)) y = y + 1; else y = y - 1;
-					px = px + 2 * (dy1 - dx1);
-				}
-        // J is X and I is Y
-        int tempIndex = y * RI.engine->ScreenWidth() + x;
-				if(wVal > RI.depthBuffer[tempIndex] && rol() && tempIndex < screenSize && tempIndex > 0)
-        {
-          RI.engine->Draw(x, y, p);
-          RI.depthBuffer[tempIndex] = wVal;
-        }
-			}
-		}
-		else
-		{
-			if (dy >= 0)
-			{
-				x = x1; y = y1; ye = y2;
-			}
-			else
-			{
-				x = x2; y = y2; ye = y1;
-			}
+    // J is X and I is Y
+    int tempIndex = y * RI.engine->ScreenWidth() + x;
+    if (tempIndex >= 0 && tempIndex < screenSize &&
+        wVal > RI.depthBuffer[tempIndex] && rol()) {
+      RI.engine->Draw(x, y, p);
+      RI.depthBuffer[tempIndex] = wVal;
+    }
 
+    for (i = 0; y < ye; i++) {
+      y = y + 1;
+      if (py <= 0)
+        py = py + 2 * dx1;
+      else {
+        if ((dx < 0 && dy < 0) || (dx > 0 && dy > 0))
+          x = x + 1;
+        else
+          x = x - 1;
+        py = py + 2 * (dx1 - dy1);
+      }
       // J is X and I is Y
       int tempIndex = y * RI.engine->ScreenWidth() + x;
-			if(wVal > RI.depthBuffer[tempIndex] && rol() && tempIndex < screenSize && tempIndex > 0)
-      {
+      if (tempIndex >= 0 && tempIndex < screenSize &&
+          wVal > RI.depthBuffer[tempIndex] && rol()) {
         RI.engine->Draw(x, y, p);
         RI.depthBuffer[tempIndex] = wVal;
       }
-
-			for (i = 0; y < ye; i++)
-			{
-				y = y + 1;
-				if (py <= 0)
-					py = py + 2 * dx1;
-				else
-				{
-					if ((dx < 0 && dy < 0) || (dx > 0 && dy > 0)) x = x + 1; else x = x - 1;
-					py = py + 2 * (dx1 - dy1);
-				}
-        // J is X and I is Y
-        int tempIndex = y * RI.engine->ScreenWidth() + x;
-				if(wVal > RI.depthBuffer[tempIndex] &&  rol() && tempIndex < screenSize && tempIndex > 0) 
-        {
-          RI.engine->Draw(x, y, p);
-          RI.depthBuffer[tempIndex] = wVal;
-        }
-			}
-		}
+    }
+  }
 }
 
 void DrawTriangleWithDepthBufferInline(int32_t x1, int32_t y1, float w1,
@@ -361,9 +370,11 @@ void DrawTriangleWithDepthBufferInline(int32_t x1, int32_t y1, float w1,
 void FillTriangleWithDepthBuffer(const Triangle &triangleInput,
                                  const RenderingInstance &RI, olc::Pixel p) {
   FillTriangleWithDepthBufferInline(
-      triangleInput.points[0].x, triangleInput.points[0].y, 1.0f / triangleInput.points[0].w, 
-      triangleInput.points[1].x, triangleInput.points[1].y, 1.0f / triangleInput.points[1].w,
-      triangleInput.points[2].x, triangleInput.points[2].y, 1.0f / triangleInput.points[2].w, RI, p);
+      triangleInput.points[0].x, triangleInput.points[0].y,
+      1.0f / triangleInput.points[0].w, triangleInput.points[1].x,
+      triangleInput.points[1].y, 1.0f / triangleInput.points[1].w,
+      triangleInput.points[2].x, triangleInput.points[2].y,
+      1.0f / triangleInput.points[2].w, RI, p);
 }
 
 void FillTriangleWithDepthBufferInline(int32_t x1, int32_t y1, float w1,
@@ -439,7 +450,8 @@ void FillTriangleWithDepthBufferInline(int32_t x1, int32_t y1, float w1,
         tex_w = (1.0f - t) * tex_sw + t * tex_ew;
         // J is X and I is Y
         offset = i * RI.engine->ScreenWidth() + j;
-        if (offset < screenSize && tex_w > RI.depthBuffer[offset]) {
+        if (offset >= 0 && offset < screenSize &&
+            tex_w > RI.depthBuffer[offset]) {
           RI.engine->Draw(j, i, p);
           RI.depthBuffer[offset] = tex_w;
         }
