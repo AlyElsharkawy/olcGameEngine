@@ -16,6 +16,7 @@
 #include "imgui.h"
 #include "imgui_impl_pge.h"
 #include "inputManager.h"
+#include "levelEditor.h"
 #include "matrixMathEssentials.h"
 #include "miscFunctions.h"
 #include "miscPrimitives.h"
@@ -30,9 +31,10 @@
 #include <iostream>
 #include <nfs/nfs.h>
 #include <string>
-namespace fs = std::filesystem;
 
 #define DEFAULT_COLORS olc::BLUE, olc::GREEN, olc::RED
+
+using std::bind;
 
 using namespace std;
 
@@ -45,22 +47,20 @@ class EngineReborn : public olc::PixelGameEngine {
   olc::SplashScreen *sps = nullptr;
   float *depthBuffer = nullptr;
   int m_GameLayer;
-  olc::imgui::PGE_ImGUI pge_imgui;
   // GUI related stuff
   Manager manager;
-  bool showAbout = false;
   // Custom fonts
   olc::Font *fontFreeSans = nullptr;
   olc::Font *fontFreeSansBold = nullptr;
   olc::Font *fontHackButtons = nullptr;
-  bool showFileBrowser = false;
-  std::string importedFilePath = "";
   // Rendering instance used to efficiently pass information between functions
   // and phases
   RenderingInstance RI;
+  LevelEditor levelEditor;
+  olc::imgui::PGE_ImGUI pge_imgui;
 
 public:
-  EngineReborn() {
+  EngineReborn() : pge_imgui(false) {
     sAppName = "3D Viewer Reborn";
 #ifdef BUILD_RELEASE
     sps = new olc::SplashScreen();
@@ -123,41 +123,8 @@ public:
         GetPathFromResources({"fonts", "TTF", "FreeSansBold.ttf"}), 50);
     fontHackButtons = new olc::Font(
         GetPathFromResources({"fonts", "TTF", "FreeSans.ttf"}), 25);
-
-    // Initialize GUI elements
-    // checkDoDebugMenu = new CheckBox(
-    //     this, &manager, fontHackButtons, "Do Debug Menu", {0, 420},
-    //     DEFAULT_COLORS, 0.0f, {20, 20}, SETTINGS_MAP[DO_DEBUG_MENU]);
-    // checkDrawLines =
-    //     new CheckBox(this, &manager, fontHackButtons, "Draw Lines", {0, 500},
-    //                  DEFAULT_COLORS, 0.0f, {20, 20},
-    //                  SETTINGS_MAP[DRAW_LINES]);
-    // checkDrawFaces =
-    //     new CheckBox(this, &manager, fontHackButtons, "Draw Faces", {0, 580},
-    //                  DEFAULT_COLORS, 0.0f, {20, 20},
-    //                  SETTINGS_MAP[DRAW_FACES]);
-    // checkVisualizeClipping = new CheckBox(
-    //     this, &manager, fontHackButtons, "Visualize Clipping", {0, 660},
-    //     DEFAULT_COLORS, 0.0f, {20, 20}, SETTINGS_MAP[VISUALIZE_CLIPPING]);
-    // checkDoScreenSpaceClipping = new CheckBox(
-    //     this, &manager, fontHackButtons, "Do Screen Space Clipping", {0,
-    //     740}, DEFAULT_COLORS, 0.0f, {20, 20},
-    //     SETTINGS_MAP[DO_SCREEN_SPACE_CLIPPING]);
-    // checkDoViewSpaceClipping = new CheckBox(
-    //     this, &manager, fontHackButtons, "Do View Space Clipping", {0, 820},
-    //     DEFAULT_COLORS, 0.0f, {20, 20},
-    //     SETTINGS_MAP[DO_VIEW_SPACE_CLIPPING]);
-    // checkDrawNormals = new CheckBox(
-    //     this, &manager, fontHackButtons, "Draw Normals", {0, 900},
-    //     DEFAULT_COLORS, 0.0f, {20, 20}, SETTINGS_MAP[DRAW_NORMALS], true);
-    // checkShowOptionsMenu =
-    //     new CheckBox(this, &manager, fontHackButtons, "Show Options", {0,
-    //     980},
-    //                  DEFAULT_COLORS, 0.0f, {20, 20}, true);
-    // Create a new Layer which will be used for the game
     m_GameLayer = CreateLayer();
     EnableLayer(m_GameLayer, true);
-    SetLayerCustomRenderFunction(0, std::bind(&EngineReborn::DrawUI, this));
     SetInitialObjects(this, allObjects, allLights, NUM_1);
 #ifdef BUILD_DEBUG
     PrintAllPrimitiveSizes();
@@ -168,6 +135,10 @@ public:
 
   bool OnUserUpdate(float fElapsedTime) override {
     // ImVec2 windowSize = ImGui::GetIO().DisplaySize;
+    SetLayerCustomRenderFunction(0, [this, fElapsedTime]() {
+      levelEditor.DrawUI(fElapsedTime, allObjects); // Removed the &
+      pge_imgui.ImGui_ImplPGE_Render();
+    });
     ScopedTimer totalTimeTimer("TOTAL TIME");
     {
       ScopedTimer clearTimer("CLEAR SCREEN TIMER");
@@ -330,187 +301,47 @@ public:
       fontFreeSansBold->DrawString(U"Facing: " + facingString, {10, 240},
                                    olc::WHITE);
     }
-
     // Draw Updated GUI Components
-    manager.Update();
-    manager.Draw();
     SetDrawTarget(m_GameLayer);
     // ImGui::ShowDemoWindow();
-    // Main Menu
-    if (ImGui::BeginMainMenuBar()) {
-      if (ImGui::BeginMenu("File")) {
-        if (ImGui::MenuItem("Import")) {
-          showFileBrowser = true;
-        }
-        if (ImGui::MenuItem("Exit", "ctrl + Q")) {
-          this->isRunning = false;
-        }
-        ImGui::EndMenu();
-      }
-      if (ImGui::BeginMenu("Help")) {
-        if (ImGui::MenuItem("About")) {
-          showAbout = true;
-        }
-        ImGui::EndMenu();
-      }
-      ImGui::EndMainMenuBar();
-    }
-    if (ImGui::Begin("Meshes")) {
-      int meshIndex = 0;
-      for (const auto &mesh : allObjects.GetMeshList()) {
-        ImGui::PushID(meshIndex);
-        std::string label = "Mesh " + std::to_string(meshIndex) + ": " + mesh->GetMeshName();
-        if (ImGui::CollapsingHeader(label.c_str())) {
-          ImGui::Text("Total Triangles: %d", mesh->GetTotalTriangles());
-          ImGui::DragFloat3("Position", mesh->translationOffsets.data(), 0.1f);
-          ImGui::DragFloat3("Rotation", mesh->rotationDegrees.data(), 0.1f);
-          ImGui::DragFloat3("Scale", mesh->scalingOffsets.data(), 0.1f, 0.01f, 100.0f);
-        }
-        ImGui::PopID();
-        meshIndex++;
-      }
-    }
-    ImGui::End();
-      DrawFileBrowser(&showFileBrowser, importedFilePath);
-      if (!importedFilePath.empty()) {
-        std::cout << "Importing file: " << importedFilePath << std::endl;
-        bool hasTexture = false;
-        std::ifstream f(importedFilePath);
-        if (f.is_open()) {
-          std::string line;
-          while (std::getline(f, line)) {
-            if (line.length() > 2 && line[0] == 'f' && line[1] == ' ') {
-              if (line.find('/') != std::string::npos) {
-                hasTexture = true;
-                break;
-              }
-            }
-          }
-          f.close();
-        }
-        std::cout << "Has texture: " << hasTexture << std::endl;
-
-        Mesh *newMesh = new Mesh();
-        if (newMesh->LoadFromOBJFile(importedFilePath, hasTexture)) {
-          std::cout << "Mesh loaded successfully. Triangles: "
-                    << newMesh->GetTotalTriangles() << std::endl;
-          allObjects.AppendMesh(newMesh);
-          allObjects.UpdateTotalCounts();
-        } else {
-          std::cout << "Failed to load mesh." << std::endl;
-          delete newMesh;
-        }
-        importedFilePath = "";
-      }
-      if (showAbout) {
-        ImGui::OpenPopup("About My Application");
-      }
-
-      // Always center the modal
-      ImVec2 center = ImGui::GetMainViewport()->GetCenter();
-      ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
-
-      if (ImGui::BeginPopupModal("About My Application", &showAbout,
-                                 ImGuiWindowFlags_AlwaysAutoResize)) {
-        ImGui::Text("3D Viewer Reborn");
-        ImGui::Separator();
-        ImGui::Text("Developed by: Aly Mohammed Elsharkawy");
-        ImGui::Text("License: MIT");
-
-        if (ImGui::Button("Close", ImVec2(120, 0))) {
-          showAbout = false;
-          ImGui::CloseCurrentPopup();
-        }
-        ImGui::EndPopup();
-      }
-      ImGui::Begin("3D Viewer Reborn");
-      ImGui::Text("Press ctrl + Q to exit the program.");
-      ImGui::Text("Elapsed Time: %.3f ms", fElapsedTime * 1000.0f);
-      ImGui::Text("FPS: %.2f", 1.0f / fElapsedTime);
-      ImGui::End();
-      // This is where screenshots are taken
-      DoAuxiliaryInputLoop(this, allObjects, allLights);
-      if (InputManager::KeyHeld(this, {NUM_9}))
-        this->isRunning = false;
-      return this->isRunning;
-    }
-
-    bool OnUserDestroy() override {
+    // This is where screenshots are taken
+    DoAuxiliaryInputLoop(this, allObjects, allLights);
+    if (InputManager::KeyHeld(this, {NUM_9}))
       this->isRunning = false;
-      if (this->player != nullptr)
-        delete this->player;
-      if (this->fontFreeSans != nullptr)
-        delete this->fontFreeSans;
-      if (this->fontHackButtons != nullptr)
-        delete this->fontHackButtons;
-      if (this->fontFreeSansBold != nullptr)
-        delete this->fontFreeSansBold;
-      manager.DeleteAllControls();
-      for (const auto &lightObject : allLights)
-        if (lightObject != nullptr)
-          delete lightObject;
-      for (const auto &object : allObjects.GetMeshList())
-        if (object != nullptr)
-          delete object;
-
-      return true;
-    }
-
-    void DrawUI(void) {
-      ImGui::Checkbox("Do Debug Menu", &SETTINGS_MAP[DO_DEBUG_MENU]);
-      ImGui::Checkbox("Draw Lines", &SETTINGS_MAP[DRAW_LINES]);
-      ImGui::Checkbox("Draw Faces", &SETTINGS_MAP[DRAW_FACES]);
-      ImGui::Checkbox("Visualize Clipping", &SETTINGS_MAP[VISUALIZE_CLIPPING]);
-      ImGui::Checkbox("Do Screen Space Clipping",
-                      &SETTINGS_MAP[DO_SCREEN_SPACE_CLIPPING]);
-      ImGui::Checkbox("Do View Space Clipping",
-                      &SETTINGS_MAP[DO_VIEW_SPACE_CLIPPING]);
-      ImGui::Checkbox("Draw Normals", &SETTINGS_MAP[DRAW_NORMALS]);
-
-      // This finishes the Dear ImGui and renders it to the screen
-
-      pge_imgui.ImGui_ImplPGE_Render();
-    }
-    void DrawFileBrowser(bool *open, std::string &selected_path) {
-      if (!*open)
-        return;
-
-      ImGui::Begin("File Browser", open);
-      static fs::path current_dir = fs::current_path();
-
-      if (ImGui::Button("..")) { // Go up a directory
-        current_dir = current_dir.parent_path();
-      }
-
-      ImGui::Separator();
-
-      for (const auto &entry : fs::directory_iterator(current_dir)) {
-        auto path = entry.path();
-        std::string label = path.filename().string();
-
-        if (entry.is_directory()) {
-          if (ImGui::Selectable(("[Dir] " + label).c_str())) {
-            current_dir = path;
-          }
-        } else {
-          if (ImGui::Selectable(label.c_str())) {
-            selected_path = path.string();
-            *open = false; // Close browser after selection
-          }
-        }
-      }
-      ImGui::End();
-    }
-    ~EngineReborn() {}
-  };
-
-  int main(int argc, char **argv) {
-    // Initialize the pwd of the program
-    PROGRAM_ROOT_DIRECTORY = GetExecutableDirectory(argv[0]);
-    EngineReborn engine;
-    if (engine.Construct(1920, 1080, 1, 1, false, false)) {
-      engine.Start();
-    } else
-      cerr << "FATAL ERROR: Failed to create 3D engine window.\n";
-    return 0;
+    return this->isRunning;
   }
+
+  bool OnUserDestroy() override {
+    this->isRunning = false;
+    if (this->player != nullptr)
+      delete this->player;
+    if (this->fontFreeSans != nullptr)
+      delete this->fontFreeSans;
+    if (this->fontHackButtons != nullptr)
+      delete this->fontHackButtons;
+    if (this->fontFreeSansBold != nullptr)
+      delete this->fontFreeSansBold;
+    manager.DeleteAllControls();
+    for (const auto &lightObject : allLights)
+      if (lightObject != nullptr)
+        delete lightObject;
+    for (const auto &object : allObjects.GetMeshList())
+      if (object != nullptr)
+        delete object;
+
+    return true;
+  }
+
+  ~EngineReborn() {}
+};
+
+int main(int argc, char **argv) {
+  // Initialize the pwd of the program
+  PROGRAM_ROOT_DIRECTORY = GetExecutableDirectory(argv[0]);
+  EngineReborn engine;
+  if (engine.Construct(1920, 1080, 1, 1, false, false)) {
+    engine.Start();
+  } else
+    cerr << "FATAL ERROR: Failed to create 3D engine window.\n";
+  return 0;
+}

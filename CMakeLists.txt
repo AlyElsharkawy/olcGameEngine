@@ -65,7 +65,7 @@ target_link_libraries(clipping PRIVATE geometry)
 target_link_libraries(normal PRIVATE vector)
 target_link_libraries(essential PRIVATE drawing)
 
-add_executable(${PROJECT_NAME} main.cpp)
+add_executable(${PROJECT_NAME} main.cpp src/levelEditor.cpp)
 add_executable(OBJFileSerializer ./src/extra/OBJFileSerializer.cpp)
 add_executable(GUITest ./src/extra/GUITest.cpp)
 add_executable(TestApp ./src/extra/test.cpp)
