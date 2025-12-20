@@ -239,10 +239,6 @@ void DrawTriangleToScreen(const RenderingInstance& RI, const Triangle& triangleI
     switch(materialType)
     {
       case MATERIAL_TYPES::NONE:
-        {
-
-        }
-
       case MATERIAL_TYPES::DIFFUSE:
         {
           olc::vf2d point1, point2, point3;
@@ -253,6 +249,7 @@ void DrawTriangleToScreen(const RenderingInstance& RI, const Triangle& triangleI
         }
 
       case MATERIAL_TYPES::TEXTURE:
+      case MATERIAL_TYPES::TEXTURE_WITH_NORMAL:
         {
           //Just incase
           if(texture != nullptr)
@@ -275,7 +272,7 @@ void DrawTriangleToScreen(const RenderingInstance& RI, const Triangle& triangleI
         }
       default:
         {
-          cerr << "ERROR: Material type not specified. Please file a bug report immiedtly!\n";
+          cerr << "ERROR: Material type not specified: " << materialType << ". Please file a bug report immiedtly!\n";
         }
     }
   }

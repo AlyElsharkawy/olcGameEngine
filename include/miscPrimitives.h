@@ -47,7 +47,7 @@ class RenderingInstance
 public:
   float* depthBuffer = nullptr;
   olc::PixelGameEngine* engine = nullptr; 
-  Mesh* selectedMesh;
+  Mesh* selectedMesh = nullptr;
   void InitializeRenderingInstance(olc::PixelGameEngine* engine);
   ~RenderingInstance();
   //void SetProjectionMatrix(const Matrix4x4& matrixInput);

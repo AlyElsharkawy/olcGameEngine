@@ -23,15 +23,27 @@ include_directories("./include/External/")
 include_directories("./user/include/")
 #For Dear ImGUI
 include_directories("./include/External/ImGUI/")
+#For Native File Dialog
+include_directories("./include/External/NFD/")
+include_directories("./include/External/NFD/include/")
 
 option(ENABLE_SANITIZERS "Enable sanitizers (ASAN + UBSAN)" OFF)
 
 find_package(Freetype REQUIRED)
 include_directories(${FREETYPE_INCLUDE_DIRS})
 find_package(yaml-cpp REQUIRED)
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(GTK3 REQUIRED gtk+-3.0)
 
 # We will create a shared library for each .cpp and .h file we have
 # We will then create debug and release configs for them
+add_library(nfd STATIC
+    ./include/External/NFD/nfd_common.c
+    ./include/External/NFD/nfd_gtk.c
+)
+target_include_directories(nfd PRIVATE ${GTK3_INCLUDE_DIRS})
+target_link_libraries(nfd PRIVATE ${GTK3_LIBRARIES})
+
 add_library(gui_essentials STATIC ./src/guiEssentials.cpp)
 add_library(misc_functions STATIC ./src/miscFunctions.cpp ./src/stbImageWriteImplementation.cpp)
 add_library(clipping STATIC ./src/clippingRoutines.cpp)
@@ -95,6 +107,7 @@ set(PROJECT_NAME_LIBS
   audio
   serialization
   im_gui
+  nfd
 )
 
 set(GUI_TEST_LIBS
