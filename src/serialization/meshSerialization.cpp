@@ -1,8 +1,11 @@
+#include <exception>
 #include <yaml-cpp/node/node.h>
 #include <yaml-cpp/node/parse.h>
+#include <filesystem>
 #include "serialization.h"
 
-void SerializeMesh(const Mesh* const meshInput, const string& filePath)
+void SerializeMesh(const Mesh* const meshInput, const string& meshFilePath, 
+                   const string& objectFilePath, const string& textureImagePath)
 {
   YAML::Node root;
   root["rotations"]["doAutomaticRotations"] = meshInput->doAutomaticRotations;
@@ -10,6 +13,7 @@ void SerializeMesh(const Mesh* const meshInput, const string& filePath)
   root["isStatic"] = meshInput->isStatic;
   root["doLighting"] = meshInput->doLighting;
   root["doLines"] = meshInput->doLines;
+  root["meshName"] = meshInput->GetMeshName();
   root["materialType"] = static_cast<int>(meshInput->materialType);
   root["vectors"]["forwardVector"] = meshInput->forwardVector;
   root["vectors"]["lookAtVector"] = meshInput->lookAtVector;
@@ -17,15 +21,49 @@ void SerializeMesh(const Mesh* const meshInput, const string& filePath)
   root["offsets"]["rotationDegrees"] = meshInput->rotationDegrees;
   root["offsets"]["rotationSpeeds"] = meshInput->rotationSpeeds;
   root["offsets"]["scalingOffsets"] = meshInput->scalingOffsets;
+  
   root["textureImagePath"] = (meshInput->GetTextureImagePath() == nullptr) ? 
-    "" : *(meshInput->GetTextureImagePath());
-  root["objectFilePath"] = meshInput->GetObjectFilePath();
-  root["hasTexture"] = (meshInput->GetTextureImagePath() != nullptr) ? true : false;
+    "" : textureImagePath;
+  if(meshInput->GetTextureImagePath() != nullptr)
+  {
+    try
+    {
+      std::filesystem::copy_file(*(meshInput->GetTextureImagePath()), 
+                                std::filesystem::canonical(meshFilePath + "/../" + textureImagePath));
+    }
+    catch(const std::exception& e)
+    {
+      cerr << "Serialization failed for " << meshInput->GetMeshName() <<" .Failed to copy texture image png file " 
+      << *(meshInput->GetTextureImagePath()) << " during deserialization.\n";
+    }
+  }
+
+  root["objectFilePath"] = objectFilePath; //RELATIVE PATH
+  root["hasTexture"] = meshInput->hasTexture;
   
   if(meshInput->GetDiffuseColor() != nullptr)
     root["diffuseColor"] = *(meshInput->GetDiffuseColor());
 
-  ofstream outputMeshFile(filePath);
+  try
+  {
+    std::filesystem::copy_file(meshInput->GetObjectFilePath(), 
+                               std::filesystem::canonical(meshFilePath + ".." + objectFilePath));
+  }
+  catch(const std::exception& e)
+  {
+    cerr << "Serialization failed for " << meshInput->GetMeshName() <<" .Failed to copy OBJ file " 
+      << meshInput->GetObjectFilePath() << " during deserialization.\n";
+    return;
+  }
+
+  if(meshInput->GetMeshComponents().light != nullptr)
+  {
+    std::filesystem::create_directory(std::filesystem::canonical(meshFilePath + "../light"));
+    const std::string& meshName = meshInput->GetMeshName();
+    SerializeLight(meshInput->GetMeshComponents().light, meshFilePath + "/light/" + meshName + ".light");
+  }
+
+  ofstream outputMeshFile(meshFilePath);
   outputMeshFile << root;
   outputMeshFile.close();
 }
@@ -35,7 +73,18 @@ Mesh* DeserializeMesh(const string& filePath)
   typedef array<float, 3> tempType;
   Mesh* toReturn = new Mesh();
   YAML::Node root = YAML::LoadFile(filePath);
-  toReturn->LoadFromOBJFile(root["objectFilePath"].as<string>(), root["hasTexture"].as<bool>());
+  try
+  {
+    toReturn->LoadFromOBJFile(std::filesystem::canonical(root["objectFilePath"].as<string>()), 
+                            root["hasTexture"].as<bool>());
+  }
+  catch(const std::exception& e)
+  {
+    cerr << "Deserialization failed for " << root["meshName"].as<string>() << '\n';
+    cerr << "Error: " << e.what() << '\n';
+    delete toReturn;
+    return nullptr;
+  }
  
   toReturn->doAutomaticRotation = root["rotations"]["doAutomaticRotation"].as<bool>();
   toReturn->doAutomaticRotations = root["rotations"]["doAutomaticRotations"].as<array<bool, 3>>();

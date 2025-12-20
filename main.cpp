@@ -30,9 +30,6 @@
 
 using namespace std;
 
-unsigned long long totalFPS = 0;
-unsigned long long totalTimes = 0;
-
 class EngineReborn : public olc::PixelGameEngine
 {
   //Splash screen. Initializing it causes it to occur
@@ -71,10 +68,6 @@ class EngineReborn : public olc::PixelGameEngine
     //Object variables
     MeshList allObjects;
     deque<Light*> allLights;
-    float totalElapsedTime = 0.0f;
-    Matrix4x4 zRotMat = GetIdentityMatrix();
-    Matrix4x4 yRotMat = GetIdentityMatrix();
-    Matrix4x4 xRotMat = GetIdentityMatrix();
     Player* player;
 
     //Consideration: Should this be another data structure?
@@ -216,7 +209,6 @@ class EngineReborn : public olc::PixelGameEngine
               break;
             }
             case MATERIAL_TYPES::TEXTURE:
-            case MATERIAL_TYPES::TEXTURE_WITH_NORMAL:
             case MATERIAL_TYPES::COMPOSITE:
               break;
           }

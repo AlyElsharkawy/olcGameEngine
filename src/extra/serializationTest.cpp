@@ -23,14 +23,17 @@ int main(int argc, char** argv)
   HexToRGB("d5e1f0", rVal, gVal, bVal);
   bunny->SetDiffuseColor(rVal, gVal, bVal, 255);
   bunny->SetMeshName("My beautiful bunny");
-  SerializeMesh(bunny, GetPathFromResources({"misc", "beautiful-bunny.mesh"}));
+  SerializeMesh(bunny, GetPathFromResources({"misc", "beautiful-bunny.mesh"}), 
+                "./objectFiles/bunny.mesh", "./textures/bunnyTexture.png");
 
   bunny->PrintMeshInfo();
 
   Mesh* importedBunny = DeserializeMesh(GetPathFromResources({"misc", "beautiful-bunny.mesh"}));
-  importedBunny->PrintMeshInfo();
+  if(importedBunny != nullptr)
+    importedBunny->PrintMeshInfo();
 
   Mesh* importedBunny2 = DeserializeMesh(GetPathFromResources({"misc", "ugly-bunny.mesh"}));
-  importedBunny2->PrintMeshInfo();
+  if(importedBunny2 != nullptr)
+    importedBunny2->PrintMeshInfo();
   return 0;
 }

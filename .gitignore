@@ -8,3 +8,4 @@ resources/misc
 .cache/
 screenshots/
 widgets.qss
+imgui.ini
