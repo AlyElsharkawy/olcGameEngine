@@ -249,7 +249,6 @@ void DrawTriangleToScreen(const RenderingInstance& RI, const Triangle& triangleI
         }
 
       case MATERIAL_TYPES::TEXTURE:
-      case MATERIAL_TYPES::TEXTURE_WITH_NORMAL:
         {
           //Just incase
           if(texture != nullptr)

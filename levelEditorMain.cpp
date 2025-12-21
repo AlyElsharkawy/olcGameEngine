@@ -42,7 +42,7 @@ public:
     // Initialize Player/Camera
     player = new Player();
     player->camera.CalculateProjectionMatrix();
-    player->camera.SetMovementSpeeds(10.0f, 10.0f, 2.0f);
+    player->camera.SetMovementSpeeds(10.0f, 10.0f, 150.0f);
 
     // Initialize Inputs
     InputManager::InitializeInputs(GetPathFromConfig({"input.yaml"}));
@@ -78,7 +78,7 @@ public:
     // Initialize ImGui explicitly since we deferred it
     pge_imgui.ImGui_ImplPGE_Init();
 
-    // 1. Get the IO structure
+    //1. Get the IO structure
     ImGuiIO &io = ImGui::GetIO();
 
     // 2. Load the font (usually a .ttf or .otf file)
@@ -154,7 +154,6 @@ public:
             break;
           }
           case MATERIAL_TYPES::TEXTURE:
-          case MATERIAL_TYPES::TEXTURE_WITH_NORMAL:
           case MATERIAL_TYPES::COMPOSITE:
             break;
           }
@@ -173,6 +172,11 @@ public:
                                  mesh->GetTextureImage());
             if (!mesh->doLighting)
               FillTriangleWithDepthBuffer(clippedTri, RI);
+          }
+          
+          if(SETTINGS_MAP[SETTINGS_ENUM::DRAW_NORMALS] == true)
+          {
+            DrawNormalsToScreen(RI, player->camera.GetCameraProjectionMatrix(), normalsToRaster); 
           }
 
           trianglesToRaster.clear();

@@ -77,6 +77,7 @@ target_link_libraries(misc_primitives PRIVATE matrix geometry)
 target_link_libraries(clipping PRIVATE geometry)
 target_link_libraries(normal PRIVATE vector)
 target_link_libraries(essential PRIVATE drawing)
+target_link_libraries(levelEditorUtils PRIVATE nfd)
 
 add_executable(${PROJECT_NAME} main.cpp)
 add_executable(LevelEditor ./levelEditorMain.cpp)
@@ -108,7 +109,6 @@ set(PROJECT_NAME_LIBS
   audio
   serialization
   im_gui
-  nfd
 )
 
 set(GUI_TEST_LIBS

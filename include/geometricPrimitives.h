@@ -121,12 +121,9 @@ private:
 
 public:
   const int GetTotalVertices() const;
-  const int GetTotalVisibleVertices() const;
   const int GetTotalTriangles() const;
-  const int GetTotalVisibleTriangles() const;
   const short GetMaterialType() const;
   deque<Mesh*>& GetMeshList();
-  void UpdateVisibleCounts();
   void UpdateTotalCounts();
   void AppendMesh(Mesh* input);
   bool LoadMeshFromOBJ(string filename);
